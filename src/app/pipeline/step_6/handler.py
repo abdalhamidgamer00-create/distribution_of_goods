@@ -1,0 +1,85 @@
+"""Step 6: Split CSV by branches handler"""
+
+import os
+import re
+from datetime import datetime
+from time import perf_counter
+from src.shared.utils.file_handler import (
+    get_file_path,
+    get_csv_files,
+    ensure_directory_exists,
+)
+from src.services.splitting.branch_splitter import split_csv_by_branches
+from src.core.domain.branches.config import get_branches
+from src.shared.utils.logging_utils import get_logger
+from src.app.pipeline.utils.file_selector import select_csv_file
+
+logger = get_logger(__name__)
+
+
+def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
+    """Step 6: Split CSV file by branches"""
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    branches_dir = os.path.join("data", "output", "branches", "files")
+    analytics_dir = os.path.join("data", "output", "branches", "analytics")
+    
+    csv_files = get_csv_files(renamed_dir)
+    
+    if not csv_files:
+        logger.error("No CSV files found in %s", renamed_dir)
+        return False
+    
+    try:
+        csv_file = select_csv_file(renamed_dir, csv_files, use_latest_file)
+        csv_path = get_file_path(csv_file, renamed_dir)
+        
+        branches = get_branches()
+        
+        for branch in branches:
+            ensure_directory_exists(os.path.join(branches_dir, branch))
+            ensure_directory_exists(os.path.join(analytics_dir, branch))
+        
+        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        base_name_only = os.path.basename(os.path.splitext(csv_file)[0])
+        base_name_only = re.sub(r'_renamed|_\d{8}_\d{6}', '', base_name_only)
+        base_filename = f"{base_name_only}_{date_str}"
+        
+        logger.info("Splitting %s by branches...", csv_file)
+        logger.info("-" * 50)
+        total_start = perf_counter()
+        
+        output_files, timing_stats = split_csv_by_branches(
+            csv_path, branches_dir, base_filename, analytics_dir
+        )
+        total_duration = perf_counter() - total_start
+        
+        logger.info("File split successfully into %s branch files:", len(output_files))
+        for branch, file_path in output_files.items():
+            logger.info("  - %s: %s", branch, os.path.basename(file_path))
+        
+        logger.info("Branch files saved to: %s", branches_dir)
+        logger.info("Analytics files saved to: %s", analytics_dir)
+        if timing_stats:
+            logger.info(
+                "Step 6 timing (seconds): prep=%.2f allocation=%.2f surplus=%.2f writes=%.2f total=%.2f",
+                timing_stats.get("prep_time", 0.0),
+                timing_stats.get("allocation_time", 0.0),
+                timing_stats.get("surplus_time", 0.0),
+                timing_stats.get("write_time", 0.0),
+                total_duration,
+            )
+            logger.info(
+                "Step 6 workload: products=%s branches=%s",
+                timing_stats.get("num_products"),
+                len(output_files),
+            )
+        
+        return True
+        
+    except ValueError as e:
+        logger.error("Error: %s", e)
+        return False
+    except Exception as e:
+        logger.exception("Error during splitting: %s", e)
+        return False
+

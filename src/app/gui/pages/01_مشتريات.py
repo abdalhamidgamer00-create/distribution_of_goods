@@ -1,0 +1,212 @@
+"""قسم المشتريات - نظام توزيع البضائع"""
+
+import streamlit as st
+from src.app.gui.utils.step_runner import run_step, get_all_steps, run_step_with_dependencies
+from src.app.gui.utils.translations import MESSAGES
+import os
+from datetime import datetime
+
+st.set_page_config(
+    page_title="قسم المشتريات",
+    page_icon="🛒",
+    layout="wide"
+)
+
+# التحقق من تسجيل الدخول
+from src.app.gui.utils.auth import check_password
+if not check_password():
+    st.stop()
+
+
+def show_metrics():
+    """Display quick metrics about files and branches"""
+    col1, col2 = st.columns(2)
+    
+    output_dir = os.path.join("data", "output")
+    if os.path.exists(output_dir):
+        file_count = sum([len(files) for r, d, files in os.walk(output_dir)])
+        col1.metric("عدد الملفات", file_count)
+    else:
+        col1.metric("عدد الملفات", 0)
+    
+    col2.metric("عدد الفروع", 6)
+
+
+def show_file_management():
+    """Display file upload and selection interface"""
+    st.subheader("📁 إدارة الملفات")
+    
+    col1, col2 = st.columns(2)
+    
+    # Upload section
+    with col1:
+        st.markdown("### 📤 رفع ملف جديد")
+        uploaded_file = st.file_uploader(
+            "اختر ملف Excel",
+            type=['xlsx', 'xls'],
+            help="قم برفع ملف Excel من جهازك",
+            key="file_uploader"
+        )
+        
+        if uploaded_file is not None:
+            input_dir = os.path.join("data", "input")
+            os.makedirs(input_dir, exist_ok=True)
+            save_path = os.path.join(input_dir, uploaded_file.name)
+            
+            with open(save_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            st.success(f"✅ تم رفع الملف: {uploaded_file.name}")
+            st.session_state['selected_file'] = uploaded_file.name
+            st.session_state['file_source'] = 'uploaded'
+    
+    # Latest file section
+    with col2:
+        st.markdown("### 📂 استخدام أحدث ملف")
+        input_dir = os.path.join("data", "input")
+        
+        if os.path.exists(input_dir):
+            excel_files = [f for f in os.listdir(input_dir) if f.endswith(('.xlsx', '.xls'))]
+            excel_files.sort(key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), reverse=True)
+            
+            if excel_files:
+                latest_file = excel_files[0]
+                file_path = os.path.join(input_dir, latest_file)
+                file_size = os.path.getsize(file_path) / 1024  # KB
+                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+                
+                st.info(f"📄 **{latest_file}**")
+                st.caption(f"الحجم: {file_size:.2f} KB")
+                st.caption(f"آخر تعديل: {file_mtime.strftime('%Y-%m-%d %H:%M')}")
+                
+                if st.button("استخدام هذا الملف", key="use_latest", use_container_width=True):
+                    st.session_state['selected_file'] = latest_file
+                    st.session_state['file_source'] = 'existing'
+                    st.success(f"✅ تم اختيار: {latest_file}")
+            else:
+                st.warning("⚠️ لا توجد ملفات Excel في المجلد")
+        else:
+            st.error("❌ مجلد البيانات غير موجود")
+    
+    # Display selected file status
+    if 'selected_file' in st.session_state:
+        source_text = "مرفوع" if st.session_state.get('file_source') == 'uploaded' else "موجود"
+        st.success(f"✅ الملف المختار حالياً: **{st.session_state['selected_file']}** ({source_text})")
+    else:
+        st.warning("⚠️ لم يتم اختيار ملف بعد. يرجى رفع ملف أو اختيار أحدث ملف.")
+
+
+def show_navigation_button(step_id):
+    """Display navigation button for specific step if successful"""
+    nav_buttons = {
+        '8': ("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py"),
+        '9': ("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py"),
+        '10': ("⚠️ عرض ملفات النقص", "pages/08_النقص.py")
+    }
+    
+    if step_id in nav_buttons and st.session_state.get(f'step_{step_id}_success', False):
+        label, page = nav_buttons[step_id]
+        if st.button(label, key=f"nav_{step_id}", type="primary"):
+            st.switch_page(page)
+
+
+def show_steps():
+    """Display available steps with run buttons"""
+    st.subheader("الخطوات المتاحة")
+    
+    steps = get_all_steps()
+    visible_steps = [step for step in steps if step['id'] in ['8', '9', '10']]
+    
+    cols = st.columns(len(visible_steps))
+    for idx, step in enumerate(visible_steps):
+        with cols[idx]:
+            with st.container():
+                st.markdown(f"### {step['name']}")
+                st.caption(step['description'])
+                
+                if st.button(f"▶️ تشغيل مع الخطوات السابقة", key=f"run_{step['id']}"):
+                    if 'selected_file' not in st.session_state:
+                        st.error("❌ يرجى اختيار ملف أولاً من قسم إدارة الملفات أعلاه")
+                    else:
+                        success, message = run_step_with_dependencies(step['id'])
+                        if success:
+                            st.success(message)
+                            st.session_state[f'step_{step["id"]}_success'] = True
+                        else:
+                            st.error(message)
+                            st.session_state[f'step_{step["id"]}_success'] = False
+                
+                show_navigation_button(step['id'])
+                st.markdown("---")
+
+
+def show_run_all_steps():
+    """Display run all steps button and progress"""
+    st.markdown("---")
+    st.subheader("تشغيل جميع الخطوات")
+    
+    if st.button("🚀 تشغيل جميع الخطوات بالترتيب", type="primary", use_container_width=True):
+        if 'selected_file' not in st.session_state:
+            st.error("❌ يرجى اختيار ملف أولاً من قسم إدارة الملفات أعلاه")
+        else:
+            steps = get_all_steps()
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            all_success = True
+            for idx, step in enumerate(steps):
+                status_text.text(f"جاري تنفيذ: {step['name']}")
+                success, message = run_step(step['id'])
+                
+                if not success:
+                    st.error(f"فشل في: {step['name']}")
+                    all_success = False
+                    break
+                
+                progress_bar.progress((idx + 1) / len(steps))
+            
+            if all_success:
+                status_text.text("اكتمل تنفيذ جميع الخطوات!")
+                st.success("✅ تم تنفيذ جميع الخطوات بنجاح!")
+                st.session_state['all_steps_success'] = True
+
+
+def show_results_navigation():
+    """Display navigation buttons to result pages if all steps succeeded"""
+    if st.session_state.get('all_steps_success', False):
+        st.markdown("### 📂 عرض النتائج")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📤 ملفات التحويل", key="nav_all_transfer", use_container_width=True):
+                st.switch_page("pages/06_ملفات_التحويل.py")
+        
+        with col2:
+            if st.button("📦 الفائض المتبقي", key="nav_all_surplus", use_container_width=True):
+                st.switch_page("pages/07_الفائض_المتبقي.py")
+        
+        with col3:
+            if st.button("⚠️ ملفات النقص", key="nav_all_shortage", use_container_width=True):
+                st.switch_page("pages/08_النقص.py")
+
+
+# Main page layout
+st.title("🛒 قسم المشتريات")
+st.markdown("### نظام توزيع البضائع")
+st.markdown("---")
+
+show_metrics()
+st.markdown("---")
+
+show_file_management()
+st.markdown("---")
+
+show_steps()
+
+show_run_all_steps()
+show_results_navigation()
+
+# Back button
+st.markdown("---")
+if st.button("← العودة إلى الرئيسية"):
+    st.switch_page("pages/00_الرئيسية.py")

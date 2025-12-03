@@ -1,0 +1,492 @@
+====================================================================================================
+DISTRIBUTION LOGIC TEST REPORT
+====================================================================================================
+
+Total Products Tested: 20
+
+====================================================================================================
+
+====================================================================================================
+PRODUCT 1: 84560 - DAPOXTARD 60 MG 6 TAB
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.60
+  Total Surplus: 0.53
+  Coverage: 88.33%
+
+[NEEDING BRANCHES] (2)
+  - akba      : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+  - nujum     : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+
+[SURPLUS BRANCHES] (2)
+  - shahid    : Surplus=    0.20, Avg_Sales=  0.01, Balance=    0.50
+  - asherin   : Surplus=    0.33, Avg_Sales=  0.00, Balance=    0.33
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - akba      : Needed=    0.30 (50.00%), Allocated=    0.26 (49.06%)
+  - nujum     : Needed=    0.30 (50.00%), Allocated=    0.26 (49.06%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: akba
+    Needed: 0.30
+    Allocated: 0.26 (50.00% of needed, 49.06% of surplus)
+    Sources:
+      - shahid    : 0.20 from 0.20 available
+      - asherin   : 0.06 from 0.33 available
+
+  Branch: nujum
+    Needed: 0.30
+    Allocated: 0.26 (50.00% of needed, 49.06% of surplus)
+    Sources:
+      - asherin   : 0.26 from 0.27 available
+
+
+====================================================================================================
+PRODUCT 2: 48177 - IMP HYDREA CAPSULES 500 MG 100 CAP
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.90
+  Total Surplus: 0.80
+  Coverage: 88.89%
+
+[NEEDING BRANCHES] (2)
+  - nujum     : Needed=    0.60, Avg_Sales=  0.02, Balance=    0.00, Monthly=    0.60
+  - asherin   : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+
+[SURPLUS BRANCHES] (1)
+  - akba      : Surplus=    0.80, Avg_Sales=  0.00, Balance=    0.80
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - asherin   : Needed=    0.30 (33.33%), Allocated=    0.27 (33.75%)
+  - nujum     : Needed=    0.60 (66.67%), Allocated=    0.53 (66.25%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: nujum
+    Needed: 0.60
+    Allocated: 0.53 (66.67% of needed, 66.25% of surplus)
+    Sources:
+      - akba      : 0.53 from 0.80 available
+
+  Branch: asherin
+    Needed: 0.30
+    Allocated: 0.27 (33.33% of needed, 33.75% of surplus)
+    Sources:
+      - akba      : 0.27 from 0.27 available
+
+
+====================================================================================================
+PRODUCT 3: 84159 - CARTIZAD 30 TABLETS 3 STRIPS
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.30
+  Total Surplus: 0.20
+  Coverage: 66.67%
+
+[NEEDING BRANCHES] (1)
+  - nujum     : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+
+[SURPLUS BRANCHES] (1)
+  - asherin   : Surplus=    0.20, Avg_Sales=  0.01, Balance=    0.50
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - nujum     : Needed=    0.30 (100.00%), Allocated=    0.20 (100.00%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: nujum
+    Needed: 0.30
+    Allocated: 0.20 (100.00% of needed, 100.00% of surplus)
+    Sources:
+      - asherin   : 0.20 from 0.20 available
+
+
+====================================================================================================
+PRODUCT 4: 56327 - CELECOX 10 CAP 200 MG
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.60
+  Total Surplus: 0.50
+  Coverage: 83.33%
+
+[NEEDING BRANCHES] (1)
+  - shahid    : Needed=    0.60, Avg_Sales=  0.02, Balance=    0.00, Monthly=    0.60
+
+[SURPLUS BRANCHES] (1)
+  - asherin   : Surplus=    0.50, Avg_Sales=  0.00, Balance=    0.50
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - shahid    : Needed=    0.60 (100.00%), Allocated=    0.50 (100.00%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: shahid
+    Needed: 0.60
+    Allocated: 0.50 (100.00% of needed, 100.00% of surplus)
+    Sources:
+      - asherin   : 0.50 from 0.50 available
+
+
+====================================================================================================
+PRODUCT 5: 72337 - HUMIRA 40MG/0.8ML 2 AMP
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.30
+  Total Surplus: 0.20
+  Coverage: 66.67%
+
+[NEEDING BRANCHES] (1)
+  - wardani   : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+
+[SURPLUS BRANCHES] (1)
+  - akba      : Surplus=    0.20, Avg_Sales=  0.01, Balance=    0.50
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - wardani   : Needed=    0.30 (100.00%), Allocated=    0.20 (100.00%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: wardani
+    Needed: 0.30
+    Allocated: 0.20 (100.00% of needed, 100.00% of surplus)
+    Sources:
+      - akba      : 0.20 from 0.20 available
+
+
+====================================================================================================
+PRODUCT 6: 90760 - NO-URIC 300 MG 20 TAB
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.30
+  Total Surplus: 0.20
+  Coverage: 66.67%
+
+[NEEDING BRANCHES] (1)
+  - asherin   : Needed=    0.30, Avg_Sales=  0.01, Balance=    0.00, Monthly=    0.30
+
+[SURPLUS BRANCHES] (2)
+  - shahid    : Surplus=    0.10, Avg_Sales=  0.08, Balance=    2.50
+  - nujum     : Surplus=    0.10, Avg_Sales=  0.03, Balance=    1.00
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - asherin   : Needed=    0.30 (100.00%), Allocated=    0.20 (100.00%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: asherin
+    Needed: 0.30
+    Allocated: 0.20 (100.00% of needed, 100.00% of surplus)
+    Sources:
+      - shahid    : 0.10 from 0.10 available
+      - nujum     : 0.10 from 0.10 available
+
+
+====================================================================================================
+PRODUCT 7: 87550 - لايف بوي 75 جرام احمر
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 2.10
+  Total Surplus: 2.00
+  Coverage: 95.24%
+
+[NEEDING BRANCHES] (2)
+  - wardani   : Needed=    1.50, Avg_Sales=  0.05, Balance=    0.00, Monthly=    1.50
+  - akba      : Needed=    0.60, Avg_Sales=  0.02, Balance=    0.00, Monthly=    0.60
+
+[SURPLUS BRANCHES] (1)
+  - nujum     : Surplus=    2.00, Avg_Sales=  0.00, Balance=    2.00
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - wardani   : Needed=    1.50 (71.43%), Allocated=    1.43 (71.50%)
+  - akba      : Needed=    0.60 (28.57%), Allocated=    0.57 (28.50%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: wardani
+    Needed: 1.50
+    Allocated: 1.43 (71.43% of needed, 71.50% of surplus)
+    Sources:
+      - nujum     : 1.43 from 2.00 available
+
+  Branch: akba
+    Needed: 0.60
+    Allocated: 0.57 (28.57% of needed, 28.50% of surplus)
+    Sources:
+      - nujum     : 0.57 from 0.57 available
+
+
+====================================================================================================
+PRODUCT 8: 89831 - SIDERAL FORT 30CAP
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 1.13
+  Total Surplus: 1.00
+  Coverage: 88.50%
+
+[NEEDING BRANCHES] (2)
+  - nujum     : Needed=    0.53, Avg_Sales=  0.04, Balance=    0.67, Monthly=    1.20
+  - akba      : Needed=    0.60, Avg_Sales=  0.02, Balance=    0.00, Monthly=    0.60
+
+[SURPLUS BRANCHES] (1)
+  - wardani   : Surplus=    1.00, Avg_Sales=  0.00, Balance=    1.00
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+  - akba      : Needed=    0.60 (53.10%), Allocated=    0.53 (53.00%)
+  - nujum     : Needed=    0.53 (46.90%), Allocated=    0.47 (47.00%)
+
+[DISTRIBUTION DETAILS]
+
+  Branch: nujum
+    Needed: 0.53
+    Allocated: 0.47 (46.90% of needed, 47.00% of surplus)
+    Sources:
+      - wardani   : 0.47 from 1.00 available
+
+  Branch: akba
+    Needed: 0.60
+    Allocated: 0.53 (53.10% of needed, 53.00% of surplus)
+    Sources:
+      - wardani   : 0.53 from 0.53 available
+
+
+====================================================================================================
+PRODUCT 9: 48121 - CONTAFEVER N SYRUP 120 ML
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 143.00
+  Total Surplus: 150.00
+  Coverage: 104.90%
+
+[NEEDING BRANCHES] (5)
+  - nujum     : Needed=   71.40, Avg_Sales=  3.28, Balance=   27.00, Monthly=   98.40
+  - akba      : Needed=   21.80, Avg_Sales=  1.96, Balance=   37.00, Monthly=   58.80
+  - shahid    : Needed=   30.80, Avg_Sales=  1.86, Balance=   25.00, Monthly=   55.80
+  - asherin   : Needed=    1.20, Avg_Sales=  1.04, Balance=   30.00, Monthly=   31.20
+  - wardani   : Needed=   17.80, Avg_Sales=  0.86, Balance=    8.00, Monthly=   25.80
+
+[SURPLUS BRANCHES] (1)
+  - admin     : Surplus=  150.00, Avg_Sales=  0.00, Balance=  150.00
+
+
+====================================================================================================
+PRODUCT 10: 47864 - CLOBUTRA CREAM
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 109.00
+  Total Surplus: 229.10
+  Coverage: 210.18%
+
+[NEEDING BRANCHES] (3)
+  - akba      : Needed=  106.20, Avg_Sales=  4.14, Balance=   18.00, Monthly=  124.20
+  - asherin   : Needed=    0.20, Avg_Sales=  0.14, Balance=    4.00, Monthly=    4.20
+  - wardani   : Needed=    2.60, Avg_Sales=  0.12, Balance=    1.00, Monthly=    3.60
+
+[SURPLUS BRANCHES] (3)
+  - shahid    : Surplus=    6.00, Avg_Sales=  0.30, Balance=   15.00
+  - nujum     : Surplus=  213.10, Avg_Sales=  0.03, Balance=  214.00
+  - admin     : Surplus=   10.00, Avg_Sales=  0.00, Balance=   10.00
+
+
+====================================================================================================
+PRODUCT 11: W - ماء مذيب
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 102.90
+  Total Surplus: 17222.30
+  Coverage: 16736.93%
+
+[NEEDING BRANCHES] (2)
+  - akba      : Needed=   80.40, Avg_Sales=  7.78, Balance=  153.00, Monthly=  233.40
+  - asherin   : Needed=   22.50, Avg_Sales=  4.05, Balance=   99.00, Monthly=  121.50
+
+[SURPLUS BRANCHES] (3)
+  - nujum     : Surplus=16876.60, Avg_Sales= 15.98, Balance=17356.00
+  - shahid    : Surplus=   98.00, Avg_Sales=  7.60, Balance=  326.00
+  - wardani   : Surplus=  247.70, Avg_Sales=  3.01, Balance=  338.00
+
+
+====================================================================================================
+PRODUCT 12: 73157 - PHENADONE SYRUP 100 ML
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 83.00
+  Total Surplus: 90.60
+  Coverage: 109.16%
+
+[NEEDING BRANCHES] (3)
+  - shahid    : Needed=   53.30, Avg_Sales=  1.81, Balance=    1.00, Monthly=   54.30
+  - akba      : Needed=   11.30, Avg_Sales=  1.41, Balance=   31.00, Monthly=   42.30
+  - asherin   : Needed=   18.40, Avg_Sales=  0.98, Balance=   11.00, Monthly=   29.40
+
+[SURPLUS BRANCHES] (3)
+  - nujum     : Surplus=   28.50, Avg_Sales=  2.75, Balance=  111.00
+  - wardani   : Surplus=    1.10, Avg_Sales=  0.53, Balance=   17.00
+  - admin     : Surplus=   61.00, Avg_Sales=  0.00, Balance=   61.00
+
+
+====================================================================================================
+PRODUCT 13: 73598 - CEFOTAX 1 GM VIAL
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 68.40
+  Total Surplus: 79.90
+  Coverage: 116.81%
+
+[NEEDING BRANCHES] (4)
+  - nujum     : Needed=   42.20, Avg_Sales=  1.74, Balance=   10.00, Monthly=   52.20
+  - shahid    : Needed=   21.90, Avg_Sales=  1.03, Balance=    9.00, Monthly=   30.90
+  - akba      : Needed=    3.80, Avg_Sales=  0.66, Balance=   16.00, Monthly=   19.80
+  - asherin   : Needed=    0.50, Avg_Sales=  0.55, Balance=   16.00, Monthly=   16.50
+
+[SURPLUS BRANCHES] (2)
+  - wardani   : Surplus=   19.90, Avg_Sales=  0.27, Balance=   28.00
+  - admin     : Surplus=   60.00, Avg_Sales=  0.00, Balance=   60.00
+
+
+====================================================================================================
+PRODUCT 14: S - NORMAL SALINE 500ML INFUSION
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 138.30
+  Total Surplus: 0.00
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (5)
+  - nujum     : Needed=   53.70, Avg_Sales=  3.19, Balance=   42.00, Monthly=   95.70
+  - shahid    : Needed=    7.70, Avg_Sales=  1.89, Balance=   49.00, Monthly=   56.70
+  - akba      : Needed=   31.90, Avg_Sales=  1.83, Balance=   23.00, Monthly=   54.90
+  - wardani   : Needed=   43.10, Avg_Sales=  1.77, Balance=   10.00, Monthly=   53.10
+  - asherin   : Needed=    1.90, Avg_Sales=  1.73, Balance=   50.00, Monthly=   51.90
+
+[SURPLUS BRANCHES] (0)
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+
+
+====================================================================================================
+PRODUCT 15: 89504 - AZITANAD 500MG TAB
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 74.10
+  Total Surplus: 0.00
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (5)
+  - shahid    : Needed=   21.90, Avg_Sales=  0.73, Balance=    0.00, Monthly=   21.90
+  - akba      : Needed=   21.00, Avg_Sales=  0.70, Balance=    0.00, Monthly=   21.00
+  - asherin   : Needed=   16.00, Avg_Sales=  0.60, Balance=    2.00, Monthly=   18.00
+  - nujum     : Needed=    8.00, Avg_Sales=  0.30, Balance=    1.00, Monthly=    9.00
+  - wardani   : Needed=    7.20, Avg_Sales=  0.24, Balance=    0.00, Monthly=    7.20
+
+[SURPLUS BRANCHES] (0)
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+
+
+====================================================================================================
+PRODUCT 16: fem - FEMOGESAL 0.03/0.075MG 21 F.C.TABS.
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 50.10
+  Total Surplus: 0.00
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (5)
+  - shahid    : Needed=   18.90, Avg_Sales=  0.73, Balance=    3.00, Monthly=   21.90
+  - nujum     : Needed=   13.90, Avg_Sales=  0.73, Balance=    8.00, Monthly=   21.90
+  - asherin   : Needed=    5.10, Avg_Sales=  0.37, Balance=    6.00, Monthly=   11.10
+  - akba      : Needed=    6.50, Avg_Sales=  0.35, Balance=    4.00, Monthly=   10.50
+  - wardani   : Needed=    5.70, Avg_Sales=  0.29, Balance=    3.00, Monthly=    8.70
+
+[SURPLUS BRANCHES] (0)
+
+[PROPORTIONAL ALLOCATION] (Surplus < Needed)
+
+
+====================================================================================================
+PRODUCT 17: 91210 - ACTITRUE MOUTH WASH
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.00
+  Total Surplus: 845.60
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (0)
+
+[SURPLUS BRANCHES] (6)
+  - akba      : Surplus=   13.70, Avg_Sales=  0.11, Balance=   17.00
+  - nujum     : Surplus=  385.70, Avg_Sales=  0.11, Balance=  389.00
+  - asherin   : Surplus=   15.50, Avg_Sales=  0.05, Balance=   17.00
+  - wardani   : Surplus=   14.70, Avg_Sales=  0.01, Balance=   15.00
+  - shahid    : Surplus=    8.00, Avg_Sales=  0.00, Balance=    8.00
+  - admin     : Surplus=  408.00, Avg_Sales=  0.00, Balance=  408.00
+
+
+====================================================================================================
+PRODUCT 18: 91165 - FREE SYRUP
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.00
+  Total Surplus: 652.80
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (0)
+
+[SURPLUS BRANCHES] (6)
+  - nujum     : Surplus=  422.70, Avg_Sales=  0.11, Balance=  426.00
+  - akba      : Surplus=    9.00, Avg_Sales=  0.10, Balance=   12.00
+  - shahid    : Surplus=    6.30, Avg_Sales=  0.09, Balance=    9.00
+  - asherin   : Surplus=    5.10, Avg_Sales=  0.03, Balance=    6.00
+  - wardani   : Surplus=    3.70, Avg_Sales=  0.01, Balance=    4.00
+  - admin     : Surplus=  206.00, Avg_Sales=  0.00, Balance=  206.00
+
+
+====================================================================================================
+PRODUCT 19: 79562 - ironoglor_max 30capsules
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.00
+  Total Surplus: 0.00
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (0)
+
+[SURPLUS BRANCHES] (0)
+
+
+====================================================================================================
+PRODUCT 20: 83889 - AVEROFEROZ 30 TAP
+====================================================================================================
+
+[SUMMARY]
+  Total Needed: 0.00
+  Total Surplus: 0.00
+  Coverage: 0.00%
+
+[NEEDING BRANCHES] (0)
+
+[SURPLUS BRANCHES] (0)
+
+====================================================================================================
+END OF REPORT
+====================================================================================================
