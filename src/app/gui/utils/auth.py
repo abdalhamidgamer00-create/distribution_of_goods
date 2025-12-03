@@ -1,16 +1,29 @@
 import streamlit as st
 import hmac
 
+# Default passwords (used if secrets.toml is not found)
+DEFAULT_PASSWORDS = {
+    "admin": "admin123",
+    "user": "user123"
+}
+
 def check_password():
     """Returns `True` if the user had a correct password."""
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
+        # Try to get passwords from secrets, fall back to defaults
+        try:
+            passwords = st.secrets["passwords"]
+        except (FileNotFoundError, KeyError):
+            passwords = DEFAULT_PASSWORDS
+            st.warning("⚠️ استخدام كلمات المرور الافتراضية. يرجى إنشاء ملف .streamlit/secrets.toml للأمان.")
+        
         if (
-            st.session_state["username"] in st.secrets["passwords"]
+            st.session_state["username"] in passwords
             and hmac.compare_digest(
                 st.session_state["password"],
-                st.secrets["passwords"][st.session_state["username"]],
+                passwords[st.session_state["username"]],
             )
         ):
             st.session_state["password_correct"] = True
