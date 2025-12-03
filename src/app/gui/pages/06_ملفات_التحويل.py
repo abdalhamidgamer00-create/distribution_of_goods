@@ -2,7 +2,14 @@
 
 import streamlit as st
 import os
+import sys
 import pandas as pd
+
+# Fix import path for Streamlit Cloud
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from src.app.gui.utils.file_manager import (
     list_output_files,
     read_file_for_display,

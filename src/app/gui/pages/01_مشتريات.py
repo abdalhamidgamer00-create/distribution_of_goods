@@ -1,10 +1,17 @@
 """قسم المشتريات - نظام توزيع البضائع"""
 
 import streamlit as st
-from src.app.gui.utils.step_runner import run_step, get_all_steps, run_step_with_dependencies
-from src.app.gui.utils.translations import MESSAGES
+import sys
 import os
 from datetime import datetime
+
+# Fix import path for Streamlit Cloud
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from src.app.gui.utils.step_runner import run_step, get_all_steps, run_step_with_dependencies
+from src.app.gui.utils.translations import MESSAGES
 
 st.set_page_config(
     page_title="قسم المشتريات",
