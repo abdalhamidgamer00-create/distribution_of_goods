@@ -19,6 +19,16 @@ def calculate_proportional_allocations_vectorized(branch_data: dict, branches: l
     if not branch_data:
         return {}
     
+    # Extract additional data for weighted scoring
+    avg_sales_df = pd.DataFrame({
+        branch: branch_data[branch]['avg_sales'].astype(float)
+        for branch in branches
+    })
+    balance_df = pd.DataFrame({
+        branch: branch_data[branch]['balance'].astype(float)
+        for branch in branches
+    })
+    
     needed_df = pd.DataFrame({
         branch: branch_data[branch]['needed_quantity'].astype(float)
         for branch in branches
@@ -32,13 +42,64 @@ def calculate_proportional_allocations_vectorized(branch_data: dict, branches: l
     total_surplus = surplus_df.clip(lower=0).sum(axis=1)
     needs_mask = (total_needed > 0) & (total_surplus > 0) & (total_surplus < total_needed)
     
+    # Allocation weights (approved by user)
+    AVG_SALES_WEIGHT = 0.10  # 10% - نشاط الفرع
+    NEEDED_WEIGHT = 0.30     # 30% - الاحتياج
+    BALANCE_WEIGHT = 0.60    # 60% - أولوية قصوى للرصيد المنخفض
+    
     allocations = {}
     for idx in total_needed[needs_mask].index:
-        denom = total_needed.loc[idx]
-        if denom <= 0:
+        total_needed_value = total_needed.loc[idx]
+        if total_needed_value <= 0:
             continue
+        
         total_surplus_value = total_surplus.loc[idx]
-        proportions = needed_df.loc[idx].clip(lower=0) / denom
+        
+        # Calculate weighted scores for each branch
+        # Higher score = higher priority
+        
+        # Component 1: avg_sales (10%) - higher is better
+        avg_sales_scores = avg_sales_df.loc[idx].clip(lower=0)
+        
+        # Component 2: needed (30%) - higher is better
+        needed_scores = needed_df.loc[idx].clip(lower=0)
+        
+        # Component 3: inverse balance (60%) - lower balance = higher score
+        # Add small epsilon to avoid division by zero
+        inverse_balance_scores = 1.0 / (balance_df.loc[idx] + 0.1)
+        
+        # Normalize each component (0 to 1 range)
+        def normalize(series):
+            min_val = series.min()
+            max_val = series.max()
+            if max_val - min_val == 0:
+                return pd.Series([1.0] * len(series), index=series.index)
+            return (series - min_val) / (max_val - min_val)
+        
+        avg_sales_norm = normalize(avg_sales_scores)
+        needed_norm = normalize(needed_scores)
+        balance_norm = normalize(inverse_balance_scores)
+        
+        # Calculate weighted total scores
+        total_scores = (
+            AVG_SALES_WEIGHT * avg_sales_norm +
+            NEEDED_WEIGHT * needed_norm +
+            BALANCE_WEIGHT * balance_norm
+        )
+        
+        # Calculate proportions based on scores
+        # Only consider branches with needed > 0
+        needing_mask = needed_df.loc[idx] > 0
+        total_scores_sum = total_scores[needing_mask].sum()
+        
+        if total_scores_sum <= 0:
+            # Fallback to simple proportion if scores are all zero
+            proportions = needed_df.loc[idx].clip(lower=0) / total_needed_value
+        else:
+            proportions = pd.Series([0.0] * len(branches), index=branches)
+            proportions[needing_mask] = total_scores[needing_mask] / total_scores_sum
+        
+        # Allocate surplus based on proportions
         # استخدام floor لتقريب التوزيع النسبي للأسفل
         allocated = (proportions * total_surplus_value).apply(lambda x: math.floor(x))
         # إضافة جميع الفروع حتى لو كانت القيمة 0 لضمان استخدام proportional allocation

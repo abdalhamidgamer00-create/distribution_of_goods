@@ -140,6 +140,20 @@ def split_csv_by_branches(csv_path: str, output_base_dir: str, base_filename: st
         
         timing_stats["surplus_time"] = perf_counter() - surplus_start
         
+        # SECOND ROUND: إعادة توزيع الفائض المهدر من قاعدة balance>=15
+        from src.services.splitting.processors.surplus_redistributor import redistribute_wasted_surplus
+        
+        max_withdrawals, second_round_time = redistribute_wasted_surplus(
+            branches=branches,
+            branch_data=branch_data,
+            analytics_data=analytics_data,
+            all_withdrawals=all_withdrawals,
+            max_withdrawals=max_withdrawals,
+            num_products=num_products,
+            balance_limit=15.0
+        )
+        timing_stats["second_round_time"] = second_round_time
+        
         # 4. حساب الفائض المتبقي
         final_surplus_remaining_dict = calculate_surplus_remaining(
             branches, branch_data, all_withdrawals

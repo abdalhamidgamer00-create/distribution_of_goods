@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 
 def step_3_validate_data(use_latest_file: bool = None):
     """Step 3: Validate CSV data and date range"""
+    # التحقق من الملف المُحوّل من Excel إلى CSV
     output_dir = os.path.join("data", "output", "converted", "csv")
     
     csv_files = get_csv_files(output_dir)

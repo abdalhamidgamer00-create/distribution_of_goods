@@ -27,7 +27,7 @@ def find_surplus_sources_for_single_product(
     
     This function:
     1. Checks if branch needs the product
-    2. Applies balance rules (no transfer if balance >= 15)
+    2. Applies balance rules (no transfer if balance >= 30)
     3. Calculates target amount based on rules
     4. Searches for surplus in other branches
     5. Processes withdrawals
@@ -63,7 +63,7 @@ def find_surplus_sources_for_single_product(
             'remaining_needed': 0.0
         }], {}
     
-    # Apply rule: No transfer if balance >= 15
+    # Apply rule: No transfer if balance >= 30
     if should_skip_transfer(balance):
         return [{
             'surplus_from_branch': 0.0,

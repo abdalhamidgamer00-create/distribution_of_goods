@@ -3,8 +3,11 @@
 
 def get_needing_branches_order_for_product(idx: int, branch_data: dict, branches: list) -> list:
     """
-    Get order of branches that need products, sorted by avg_sales (descending) then balance (ascending)
-    This determines which needing branch processes first for its needs
+    Get order of branches that need products, sorted by weighted score.
+    Uses same weights as proportional allocation for consistency:
+    - balance: 60% (lower balance = higher priority)
+    - needed: 30% (higher need = higher priority)  
+    - avg_sales: 10% (higher sales = higher priority)
     
     Args:
         idx: Product index
@@ -12,8 +15,13 @@ def get_needing_branches_order_for_product(idx: int, branch_data: dict, branches
         branches: List of all branch names
         
     Returns:
-        List of branch names that need the product, sorted by: highest avg_sales, then lowest balance
+        List of branch names that need the product, sorted by priority score (descending)
     """
+    # Weights matching proportional allocation
+    BALANCE_WEIGHT = 0.60
+    NEEDED_WEIGHT = 0.30
+    AVG_SALES_WEIGHT = 0.10
+    
     needing_branches = []
     
     for branch in branches:
@@ -21,9 +29,22 @@ def get_needing_branches_order_for_product(idx: int, branch_data: dict, branches
         if needed > 0:
             avg_sales = branch_data[branch].iloc[idx]['avg_sales']
             balance = branch_data[branch].iloc[idx]['balance']
-            needing_branches.append((branch, avg_sales, balance))
+            
+            # Calculate weighted score
+            # Higher score = higher priority
+            inverse_balance_score = 1.0 / (balance + 0.1)  # +0.1 to avoid division by zero
+            
+            # Weighted score (no normalization needed for ordering)
+            score = (
+                BALANCE_WEIGHT * inverse_balance_score +
+                NEEDED_WEIGHT * needed +
+                AVG_SALES_WEIGHT * avg_sales
+            )
+            
+            needing_branches.append((branch, score, avg_sales, balance))
     
-    needing_branches.sort(key=lambda x: (-x[1], x[2]))
+    # Sort by score (descending) - higher score = higher priority
+    needing_branches.sort(key=lambda x: -x[1])
     
     return [b[0] for b in needing_branches]
 
@@ -31,7 +52,11 @@ def get_needing_branches_order_for_product(idx: int, branch_data: dict, branches
 def get_surplus_branches_order_for_product(idx: int, branch: str, branch_data: dict, branches: list, existing_withdrawals: dict = None) -> list:
     """
     Get order of branches to search for surplus based on available surplus quantity
-    Branches with more surplus are searched first
+    
+    Sorting priority:
+    1. Higher available surplus (descending)
+    2. Higher balance (descending) - richer branches give first
+    3. Lower avg_sales (ascending) - less active branches give first
     
     Args:
         idx: Product index
@@ -41,7 +66,7 @@ def get_surplus_branches_order_for_product(idx: int, branch: str, branch_data: d
         existing_withdrawals: Dictionary of withdrawals already made (branch, idx) -> amount
         
     Returns:
-        List of branch names sorted by available surplus quantity (descending)
+        List of branch names sorted by priority
     """
     if existing_withdrawals is None:
         existing_withdrawals = {}
@@ -55,9 +80,12 @@ def get_surplus_branches_order_for_product(idx: int, branch: str, branch_data: d
             available_surplus = round(max(0, original_surplus - already_withdrawn), 2)
             
             if available_surplus > 0:
-                branch_surplus.append((other_branch, available_surplus))
+                balance = branch_data[other_branch].iloc[idx]['balance']
+                avg_sales = branch_data[other_branch].iloc[idx]['avg_sales']
+                branch_surplus.append((other_branch, available_surplus, balance, avg_sales))
     
-    branch_surplus.sort(key=lambda x: -x[1])
+    # Sort by: surplus (desc), balance (desc), avg_sales (asc)
+    branch_surplus.sort(key=lambda x: (-x[1], -x[2], x[3]))
     
     return [b[0] for b in branch_surplus]
 

@@ -4,7 +4,7 @@ import math
 
 
 # Maximum allowed balance for a branch (no transfers if balance >= this value)
-MAX_ALLOWED_BALANCE = 15
+MAX_ALLOWED_BALANCE = 30
 
 
 def calculate_target_amount(
@@ -16,9 +16,9 @@ def calculate_target_amount(
     Calculate target transfer amount based on balance rules.
     
     Rules:
-    1. If balance >= 15: No transfer (return 0)
-    2. If balance < 15 and needed + balance > 15: Transfer only (15 - balance)
-    3. If balance < 15 and needed + balance <= 15: Transfer full needed amount
+    1. If balance >= 30: No transfer (return 0)
+    2. If balance < 30 and needed + balance > 30: Transfer only (30 - balance)
+    3. If balance < 30 and needed + balance <= 30: Transfer full needed amount
     4. If proportional_allocation is provided, apply same rules to it
     
     Args:
@@ -29,7 +29,7 @@ def calculate_target_amount(
     Returns:
         Target amount to transfer (as integer)
     """
-    # Rule 1: No transfer if balance >= 15
+    # Rule 1: No transfer if balance >= 30
     if balance >= MAX_ALLOWED_BALANCE:
         return 0.0
     
@@ -42,7 +42,7 @@ def calculate_target_amount(
             # Rule 3: Transfer full needed amount
             target_amount = needed
     else:
-        # Should not reach here (balance >= 15 already checked)
+        # Should not reach here (balance >= 30 already checked)
         target_amount = 0.0
     
     # Apply proportional allocation if provided
@@ -69,7 +69,7 @@ def should_skip_transfer(balance: float) -> bool:
         balance: Current balance of the branch
         
     Returns:
-        True if transfer should be skipped (balance >= 15), False otherwise
+        True if transfer should be skipped (balance >= 30), False otherwise
     """
     return balance >= MAX_ALLOWED_BALANCE
 
