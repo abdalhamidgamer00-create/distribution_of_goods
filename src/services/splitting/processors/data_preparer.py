@@ -110,15 +110,20 @@ def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_d
             f'{branch}_balance'
         ]
         
-        # اختيار الأعمدة
+        # Select columns
         selected_columns = base_columns + required_branch_cols
         branch_df = df[selected_columns].copy()
         
-        # إعادة تسمية الأعمدة
+        # Rename columns
         branch_df.columns = base_columns + ['sales', 'balance']
         
-        # حساب avg_sales دائماً من sales وعدد الأيام
-        # تجاهل أي قيمة avg_sales مرسلة من المستخدم لتجنب الأخطاء
+        # Convert sales and balance to numeric, handling non-numeric values gracefully
+        # errors='coerce' converts invalid values to NaN, then fillna converts NaN to 0.0
+        branch_df['sales'] = pd.to_numeric(branch_df['sales'], errors='coerce').fillna(0.0)
+        branch_df['balance'] = pd.to_numeric(branch_df['balance'], errors='coerce').fillna(0.0)
+        
+        # Calculate avg_sales from sales and number of days
+        # Ignore any avg_sales value sent from user to avoid errors
         branch_df['avg_sales'] = branch_df['sales'] / num_days
         logger.info(f"✅ Calculated avg_sales for {branch}: sales / {num_days} days")
         
