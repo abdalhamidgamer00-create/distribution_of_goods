@@ -106,15 +106,22 @@ def show_file_management():
 def show_navigation_button(step_id):
     """Display navigation button for specific step if successful"""
     nav_buttons = {
-        '8': ("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py"),
-        '9': ("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py"),
-        '10': ("⚠️ عرض ملفات النقص", "pages/08_النقص.py")
+        '8': [("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py")],
+        '9': [("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py")],
+        '10': [("⚠️ عرض ملفات النقص", "pages/08_النقص.py")],
+        '11': [
+            ("📋 التحويلات المجمعة", "pages/09_التحويلات_المجمعة.py"),
+            ("📂 التحويلات المنفصلة", "pages/10_التحويلات_المنفصلة.py")
+        ]
     }
     
     if step_id in nav_buttons and st.session_state.get(f'step_{step_id}_success', False):
-        label, page = nav_buttons[step_id]
-        if st.button(label, key=f"nav_{step_id}", type="primary"):
-            st.switch_page(page)
+        buttons = nav_buttons[step_id]
+        cols = st.columns(len(buttons))
+        for idx, (label, page) in enumerate(buttons):
+            with cols[idx]:
+                if st.button(label, key=f"nav_{step_id}_{idx}", type="primary", use_container_width=True):
+                    st.switch_page(page)
 
 
 def show_steps():
@@ -122,7 +129,7 @@ def show_steps():
     st.subheader("الخطوات المتاحة")
     
     steps = get_all_steps()
-    visible_steps = [step for step in steps if step['id'] in ['8', '9', '10']]
+    visible_steps = [step for step in steps if step['id'] in ['8', '9', '10', '11']]
     
     cols = st.columns(len(visible_steps))
     for idx, step in enumerate(visible_steps):
@@ -182,7 +189,7 @@ def show_results_navigation():
     """Display navigation buttons to result pages if all steps succeeded"""
     if st.session_state.get('all_steps_success', False):
         st.markdown("### 📂 عرض النتائج")
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             if st.button("📤 ملفات التحويل", key="nav_all_transfer", use_container_width=True):
@@ -195,6 +202,14 @@ def show_results_navigation():
         with col3:
             if st.button("⚠️ ملفات النقص", key="nav_all_shortage", use_container_width=True):
                 st.switch_page("pages/08_النقص.py")
+        
+        with col4:
+            if st.button("📋 مجمعة", key="nav_all_combined", use_container_width=True):
+                st.switch_page("pages/09_التحويلات_المجمعة.py")
+        
+        with col5:
+            if st.button("📂 منفصلة", key="nav_all_separate", use_container_width=True):
+                st.switch_page("pages/10_التحويلات_المنفصلة.py")
 
 
 # Main page layout

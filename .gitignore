@@ -16,6 +16,7 @@ pip-delete-this-directory.txt
 # Data
 data/input/*
 data/output/*
+data/archive/*
 !data/input/.gitkeep
 !data/output/.gitkeep
 
@@ -27,3 +28,7 @@ data/output/*
 # OS
 .DS_Store
 Thumbs.db
+
+# Personal planning
+plan.txt
+docs/

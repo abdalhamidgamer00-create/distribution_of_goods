@@ -10,6 +10,7 @@ from src.app.pipeline.step_7 import step_7_generate_transfers
 from src.app.pipeline.step_8 import step_8_split_by_product_type
 from src.app.pipeline.step_9 import step_9_generate_remaining_surplus
 from src.app.pipeline.step_10 import step_10_generate_shortage_files
+from src.app.pipeline.step_11 import step_11_generate_combined_transfers
 
 
 # Available steps definition
@@ -73,5 +74,12 @@ AVAILABLE_STEPS = [
         "name": "Generate Shortage Files",
         "description": "Generate files for products where total needed exceeds total surplus (unfulfilled demand)",
         "function": step_10_generate_shortage_files
+    },
+    {
+        "id": "11",
+        "name": "Generate Combined Transfer Files",
+        "description": "Combine transfers with remaining surplus (to admin) in merged/separate formats with balance coloring",
+        "function": step_11_generate_combined_transfers
     }
 ]
+
