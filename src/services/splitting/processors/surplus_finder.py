@@ -88,6 +88,15 @@ def _check_early_returns(needed: float, balance: float) -> tuple:
     return False, None, None
 
 
+def _finalize_withdrawals(withdrawals_for_row: list, remaining_needed: float) -> tuple:
+    """Finalize withdrawal results."""
+    if not withdrawals_for_row:
+        return [_create_empty_withdrawal_record(remaining_needed)], {}
+    
+    withdrawals_for_row[-1]['remaining_needed'] = math.ceil(remaining_needed)
+    return withdrawals_for_row, None  # None signals to use existing withdrawals
+
+
 def find_surplus_sources_for_single_product(
     branch: str,
     product_idx: int,
@@ -106,27 +115,20 @@ def find_surplus_sources_for_single_product(
     needed = branch_df.iloc[product_idx]['needed_quantity']
     balance = branch_df.iloc[product_idx]['balance']
     
-    # Check early returns
     should_return, result_list, result_dict = _check_early_returns(needed, balance)
     if should_return:
         return result_list, result_dict
     
-    # Calculate target amount
     allocated = _get_allocated_amount(product_idx, branch, proportional_allocation)
     target_amount = calculate_target_amount(needed, balance, allocated)
     
     if target_amount <= 0:
         return [_create_empty_withdrawal_record(needed)], {}
     
-    # Search and withdraw
     withdrawals_for_row, withdrawals, remaining_needed = _search_and_withdraw_surplus(
         branch, product_idx, branch_data, branches, existing_withdrawals, target_amount, needed
     )
     
-    # Finalize results
-    if not withdrawals_for_row:
-        return [_create_empty_withdrawal_record(remaining_needed)], {}
-    
-    withdrawals_for_row[-1]['remaining_needed'] = math.ceil(remaining_needed)
-    return withdrawals_for_row, withdrawals
+    result_list, result_dict = _finalize_withdrawals(withdrawals_for_row, remaining_needed)
+    return result_list, result_dict if result_dict is not None else withdrawals
 

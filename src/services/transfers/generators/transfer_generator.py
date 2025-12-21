@@ -75,6 +75,40 @@ def _save_transfer_file(
     return transfer_path
 
 
+def _get_analytics_path(analytics_dir: str, target_branch: str) -> tuple:
+    """Get analytics file path and base name."""
+    target_analytics_dir = os.path.join(analytics_dir, target_branch)
+    
+    if not os.path.exists(target_analytics_dir):
+        return None, None, None
+    
+    latest_analytics_file = get_latest_file(target_analytics_dir, '.csv')
+    if not latest_analytics_file:
+        return None, None, None
+    
+    analytics_path = os.path.join(target_analytics_dir, latest_analytics_file)
+    base_name = os.path.splitext(latest_analytics_file)[0].replace(f'_{target_branch}_analytics', '')
+    
+    return analytics_path, latest_analytics_file, base_name
+
+
+def _process_transfer(analytics_path: str, source_branch: str, target_branch: str, 
+                      transfers_dir: str, base_name: str, has_date_header: bool, first_line: str) -> str:
+    """Process transfer from analytics file."""
+    analytics_df = _load_analytics_file(analytics_path)
+    
+    transfer_amounts = _calculate_transfer_amounts(analytics_df, source_branch)
+    transfer_df = _build_transfer_dataframe(analytics_df, transfer_amounts, target_branch)
+    
+    if transfer_df is None:
+        return None
+    
+    return _save_transfer_file(
+        transfer_df, transfers_dir, source_branch, target_branch,
+        base_name, has_date_header, first_line
+    )
+
+
 def generate_transfer_for_pair(
     source_branch: str,
     target_branch: str,
@@ -83,38 +117,17 @@ def generate_transfer_for_pair(
     has_date_header: bool = False,
     first_line: str = ""
 ) -> str:
-    """
-    Generate transfer CSV file from source branch to target branch.
+    """Generate transfer CSV file from source branch to target branch."""
+    analytics_path, _, base_name = _get_analytics_path(analytics_dir, target_branch)
     
-    Returns:
-        Output file path if successful, None otherwise
-    """
-    target_analytics_dir = os.path.join(analytics_dir, target_branch)
-    
-    if not os.path.exists(target_analytics_dir):
+    if not analytics_path:
         return None
-    
-    latest_analytics_file = get_latest_file(target_analytics_dir, '.csv')
-    if not latest_analytics_file:
-        return None
-    
-    analytics_path = os.path.join(target_analytics_dir, latest_analytics_file)
     
     try:
-        analytics_df = _load_analytics_file(analytics_path)
-        base_name = os.path.splitext(latest_analytics_file)[0].replace(f'_{target_branch}_analytics', '')
-        
-        transfer_amounts = _calculate_transfer_amounts(analytics_df, source_branch)
-        transfer_df = _build_transfer_dataframe(analytics_df, transfer_amounts, target_branch)
-        
-        if transfer_df is None:
-            return None
-        
-        return _save_transfer_file(
-            transfer_df, transfers_dir, source_branch, target_branch,
-            base_name, has_date_header, first_line
+        return _process_transfer(
+            analytics_path, source_branch, target_branch, 
+            transfers_dir, base_name, has_date_header, first_line
         )
-    
     except ValueError as exc:
         logger.error("%s", exc)
         return None

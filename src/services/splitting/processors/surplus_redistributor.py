@@ -70,6 +70,34 @@ def _record_redistribution(branch: str, other_branch: str, product_idx: int, tra
     return max_withdrawals
 
 
+def _try_redistribute_from_branch(other_branch: str, branch: str, product_idx: int, remaining_capacity: float,
+                                   branch_data: dict, analytics_data: dict, all_withdrawals: dict,
+                                   max_withdrawals: int) -> tuple:
+    """Try to redistribute from a single source branch."""
+    available_surplus = calculate_available_surplus(
+        branch_data, other_branch, product_idx, all_withdrawals
+    )
+    
+    if available_surplus <= 0:
+        return max_withdrawals, 0, remaining_capacity
+    
+    transfer_amount = min(available_surplus, remaining_capacity)
+    if transfer_amount <= 0:
+        return max_withdrawals, 0, remaining_capacity
+    
+    max_withdrawals = _record_redistribution(
+        branch, other_branch, product_idx, transfer_amount,
+        available_surplus, analytics_data, all_withdrawals, max_withdrawals
+    )
+    
+    logger.debug(
+        f"Second round: Transferred {transfer_amount:.2f} of product {product_idx} "
+        f"from {other_branch} to {branch}"
+    )
+    
+    return max_withdrawals, 1, remaining_capacity - transfer_amount
+
+
 def _redistribute_to_branch(
     branch: str,
     product_idx: int,
@@ -87,29 +115,27 @@ def _redistribute_to_branch(
         if other_branch == branch or remaining_capacity <= 0:
             continue
         
-        available_surplus = calculate_available_surplus(
-            branch_data, other_branch, product_idx, all_withdrawals
+        max_withdrawals, count, remaining_capacity = _try_redistribute_from_branch(
+            other_branch, branch, product_idx, remaining_capacity,
+            branch_data, analytics_data, all_withdrawals, max_withdrawals
         )
-        
-        if available_surplus <= 0:
-            continue
-        
-        transfer_amount = min(available_surplus, remaining_capacity)
-        if transfer_amount <= 0:
-            continue
-        
-        max_withdrawals = _record_redistribution(
-            branch, other_branch, product_idx, transfer_amount,
-            available_surplus, analytics_data, all_withdrawals, max_withdrawals
+        redistributed_count += count
+    
+    return max_withdrawals, redistributed_count
+
+
+def _process_single_product(product_idx: int, branches: list, branch_data: dict, analytics_data: dict,
+                             all_withdrawals: dict, max_withdrawals: int, balance_limit: float) -> tuple:
+    """Process redistribution for a single product."""
+    redistributed_count = 0
+    eligible_branches = _find_eligible_branches(branches, analytics_data, product_idx, balance_limit)
+    
+    for branch, _, _, remaining_capacity in eligible_branches:
+        max_withdrawals, count = _redistribute_to_branch(
+            branch, product_idx, remaining_capacity, branches,
+            branch_data, analytics_data, all_withdrawals, max_withdrawals
         )
-        
-        remaining_capacity -= transfer_amount
-        redistributed_count += 1
-        
-        logger.debug(
-            f"Second round: Transferred {transfer_amount:.2f} of product {product_idx} "
-            f"from {other_branch} to {branch}"
-        )
+        redistributed_count += count
     
     return max_withdrawals, redistributed_count
 
@@ -123,34 +149,17 @@ def redistribute_wasted_surplus(
     num_products: int,
     balance_limit: float = 30.0
 ) -> tuple:
-    """
-    Redistribute wasted surplus from balance limit rule to other eligible branches.
-    
-    Args:
-        branches: List of all branch names
-        branch_data: Dictionary of branch dataframes
-        analytics_data: Dictionary mapping branch -> (dataframe, withdrawals_list)
-        all_withdrawals: Dictionary tracking all withdrawals
-        max_withdrawals: Current maximum number of withdrawals per product
-        num_products: Total number of products
-        balance_limit: Maximum allowed balance per branch
-        
-    Returns:
-        Tuple of (updated_max_withdrawals, timing_seconds)
-    """
+    """Redistribute wasted surplus from balance limit rule to other eligible branches."""
     logger.info("Starting second redistribution round for wasted surplus...")
     start_time = perf_counter()
     redistributed_count = 0
     
     for product_idx in range(num_products):
-        eligible_branches = _find_eligible_branches(branches, analytics_data, product_idx, balance_limit)
-        
-        for branch, _, _, remaining_capacity in eligible_branches:
-            max_withdrawals, count = _redistribute_to_branch(
-                branch, product_idx, remaining_capacity, branches,
-                branch_data, analytics_data, all_withdrawals, max_withdrawals
-            )
-            redistributed_count += count
+        max_withdrawals, count = _process_single_product(
+            product_idx, branches, branch_data, analytics_data,
+            all_withdrawals, max_withdrawals, balance_limit
+        )
+        redistributed_count += count
     
     elapsed_time = perf_counter() - start_time
     logger.info(f"Second redistribution round completed in {elapsed_time:.2f}s ({redistributed_count} transfers)")
