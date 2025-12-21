@@ -8,6 +8,17 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _write_csv_with_header(df, filepath: str, has_date_header: bool, first_line: str) -> None:
+    """Write DataFrame to CSV with optional date header."""
+    with open(filepath, 'w', encoding='utf-8-sig', newline='') as f:
+        if has_date_header:
+            f.write(first_line + '\n')
+        df.to_csv(f, index=False, lineterminator='\n')
+    
+    if not os.path.exists(filepath):
+        raise IOError(f"File was not created: {filepath}")
+
+
 def write_branch_files(
     branches: list, 
     analytics_data: dict, 
@@ -16,20 +27,7 @@ def write_branch_files(
     has_date_header: bool, 
     first_line: str
 ) -> dict:
-    """
-    Write branch files to disk
-    
-    Args:
-        branches: List of branch names
-        analytics_data: Dictionary mapping branch to branch_df
-        output_base_dir: Base directory for output files
-        base_filename: Base filename (without extension)
-        has_date_header: Whether to include date header
-        first_line: First line (date header) to write if has_date_header is True
-        
-    Returns:
-        Dictionary with branch names as keys and output file paths as values
-    """
+    """Write branch files to disk."""
     output_files = {}
     
     for branch in branches:
@@ -41,18 +39,9 @@ def write_branch_files(
         output_path = os.path.join(branch_dir, output_file)
         
         try:
-            with open(output_path, 'w', encoding='utf-8-sig', newline='') as f:
-                if has_date_header:
-                    f.write(first_line + '\n')
-                branch_df.to_csv(f, index=False, lineterminator='\n')
-            
-            # التحقق من نجاح الكتابة
-            if not os.path.exists(output_path):
-                raise IOError(f"File was not created: {output_path}")
-            
+            _write_csv_with_header(branch_df, output_path, has_date_header, first_line)
             output_files[branch] = output_path
             logger.debug("Written branch file: %s", output_path)
-            
         except Exception as e:
             logger.error("Failed to write branch file for %s: %s", branch, e)
             raise
@@ -69,18 +58,7 @@ def write_analytics_files(
     has_date_header: bool, 
     first_line: str
 ) -> None:
-    """
-    Write analytics files to disk
-    
-    Args:
-        branches: List of branch names
-        analytics_data: Dictionary mapping branch to branch_df
-        analytics_dir: Directory for analytics files
-        base_filename: Base filename (without extension)
-        max_withdrawals: Maximum number of withdrawal columns
-        has_date_header: Whether to include date header
-        first_line: First line (date header) to write if has_date_header is True
-    """
+    """Write analytics files to disk."""
     analytics_columns = get_analytics_columns(max_withdrawals)
     
     for branch in branches:
@@ -92,18 +70,10 @@ def write_analytics_files(
         analytics_path = os.path.join(branch_dir, analytics_file)
         
         try:
-            with open(analytics_path, 'w', encoding='utf-8-sig', newline='') as f:
-                if has_date_header:
-                    f.write(first_line + '\n')
-                analytics_df.to_csv(f, index=False, lineterminator='\n')
-            
-            # التحقق من نجاح الكتابة
-            if not os.path.exists(analytics_path):
-                raise IOError(f"Analytics file was not created: {analytics_path}")
-            
+            _write_csv_with_header(analytics_df, analytics_path, has_date_header, first_line)
             logger.debug("Written analytics file: %s", analytics_path)
-            
         except Exception as e:
             logger.error("Failed to write analytics file for %s: %s", branch, e)
             raise
+
 
