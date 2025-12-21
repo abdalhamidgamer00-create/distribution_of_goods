@@ -34,6 +34,31 @@ def _generate_output_filename(excel_file: str) -> str:
     return f"{base_name_clean}_{date_str}.csv"
 
 
+def _select_excel_file_source(excel_files: list, input_dir: str, use_latest_file: bool):
+    """Select Excel file from Streamlit or selector."""
+    excel_file = _get_excel_file_from_streamlit(excel_files)
+    if not excel_file:
+        excel_file = select_excel_file(input_dir, excel_files, use_latest_file)
+    return excel_file
+
+
+def _perform_conversion(excel_file: str, input_dir: str, converted_dir: str) -> bool:
+    """Perform the CSV conversion."""
+    csv_file = _generate_output_filename(excel_file)
+    input_path = get_file_path(excel_file, input_dir)
+    output_path = get_file_path(csv_file, converted_dir)
+    
+    logger.info("Converting %s to %s...", excel_file, csv_file)
+    success = convert_excel_to_csv(input_path, output_path)
+    
+    if success:
+        logger.info("Conversion successful! File saved to: %s", converted_dir)
+    else:
+        logger.error("Conversion failed!")
+    
+    return success
+
+
 def step_2_convert_excel_to_csv(use_latest_file: bool = None):
     """Step 2: Convert Excel to CSV."""
     input_dir = os.path.join("data", "input")
@@ -47,27 +72,12 @@ def step_2_convert_excel_to_csv(use_latest_file: bool = None):
         return False
     
     try:
-        excel_file = _get_excel_file_from_streamlit(excel_files)
-        if not excel_file:
-            excel_file = select_excel_file(input_dir, excel_files, use_latest_file)
-        
+        excel_file = _select_excel_file_source(excel_files, input_dir, use_latest_file)
         if not excel_file:
             logger.error("No Excel file selected!")
             return False
         
-        csv_file = _generate_output_filename(excel_file)
-        input_path = get_file_path(excel_file, input_dir)
-        output_path = get_file_path(csv_file, converted_dir)
-        
-        logger.info("Converting %s to %s...", excel_file, csv_file)
-        success = convert_excel_to_csv(input_path, output_path)
-        
-        if success:
-            logger.info("Conversion successful! File saved to: %s", converted_dir)
-        else:
-            logger.error("Conversion failed!")
-        
-        return success
+        return _perform_conversion(excel_file, input_dir, converted_dir)
         
     except ValueError as e:
         logger.error("Error: %s", e)

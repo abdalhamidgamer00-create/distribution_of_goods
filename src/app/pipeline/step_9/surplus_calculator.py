@@ -52,46 +52,28 @@ def calculate_total_withdrawals(analytics_dir: str, branch: str) -> dict:
     return total_withdrawals
 
 
-def calculate_remaining_surplus(df: pd.DataFrame, total_withdrawals: dict) -> pd.DataFrame:
-    """
-    Calculate remaining surplus for each product.
-    
-    Subtracts total withdrawals from original surplus quantity.
-    
-    Args:
-        df: DataFrame with 'code' and 'surplus_quantity' columns
-        total_withdrawals: Dictionary of product_code -> total_withdrawn
-        
-    Returns:
-        DataFrame with products that have remaining surplus > 0,
-        containing columns: code, product_name, surplus_remaining
-    """
-    # Map withdrawals to products
-    df = df.copy()
-    df['total_withdrawn'] = df['code'].astype(str).map(total_withdrawals).fillna(0.0)
-    df['calculated_remaining'] = df['surplus_quantity'] - df['total_withdrawn']
-    
-    # Filter products with remaining surplus
+def _filter_and_sort_remaining(df) -> pd.DataFrame:
+    """Filter products with remaining surplus and sort by name."""
     remaining_df = df[df['calculated_remaining'] > 0].copy()
     
     if remaining_df.empty:
         return pd.DataFrame(columns=['code', 'product_name', 'surplus_remaining'])
     
-    # Create result DataFrame
     result_df = pd.DataFrame({
         'code': remaining_df['code'],
         'product_name': remaining_df['product_name'],
         'surplus_remaining': remaining_df['calculated_remaining'].astype(int)
     })
     
-    # Sort by product name (case-insensitive)
-    result_df = result_df.sort_values(
-        'product_name', 
-        ascending=True,
-        key=lambda x: x.str.lower()
-    )
-    
-    return result_df
+    return result_df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
+
+
+def calculate_remaining_surplus(df: pd.DataFrame, total_withdrawals: dict) -> pd.DataFrame:
+    """Calculate remaining surplus for each product."""
+    df = df.copy()
+    df['total_withdrawn'] = df['code'].astype(str).map(total_withdrawals).fillna(0.0)
+    df['calculated_remaining'] = df['surplus_quantity'] - df['total_withdrawn']
+    return _filter_and_sort_remaining(df)
 
 
 def validate_analytics_columns(df: pd.DataFrame) -> list:

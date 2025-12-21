@@ -47,48 +47,38 @@ def convert_to_excel_with_formatting(csv_files: List[Dict], excel_output_dir: st
     return excel_files
 
 
+def _determine_output_path(csv_path: str, excel_output_dir: str) -> str:
+    """Determine the output path for Excel file based on CSV structure."""
+    csv_dir = os.path.dirname(csv_path)
+    parent_dir = os.path.dirname(csv_dir)
+    
+    folder_name = os.path.basename(csv_dir)
+    grandparent_name = os.path.basename(parent_dir)
+    
+    if folder_name.startswith('to_'):
+        # Separate: 2-level structure
+        output_subdir = os.path.join(excel_output_dir, grandparent_name, folder_name)
+    else:
+        # Merged: 1-level structure
+        output_subdir = os.path.join(excel_output_dir, folder_name)
+    
+    os.makedirs(output_subdir, exist_ok=True)
+    excel_filename = os.path.basename(csv_path).replace('.csv', '.xlsx')
+    return os.path.join(output_subdir, excel_filename)
+
+
 def _convert_single_file(csv_path: str, excel_output_dir: str) -> str:
     """Convert a single CSV file to Excel with formatting."""
-    # Read CSV
     df = pd.read_csv(csv_path, encoding='utf-8-sig')
     
     if df.empty:
         return None
     
-    # Get the relative path structure from CSV
-    # Merged:   .../csv/combined_transfers_from_shahid_xxx/filename.csv (1 level)
-    # Separate: .../csv/transfers_from_shahid_xxx/to_admin/filename.csv (2 levels)
-    
-    csv_dir = os.path.dirname(csv_path)  # immediate parent
-    parent_dir = os.path.dirname(csv_dir)  # grandparent
-    
-    folder_name = os.path.basename(csv_dir)
-    grandparent_name = os.path.basename(parent_dir)
-    
-    # Check if this is a "to_xxx" folder (separate files) or a branch folder (merged files)
-    if folder_name.startswith('to_'):
-        # Separate: 2-level structure
-        source_folder = grandparent_name  # e.g., transfers_from_shahid_xxx
-        target_folder = folder_name       # e.g., to_admin
-        output_subdir = os.path.join(excel_output_dir, source_folder, target_folder)
-    else:
-        # Merged: 1-level structure
-        source_folder = folder_name  # e.g., combined_transfers_from_shahid_xxx
-        output_subdir = os.path.join(excel_output_dir, source_folder)
-    
-    os.makedirs(output_subdir, exist_ok=True)
-    
-    # Generate Excel filename
-    excel_filename = os.path.basename(csv_path).replace('.csv', '.xlsx')
-    excel_path = os.path.join(output_subdir, excel_filename)
-    
-    # Save to Excel first
+    excel_path = _determine_output_path(csv_path, excel_output_dir)
     df.to_excel(excel_path, index=False, engine='openpyxl')
-    
-    # Apply formatting
     _apply_conditional_formatting(excel_path, df)
     
-    logger.debug(f"Generated Excel: {excel_filename}")
+    logger.debug(f"Generated Excel: {os.path.basename(excel_path)}")
     return excel_path
 
 

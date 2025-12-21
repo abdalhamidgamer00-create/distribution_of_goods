@@ -27,6 +27,26 @@ def calculate_available_surplus(
     return math.floor(max(0, original_surplus - already_withdrawn))
 
 
+def _calculate_withdrawal_amounts(remaining_needed: float, target_amount: float, available_surplus: float) -> int:
+    """Calculate the amount to withdraw."""
+    return math.ceil(min(remaining_needed, target_amount, available_surplus))
+
+
+def _record_withdrawal(other_branch: str, product_index: int, amount: int, available_surplus: float, 
+                       remaining_needed: float, withdrawals: dict, withdrawals_for_row: list) -> None:
+    """Record a withdrawal in the tracking structures."""
+    surplus_remaining = math.ceil(max(0, available_surplus - amount))
+    new_remaining = math.ceil(max(0, remaining_needed - amount))
+    
+    withdrawals_for_row.append({
+        'surplus_from_branch': amount,
+        'available_branch': other_branch,
+        'surplus_remaining': surplus_remaining,
+        'remaining_needed': new_remaining
+    })
+    withdrawals[(other_branch, product_index)] = withdrawals.get((other_branch, product_index), 0.0) + amount
+
+
 def process_single_withdrawal(
     other_branch: str,
     product_index: int,
@@ -36,34 +56,12 @@ def process_single_withdrawal(
     withdrawals: dict,
     withdrawals_for_row: list
 ) -> tuple:
-    """
-    Process a single withdrawal from a surplus branch.
-    Uses ceiling rounding for quantities taken.
-    
-    Args:
-        other_branch: Branch providing surplus
-        product_index: Product index being processed
-        remaining_needed: Remaining quantity needed by requesting branch
-        target_amount: Maximum target amount to take
-        available_surplus: Available surplus in the providing branch
-        withdrawals: Dictionary to track all withdrawals
-        withdrawals_for_row: List to store withdrawal records for this product
-        
-    Returns:
-        Tuple of (updated remaining_needed, updated target_amount)
-    """
-    # Calculate amount to take (minimum of remaining_needed, target_amount, available_surplus)
-    amount_to_take = math.ceil(min(remaining_needed, target_amount, available_surplus))
+    """Process a single withdrawal from a surplus branch."""
+    amount_to_take = _calculate_withdrawal_amounts(remaining_needed, target_amount, available_surplus)
     
     if amount_to_take > 0:
-        surplus_remaining = math.ceil(max(0, available_surplus - amount_to_take))
-        withdrawals_for_row.append({
-            'surplus_from_branch': amount_to_take,
-            'available_branch': other_branch,
-            'surplus_remaining': surplus_remaining,
-            'remaining_needed': math.ceil(max(0, remaining_needed - amount_to_take))
-        })
-        withdrawals[(other_branch, product_index)] = withdrawals.get((other_branch, product_index), 0.0) + amount_to_take
+        _record_withdrawal(other_branch, product_index, amount_to_take, available_surplus, 
+                          remaining_needed, withdrawals, withdrawals_for_row)
         remaining_needed = math.ceil(max(0, remaining_needed - amount_to_take))
         target_amount = math.ceil(max(0, target_amount - amount_to_take))
     

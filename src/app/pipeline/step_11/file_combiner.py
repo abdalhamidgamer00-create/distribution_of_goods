@@ -278,6 +278,26 @@ def generate_separate_files(df: pd.DataFrame, branch: str, csv_output_dir: str, 
     return files_info
 
 
+# Classification keywords for product type detection
+PRODUCT_TYPE_KEYWORDS = {
+    'tablets_and_capsules': (['قرص', 'كبسول', 'tab', 'cap'], ['tab', 'cap', 'قرص', 'كبسول']),
+    'injections': (['أمبول', 'حقن', 'amp', 'inj', 'vial'], ['amp', 'inj', 'vial', 'أمبول']),
+    'syrups': (['شراب', 'syrup', 'زجاجة'], ['syrup', 'شراب', 'susp']),
+    'creams': (['كريم', 'cream', 'مرهم', 'oint'], ['cream', 'oint', 'gel', 'كريم']),
+    'sachets': (['كيس', 'sachet', 'ظرف'], ['sachet', 'كيس']),
+}
+
+
+def _classify_by_keywords(unit: str, product_name: str) -> str:
+    """Classify product based on unit and product name keywords."""
+    for category, (unit_keywords, name_keywords) in PRODUCT_TYPE_KEYWORDS.items():
+        if any(x in unit for x in unit_keywords):
+            return category
+        if any(x in product_name for x in name_keywords):
+            return category
+    return 'other'
+
+
 def _add_product_type_column(df: pd.DataFrame) -> pd.DataFrame:
     """Add product_type column based on unit type."""
     df = df.copy()
@@ -285,38 +305,7 @@ def _add_product_type_column(df: pd.DataFrame) -> pd.DataFrame:
     def classify_product(row):
         unit = str(row.get('unit', '')).lower() if 'unit' in row else ''
         product_name = str(row.get('product_name', '')).lower()
-        
-        # Tablets and capsules
-        if any(x in unit for x in ['قرص', 'كبسول', 'tab', 'cap']):
-            return 'tablets_and_capsules'
-        if any(x in product_name for x in ['tab', 'cap', 'قرص', 'كبسول']):
-            return 'tablets_and_capsules'
-        
-        # Injections
-        if any(x in unit for x in ['أمبول', 'حقن', 'amp', 'inj', 'vial']):
-            return 'injections'
-        if any(x in product_name for x in ['amp', 'inj', 'vial', 'أمبول']):
-            return 'injections'
-        
-        # Syrups
-        if any(x in unit for x in ['شراب', 'syrup', 'زجاجة']):
-            return 'syrups'
-        if any(x in product_name for x in ['syrup', 'شراب', 'susp']):
-            return 'syrups'
-        
-        # Creams
-        if any(x in unit for x in ['كريم', 'cream', 'مرهم', 'oint']):
-            return 'creams'
-        if any(x in product_name for x in ['cream', 'oint', 'gel', 'كريم']):
-            return 'creams'
-        
-        # Sachets
-        if any(x in unit for x in ['كيس', 'sachet', 'ظرف']):
-            return 'sachets'
-        if any(x in product_name for x in ['sachet', 'كيس']):
-            return 'sachets'
-        
-        return 'other'
+        return _classify_by_keywords(unit, product_name)
     
     df['product_type'] = df.apply(classify_product, axis=1)
     return df

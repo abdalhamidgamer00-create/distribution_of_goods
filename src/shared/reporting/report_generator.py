@@ -36,47 +36,49 @@ def generate_improvement_suggestions(analysis: dict) -> list:
     return suggestions
 
 
-def generate_report(analysis: dict, csv_file: str) -> str:
-    """
-    Generate complete analysis report
-    
-    Args:
-        analysis: Analysis dictionary from analyzer
-        csv_file: Name of CSV file analyzed
-        
-    Returns:
-        Formatted report string
-    """
-    report_lines = []
-    report_lines.append("=" * 60)
-    report_lines.append("SALES DATA ANALYSIS REPORT")
-    report_lines.append("=" * 60)
-    report_lines.append(f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    report_lines.append(f"File: {csv_file}")
-    
+def _generate_header(csv_file: str, analysis: dict) -> list:
+    """Generate report header section."""
+    lines = [
+        "=" * 60,
+        "SALES DATA ANALYSIS REPORT",
+        "=" * 60,
+        f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"File: {csv_file}",
+    ]
     if analysis.get('date_range'):
         date_range = analysis['date_range']
-        report_lines.append(f"Date Range: {date_range['start']} to {date_range['end']}")
-    
-    report_lines.append("\n" + "-" * 60)
-    report_lines.append("STATISTICS")
-    report_lines.append("-" * 60)
-    report_lines.append(f"Total Rows (Data): {analysis.get('total_rows', 0):,}")
-    report_lines.append(f"Total Columns: {analysis.get('total_columns', 0):,}")
-    report_lines.append(f"Total Cells: {analysis.get('total_cells', 0):,}")
-    report_lines.append(f"Filled Cells: {analysis.get('filled_cells', 0):,}")
-    report_lines.append(f"Empty Cells: {analysis.get('empty_cells', 0):,}")
-    report_lines.append(f"Empty Cells Percentage: {analysis.get('empty_cells_percentage', 0)}%")
-    
+        lines.append(f"Date Range: {date_range['start']} to {date_range['end']}")
+    return lines
+
+
+def _generate_statistics(analysis: dict) -> list:
+    """Generate statistics section."""
+    return [
+        "\n" + "-" * 60,
+        "STATISTICS",
+        "-" * 60,
+        f"Total Rows (Data): {analysis.get('total_rows', 0):,}",
+        f"Total Columns: {analysis.get('total_columns', 0):,}",
+        f"Total Cells: {analysis.get('total_cells', 0):,}",
+        f"Filled Cells: {analysis.get('filled_cells', 0):,}",
+        f"Empty Cells: {analysis.get('empty_cells', 0):,}",
+        f"Empty Cells Percentage: {analysis.get('empty_cells_percentage', 0)}%",
+    ]
+
+
+def _format_suggestions(suggestions: list) -> list:
+    """Format suggestions section."""
+    lines = ["\n" + "-" * 60, "IMPROVEMENT SUGGESTIONS", "-" * 60]
+    lines.extend(f"{idx}. {s}" for idx, s in enumerate(suggestions, 1))
+    lines.append("\n" + "=" * 60)
+    return lines
+
+
+def generate_report(analysis: dict, csv_file: str) -> str:
+    """Generate complete analysis report."""
+    report_lines = _generate_header(csv_file, analysis)
+    report_lines.extend(_generate_statistics(analysis))
     suggestions = generate_improvement_suggestions(analysis)
-    
-    report_lines.append("\n" + "-" * 60)
-    report_lines.append("IMPROVEMENT SUGGESTIONS")
-    report_lines.append("-" * 60)
-    for idx, suggestion in enumerate(suggestions, 1):
-        report_lines.append(f"{idx}. {suggestion}")
-    
-    report_lines.append("\n" + "=" * 60)
-    
+    report_lines.extend(_format_suggestions(suggestions))
     return "\n".join(report_lines)
 

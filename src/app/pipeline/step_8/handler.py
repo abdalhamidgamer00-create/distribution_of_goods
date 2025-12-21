@@ -54,6 +54,29 @@ def _log_split_summary(all_output_files: dict, categories: list) -> None:
             logger.info("  - %s: %s files", category, count)
 
 
+def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) -> bool:
+    """Perform splitting and conversion to Excel."""
+    has_date_header, first_line = _extract_date_header(transfer_files[0])
+    
+    logger.info("Splitting transfer files by product type...")
+    logger.info("-" * 50)
+    logger.info("Found %s transfer files to split", len(transfer_files))
+    
+    all_output_files = split_all_transfer_files(transfers_base_dir, has_date_header, first_line)
+    
+    if not all_output_files:
+        logger.warning("No files were split")
+        return False
+    
+    categories = get_product_categories()
+    _log_split_summary(all_output_files, categories)
+    logger.info("Split files saved to: %s", transfers_base_dir)
+    
+    logger.info("-" * 50)
+    logger.info("Starting Excel conversion...")
+    return _convert_to_excel(transfers_base_dir)
+
+
 def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
     """Step 8: Split transfer files by product type."""
     transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
@@ -71,26 +94,7 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
         return False
     
     try:
-        has_date_header, first_line = _extract_date_header(transfer_files[0])
-        
-        logger.info("Splitting transfer files by product type...")
-        logger.info("-" * 50)
-        logger.info("Found %s transfer files to split", len(transfer_files))
-        
-        all_output_files = split_all_transfer_files(transfers_base_dir, has_date_header, first_line)
-        
-        if not all_output_files:
-            logger.warning("No files were split")
-            return False
-        
-        categories = get_product_categories()
-        _log_split_summary(all_output_files, categories)
-        logger.info("Split files saved to: %s", transfers_base_dir)
-        
-        logger.info("-" * 50)
-        logger.info("Starting Excel conversion...")
-        return _convert_to_excel(transfers_base_dir)
-        
+        return _perform_split_and_convert(transfer_files, transfers_base_dir)
     except Exception as e:
         logger.exception("Error during file splitting: %s", e)
         return False

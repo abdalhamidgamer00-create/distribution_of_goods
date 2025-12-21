@@ -61,33 +61,18 @@ def execute_step(step_id: str) -> bool:
     return execute_single_step(step, use_latest_file=False)
 
 
-def execute_step_with_dependencies(step_id: str) -> bool:
-    """
-    Execute all steps from 1 to step_id in sequence.
-    
-    Args:
-        step_id: Target step ID
-        
-    Returns:
-        True if all steps succeeded, False otherwise
-    """
-    # Get all steps up to target
+def _get_steps_up_to(step_id: str) -> list:
+    """Get all steps up to and including the target step ID."""
     try:
         target_step_num = int(step_id)
     except ValueError:
-        logger.error("✗ Invalid step ID: %s", step_id)
-        return False
+        return []
     
-    all_steps = [s for s in AVAILABLE_STEPS if int(s['id']) <= target_step_num]
-    
-    if not all_steps:
-        logger.error("✗ No steps found up to step %s", step_id)
-        return False
-    
-    logger.info("=" * 70)
-    logger.info("Running steps 1 through %s (Total: %d steps)", step_id, len(all_steps))
-    logger.info("=" * 70)
-    
+    return [s for s in AVAILABLE_STEPS if int(s['id']) <= target_step_num]
+
+
+def _run_step_sequence(all_steps: list) -> bool:
+    """Run a sequence of steps, stopping on first failure."""
     for idx, step in enumerate(all_steps, 1):
         logger.info("")
         logger.info("[%d/%d] Executing: %s", idx, len(all_steps), step["name"])
@@ -103,9 +88,27 @@ def execute_step_with_dependencies(step_id: str) -> bool:
         
         logger.info("✓ Step %s completed", step['id'])
     
-    logger.info("")
+    return True
+
+
+def execute_step_with_dependencies(step_id: str) -> bool:
+    """Execute all steps from 1 to step_id in sequence."""
+    all_steps = _get_steps_up_to(step_id)
+    
+    if not all_steps:
+        logger.error("✗ No steps found up to step %s", step_id)
+        return False
+    
     logger.info("=" * 70)
-    logger.info("✓ SUCCESS: All %d steps completed successfully!", len(all_steps))
+    logger.info("Running steps 1 through %s (Total: %d steps)", step_id, len(all_steps))
     logger.info("=" * 70)
     
-    return True
+    success = _run_step_sequence(all_steps)
+    
+    if success:
+        logger.info("")
+        logger.info("=" * 70)
+        logger.info("✓ SUCCESS: All %d steps completed successfully!", len(all_steps))
+        logger.info("=" * 70)
+    
+    return success
