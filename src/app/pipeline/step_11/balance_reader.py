@@ -13,55 +13,44 @@ from src.shared.utils.file_handler import get_latest_file
 logger = get_logger(__name__)
 
 
-def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
-    """
-    Get balance data for a branch from its analytics file.
+def _detect_header_skiprows(filepath: str) -> int:
+    """Detect if file has date header and return skiprows value."""
+    try:
+        with open(filepath, 'r', encoding='utf-8-sig') as f:
+            first_line = f.readline()
+        return 1 if 'من' in first_line or 'إلى' in first_line else 0
+    except Exception:
+        return 0
+
+
+def _build_balance_dict(df) -> dict:
+    """Build balance dictionary from DataFrame."""
+    if 'code' not in df.columns or 'balance' not in df.columns:
+        return {}
     
-    Args:
-        analytics_dir: Directory containing analytics files
-        branch: Branch name
-        
-    Returns:
-        Dictionary mapping product code to balance
-    """
+    df['balance'] = pd.to_numeric(df['balance'], errors='coerce').fillna(0)
+    return {str(row['code']): float(row['balance']) for _, row in df.iterrows()}
+
+
+def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
+    """Get balance data for a branch from its analytics file."""
     branch_dir = os.path.join(analytics_dir, branch)
     
     if not os.path.exists(branch_dir):
         logger.debug(f"Analytics directory not found for {branch}")
         return {}
     
-    # Get latest analytics file
     latest_file = get_latest_file(branch_dir, '.csv')
-    
     if not latest_file:
         logger.debug(f"No analytics file found for {branch}")
         return {}
     
     try:
-        # Read analytics file
         filepath = os.path.join(branch_dir, latest_file)
-        
-        # Try to detect if there's a date header
-        with open(filepath, 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline()
-        
-        # Skip header if it's a date line
-        skiprows = 1 if 'من' in first_line or 'إلى' in first_line else 0
-        
+        skiprows = _detect_header_skiprows(filepath)
         df = pd.read_csv(filepath, skiprows=skiprows, encoding='utf-8-sig')
         
-        # Create balance dictionary
-        balances = {}
-        
-        if 'code' in df.columns and 'balance' in df.columns:
-            # Ensure balance is numeric
-            df['balance'] = pd.to_numeric(df['balance'], errors='coerce').fillna(0)
-            
-            for _, row in df.iterrows():
-                code = str(row['code'])
-                balance = float(row['balance'])
-                balances[code] = balance
-        
+        balances = _build_balance_dict(df)
         logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
         return balances
         

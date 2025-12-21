@@ -8,6 +8,34 @@ import math
 MAXIMUM_BRANCH_BALANCE_THRESHOLD = 30
 
 
+def _calculate_base_target(needed: float, balance: float) -> float:
+    """Calculate base target amount based on needed and balance."""
+    if balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD:
+        return 0.0
+    
+    if needed + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
+        return MAXIMUM_BRANCH_BALANCE_THRESHOLD - balance
+    
+    return needed
+
+
+def _apply_proportional_limit(target_amount: float, proportional_allocation: float, balance: float) -> float:
+    """Apply proportional allocation limits to target amount."""
+    if proportional_allocation is None or proportional_allocation <= 0:
+        return target_amount
+    
+    if balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD:
+        return 0.0
+    
+    allocated_ceil = math.ceil(proportional_allocation)
+    max_transfer = MAXIMUM_BRANCH_BALANCE_THRESHOLD - balance
+    
+    if allocated_ceil + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
+        return min(target_amount, max_transfer)
+    
+    return min(target_amount, allocated_ceil)
+
+
 def calculate_target_amount(
     needed: float,
     balance: float,
@@ -16,50 +44,11 @@ def calculate_target_amount(
     """
     Calculate target transfer amount based on balance rules.
     
-    Rules:
-    1. If balance >= 30: No transfer (return 0)
-    2. If balance < 30 and needed + balance > 30: Transfer only (30 - balance)
-    3. If balance < 30 and needed + balance <= 30: Transfer full needed amount
-    4. If proportional_allocation is provided, apply same rules to it
-    
-    Args:
-        needed: Needed quantity for the branch
-        balance: Current balance of the branch
-        proportional_allocation: Optional proportional allocation amount
-        
     Returns:
-        Target amount to transfer (as integer)
+        Target amount to transfer (as float)
     """
-    # Rule 1: No transfer if balance >= threshold
-    if balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD:
-        return 0.0
-    
-    # Rule 2 & 3: Calculate based on needed + balance
-    if balance < MAXIMUM_BRANCH_BALANCE_THRESHOLD:
-        if needed + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
-            # Rule 2: Transfer only what completes to threshold (30)
-            target_amount = MAXIMUM_BRANCH_BALANCE_THRESHOLD - balance
-        else:
-            # Rule 3: Transfer full needed amount
-            target_amount = needed
-    else:
-        # Should not reach here (balance >= 30 already checked)
-        target_amount = 0.0
-    
-    # Apply proportional allocation if provided
-    if proportional_allocation is not None and proportional_allocation > 0:
-        allocated_ceil = math.ceil(proportional_allocation)
-        if balance < MAXIMUM_BRANCH_BALANCE_THRESHOLD:
-            if allocated_ceil + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
-                # Cannot transfer more than (threshold - balance)
-                target_amount = min(target_amount, MAXIMUM_BRANCH_BALANCE_THRESHOLD - balance)
-            else:
-                # Can transfer full allocated amount
-                target_amount = min(target_amount, allocated_ceil)
-        else:
-            target_amount = 0.0
-    
-    return target_amount
+    target_amount = _calculate_base_target(needed, balance)
+    return _apply_proportional_limit(target_amount, proportional_allocation, balance)
 
 
 def should_skip_transfer(balance: float) -> bool:
