@@ -12,6 +12,8 @@ from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
+REQUIRED_COLUMNS = ['code', 'product_name', 'surplus_quantity', 'needed_quantity', 'balance', 'sales']
+
 
 def read_analytics_file(analytics_path: str) -> tuple:
     """
@@ -42,28 +44,34 @@ def read_analytics_file(analytics_path: str) -> tuple:
         return None, False, ''
 
 
-def calculate_shortage_products(analytics_dir: str) -> tuple:
+def _has_required_columns(df: pd.DataFrame, analytics_path: str) -> bool:
+    """Check if DataFrame has all required columns."""
+    missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    if missing_cols:
+        logger.warning("Missing columns in %s: %s", analytics_path, missing_cols)
+        return False
+    return True
+
+
+def _initialize_product_totals(product_name: str, branches: list) -> dict:
+    """Create initial product totals dictionary."""
+    return {
+        'product_name': product_name,
+        'total_surplus': 0.0,
+        'total_needed': 0.0,
+        'total_sales': 0.0,
+        'branch_balances': {b: 0 for b in branches}
+    }
+
+
+def _aggregate_branch_totals(analytics_dir: str, branches: list) -> tuple:
     """
-    Calculate products where total needed exceeds total surplus.
+    Aggregate totals across all branches.
     
-    For each product:
-    - Sum surplus_quantity across all branches = total_surplus
-    - Sum needed_quantity across all branches = total_needed
-    - If total_needed > total_surplus: shortage = total_needed - total_surplus
-    - Also includes balance for each branch
-    
-    Args:
-        analytics_dir: Base analytics directory
-        
     Returns:
-        Tuple of (DataFrame with shortage products, has_date_header, first_line)
+        Tuple of (product_totals dict, has_date_header, first_line)
     """
-    branches = get_branches()
-    
-    # Dictionary to store totals per product
-    # Key: product_code, Value: {product_name, total_surplus, total_needed, balance_per_branch}
     product_totals = {}
-    
     has_date_header = False
     first_line = ''
     
@@ -81,84 +89,78 @@ def calculate_shortage_products(analytics_dir: str) -> tuple:
         if df is None:
             continue
         
-        # Store date header info from first successful read
         if not has_date_header and branch_has_date_header:
             has_date_header = True
             first_line = branch_first_line
         
-        # Check required columns
-        required_cols = ['code', 'product_name', 'surplus_quantity', 'needed_quantity', 'balance', 'sales']
-        missing_cols = [col for col in required_cols if col not in df.columns]
-        if missing_cols:
-            logger.warning("Missing columns in %s: %s", analytics_path, missing_cols)
+        if not _has_required_columns(df, analytics_path):
             continue
         
-        # Aggregate totals for each product
         for _, row in df.iterrows():
             code = row['code']
             if pd.isna(code):
                 continue
             
             code = str(code)
-            product_name = row['product_name']
-            surplus = float(row['surplus_quantity']) if pd.notna(row['surplus_quantity']) else 0.0
-            needed = float(row['needed_quantity']) if pd.notna(row['needed_quantity']) else 0.0
-            balance = int(row['balance']) if pd.notna(row['balance']) else 0
-            sales = float(row['sales']) if pd.notna(row['sales']) else 0.0
-            
             if code not in product_totals:
-                product_totals[code] = {
-                    'product_name': product_name,
-                    'total_surplus': 0.0,
-                    'total_needed': 0.0,
-                    'total_sales': 0.0,
-                    'branch_balances': {b: 0 for b in branches}
-                }
+                product_totals[code] = _initialize_product_totals(row['product_name'], branches)
             
-            product_totals[code]['total_surplus'] += surplus
-            product_totals[code]['total_needed'] += needed
-            product_totals[code]['total_sales'] += sales
-            product_totals[code]['branch_balances'][branch] = balance
+            product_totals[code]['total_surplus'] += float(row['surplus_quantity'] or 0)
+            product_totals[code]['total_needed'] += float(row['needed_quantity'] or 0)
+            product_totals[code]['total_sales'] += float(row['sales'] or 0)
+            product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
     
-    # Calculate shortage (where needed > surplus)
+    return product_totals, has_date_header, first_line
+
+
+def _build_shortage_dataframe(product_totals: dict, branches: list) -> pd.DataFrame:
+    """Build DataFrame from products with shortage (needed > surplus)."""
     shortage_data = []
+    
     for code, totals in product_totals.items():
-        total_surplus = totals['total_surplus']
-        total_needed = totals['total_needed']
+        if totals['total_needed'] <= totals['total_surplus']:
+            continue
         
-        # Shortage = total_needed - total_surplus (only if negative balance)
-        if total_needed > total_surplus:
-            shortage_quantity = int(total_needed - total_surplus)
-            row_data = {
-                'code': code,
-                'product_name': totals['product_name'],
-                'shortage_quantity': shortage_quantity,
-                'total_sales': int(totals['total_sales'])
-            }
-            
-            # Add balance for each branch
-            for branch in branches:
-                row_data[f'balance_{branch}'] = totals['branch_balances'].get(branch, 0)
-            
-            shortage_data.append(row_data)
+        shortage_quantity = int(totals['total_needed'] - totals['total_surplus'])
+        row_data = {
+            'code': code,
+            'product_name': totals['product_name'],
+            'shortage_quantity': shortage_quantity,
+            'total_sales': int(totals['total_sales'])
+        }
+        
+        for branch in branches:
+            row_data[f'balance_{branch}'] = totals['branch_balances'].get(branch, 0)
+        
+        shortage_data.append(row_data)
     
     if not shortage_data:
-        # Create empty DataFrame with all columns including branch balances
         ordered_branches = get_search_order()
         columns = ['code', 'product_name', 'shortage_quantity', 'total_sales'] + [f'balance_{b}' for b in ordered_branches]
-        return pd.DataFrame(columns=columns), has_date_header, first_line
+        return pd.DataFrame(columns=columns)
     
-    # Create DataFrame and sort by shortage_quantity (descending)
     result_df = pd.DataFrame(shortage_data)
-    result_df = result_df.sort_values(
-        'shortage_quantity',
-        ascending=False
-    )
+    result_df = result_df.sort_values('shortage_quantity', ascending=False)
     
-    # Reorder columns: code, product_name, shortage_quantity, total_sales, then branch balances (in search order)
     ordered_branches = get_search_order()
     column_order = ['code', 'product_name', 'shortage_quantity', 'total_sales'] + [f'balance_{b}' for b in ordered_branches]
-    result_df = result_df[column_order]
+    return result_df[column_order]
+
+
+def calculate_shortage_products(analytics_dir: str) -> tuple:
+    """
+    Calculate products where total needed exceeds total surplus.
     
-    return result_df, has_date_header, first_line
+    Args:
+        analytics_dir: Base analytics directory
+        
+    Returns:
+        Tuple of (DataFrame with shortage products, has_date_header, first_line)
+    """
+    branches = get_branches()
+    product_totals, has_date_header, first_line = _aggregate_branch_totals(analytics_dir, branches)
+    shortage_df = _build_shortage_dataframe(product_totals, branches)
+    
+    return shortage_df, has_date_header, first_line
+
 
