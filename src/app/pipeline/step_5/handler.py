@@ -11,15 +11,23 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+def _generate_renamed_filename(csv_file: str) -> str:
+    """Generate output filename for renamed CSV."""
+    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_name = os.path.splitext(csv_file)[0]
+    base_name_only = os.path.basename(base_name)
+    base_name_clean = re.sub(r'_\d{8}_\d{6}', '', base_name_only)
+    return f"{base_name_clean}_renamed_{date_str}.csv"
+
+
 def step_5_rename_columns(use_latest_file: bool = None) -> bool:
-    """Step 5: Rename CSV columns from Arabic to English"""
+    """Step 5: Rename CSV columns from Arabic to English."""
     output_dir = os.path.join("data", "output", "converted", "csv")
     renamed_dir = os.path.join("data", "output", "converted", "renamed")
     
     ensure_directory_exists(renamed_dir)
     
     csv_files = get_csv_files(output_dir)
-    
     if not csv_files:
         logger.error("No CSV files found in %s", output_dir)
         return False
@@ -28,11 +36,7 @@ def step_5_rename_columns(use_latest_file: bool = None) -> bool:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
         csv_path = get_file_path(csv_file, output_dir)
         
-        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_name = os.path.splitext(csv_file)[0]
-        base_name_only = os.path.basename(base_name)
-        base_name_clean = re.sub(r'_\d{8}_\d{6}', '', base_name_only)
-        output_file = f"{base_name_clean}_renamed_{date_str}.csv"
+        output_file = _generate_renamed_filename(csv_file)
         output_path = get_file_path(output_file, renamed_dir)
         
         logger.info("Renaming columns in %s...", csv_file)
@@ -52,4 +56,5 @@ def step_5_rename_columns(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during column renaming: %s", e)
         return False
+
 

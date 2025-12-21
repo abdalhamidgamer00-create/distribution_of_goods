@@ -11,49 +11,51 @@ from src.app.pipeline.utils.file_selector import select_excel_file
 logger = get_logger(__name__)
 
 
+def _get_excel_file_from_streamlit(excel_files: list) -> str:
+    """Try to get Excel file from Streamlit session state."""
+    try:
+        import streamlit as st
+        if hasattr(st, 'session_state') and 'selected_file' in st.session_state:
+            excel_file = st.session_state['selected_file']
+            logger.info("Using Streamlit selected file: %s", excel_file)
+            if excel_file not in excel_files:
+                return None
+            return excel_file
+    except (ImportError, RuntimeError):
+        pass
+    return None
+
+
+def _generate_output_filename(excel_file: str) -> str:
+    """Generate output CSV filename with timestamp."""
+    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_name = os.path.splitext(excel_file)[0]
+    base_name_clean = re.sub(r'_\d{8}_\d{6}', '', base_name)
+    return f"{base_name_clean}_{date_str}.csv"
+
+
 def step_2_convert_excel_to_csv(use_latest_file: bool = None):
-    """Step 2: Convert Excel to CSV"""
+    """Step 2: Convert Excel to CSV."""
     input_dir = os.path.join("data", "input")
-    output_dir = os.path.join("data", "output")
     converted_dir = os.path.join("data", "output", "converted", "csv")
     
     ensure_directory_exists(converted_dir)
     
     excel_files = get_excel_files(input_dir)
-    
     if not excel_files:
         logger.error("No Excel files found in %s", input_dir)
         return False
     
     try:
-        # Check if running from Streamlit with selected file
-        excel_file = None
-        try:
-            import streamlit as st
-            if hasattr(st, 'session_state') and 'selected_file' in st.session_state:
-                excel_file = st.session_state['selected_file']
-                logger.info("Using Streamlit selected file: %s", excel_file)
-                
-                # Verify file exists
-                if excel_file not in excel_files:
-                    logger.error("Selected file not found in input directory: %s", excel_file)
-                    return False
-            else:
-                # No file selected in session state, use normal selection
-                excel_file = select_excel_file(input_dir, excel_files, use_latest_file)
-        except (ImportError, RuntimeError):
-            # Not in Streamlit context, use normal selection
+        excel_file = _get_excel_file_from_streamlit(excel_files)
+        if not excel_file:
             excel_file = select_excel_file(input_dir, excel_files, use_latest_file)
         
         if not excel_file:
             logger.error("No Excel file selected!")
             return False
         
-        date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_name = os.path.splitext(excel_file)[0]
-        base_name_clean = re.sub(r'_\d{8}_\d{6}', '', base_name)
-        csv_file = f"{base_name_clean}_{date_str}.csv"
-        
+        csv_file = _generate_output_filename(excel_file)
         input_path = get_file_path(excel_file, input_dir)
         output_path = get_file_path(csv_file, converted_dir)
         
@@ -73,4 +75,5 @@ def step_2_convert_excel_to_csv(use_latest_file: bool = None):
     except Exception as e:
         logger.exception("Error during conversion: %s", e)
         return False
+
 
