@@ -142,32 +142,34 @@ def archive_all_output(archive_base_dir: str = "data/archive", create_zip: bool 
     return result
 
 
+def _delete_directory_contents(directory: str) -> None:
+    """Delete all contents of a directory but keep the directory itself."""
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        try:
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
+        except Exception as e:
+            logger.warning("  Warning: Could not delete %s: %s", item_path, e)
+
+
 def clear_output_directory(output_dir: str = "data/output") -> bool:
     """
-    Clear all contents of the output directory after archiving
+    Clear all contents of the output directory after archiving.
     
-    This function deletes all files and subdirectories in the output directory
-    while keeping the output directory itself intact.
-    
-    Args:
-        output_dir: Directory to clear (default: "data/output")
-        
     Returns:
         True if successful, False otherwise
     """
     if not os.path.exists(output_dir):
         logger.warning("Output directory not found: %s", output_dir)
-        return True  # Not an error, directory doesn't exist
+        return True
     
     try:
         logger.info("Clearing output directory: %s...", output_dir)
         
-        # Count files and directories before deletion
-        file_count = 0
-        dir_count = 0
-        for root, dirs, files in os.walk(output_dir):
-            dir_count += len(dirs)
-            file_count += len(files)
+        file_count, dir_count = _count_directory_contents(output_dir)
         
         if file_count == 0 and dir_count == 0:
             logger.info("  Output directory is already empty.")
@@ -175,23 +177,9 @@ def clear_output_directory(output_dir: str = "data/output") -> bool:
         
         logger.info("  Found %s files in %s directories to delete", file_count, dir_count)
         
-        # Delete all contents (files and subdirectories) but keep the directory itself
-        for item in os.listdir(output_dir):
-            item_path = os.path.join(output_dir, item)
-            try:
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-                else:
-                    os.remove(item_path)
-            except Exception as e:
-                logger.warning("  Warning: Could not delete %s: %s", item_path, e)
+        _delete_directory_contents(output_dir)
         
-        # Verify deletion
-        remaining_files = 0
-        remaining_dirs = 0
-        for root, dirs, files in os.walk(output_dir):
-            remaining_dirs += len(dirs)
-            remaining_files += len(files)
+        remaining_files, remaining_dirs = _count_directory_contents(output_dir)
         
         if remaining_files == 0 and remaining_dirs == 0:
             logger.info("  ✓ Output directory cleared successfully!")
@@ -205,4 +193,5 @@ def clear_output_directory(output_dir: str = "data/output") -> bool:
     except Exception as e:
         logger.exception("  ✗ Error clearing output directory: %s", e)
         return False
+
 
