@@ -88,49 +88,43 @@ def _validate_analytics_directories(branches: list) -> bool:
     return True
 
 
-def _process_branch(branch: str) -> dict:
-    """
-    Process a single branch and generate its remaining surplus files.
-    
-    Returns:
-        Dictionary with file info, or None if no remaining surplus
-    """
-    # Get analytics file
+def _load_and_validate_analytics(branch: str):
+    """Load and validate analytics file for a branch."""
     analytics_path = get_latest_analytics_path(ANALYTICS_DIR, branch)
     if not analytics_path:
         logger.warning("No analytics file found for branch: %s", branch)
-        return None
+        return None, None, None
     
-    # Read analytics data
     df, has_date_header, first_line = read_analytics_file(analytics_path)
     if df is None:
-        return None
+        return None, None, None
     
-    # Validate columns
     missing_cols = validate_analytics_columns(df)
     if missing_cols:
         logger.error("Missing required columns in %s: %s", analytics_path, missing_cols)
-        return None
+        return None, None, None
     
-    # Calculate total withdrawals from this branch
+    return df, has_date_header, first_line
+
+
+def _calculate_branch_surplus(df, branch: str):
+    """Calculate remaining surplus for a branch."""
     total_withdrawals = calculate_total_withdrawals(ANALYTICS_DIR, branch)
-    
-    # Calculate remaining surplus
     result_df = calculate_remaining_surplus(df, total_withdrawals)
     
     if result_df.empty:
         logger.info("No remaining surplus for branch: %s", branch)
         return None
     
-    # Add product type for categorization
-    result_df = add_product_type_column(result_df)
-    
-    # Generate file names
+    return add_product_type_column(result_df)
+
+
+def _generate_branch_files(result_df, branch: str, has_date_header: bool, first_line: str) -> dict:
+    """Generate CSV files for branch surplus."""
     latest_file = get_latest_file(os.path.join(ANALYTICS_DIR, branch), '.csv')
     base_name = extract_base_name(latest_file, branch)
     timestamp = get_timestamp()
     
-    # Generate CSV files
     csv_files = generate_csv_files(
         df=result_df,
         branch=branch,
@@ -144,13 +138,22 @@ def _process_branch(branch: str) -> dict:
     if csv_files:
         logger.info("Generated remaining surplus files for %s: %d products in %d categories",
                    branch, len(result_df), len(csv_files))
-        
-        return {
-            'files': csv_files,
-            'total_products': len(result_df)
-        }
+        return {'files': csv_files, 'total_products': len(result_df)}
     
     return None
+
+
+def _process_branch(branch: str) -> dict:
+    """Process a single branch and generate its remaining surplus files."""
+    df, has_date_header, first_line = _load_and_validate_analytics(branch)
+    if df is None:
+        return None
+    
+    result_df = _calculate_branch_surplus(df, branch)
+    if result_df is None:
+        return None
+    
+    return _generate_branch_files(result_df, branch, has_date_header, first_line)
 
 
 def _convert_all_to_excel(all_branch_files: dict) -> None:
