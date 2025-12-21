@@ -76,26 +76,9 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
 
 
 
-def create_zip_archive(archive_dir: str, zip_output_path: str = None) -> str:
-    """
-    Create a ZIP file from archive directory
-    
-    Args:
-        archive_dir: Directory to compress
-        zip_output_path: Optional path for ZIP file (default: archive_dir + .zip)
-        
-    Returns:
-        Path to the created ZIP file
-    """
+def _write_zip_files(archive_dir: str, zip_output_path: str) -> None:
+    """Write all files from archive directory to ZIP file."""
     import zipfile
-    
-    if not os.path.exists(archive_dir):
-        raise ValueError(f"Archive directory not found: {archive_dir}")
-    
-    if zip_output_path is None:
-        zip_output_path = f"{archive_dir}.zip"
-    
-    logger.info("Creating ZIP archive: %s...", zip_output_path)
     
     with zipfile.ZipFile(zip_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(archive_dir):
@@ -103,7 +86,18 @@ def create_zip_archive(archive_dir: str, zip_output_path: str = None) -> str:
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, archive_dir)
                 zipf.write(file_path, arcname)
+
+
+def create_zip_archive(archive_dir: str, zip_output_path: str = None) -> str:
+    """Create a ZIP file from archive directory."""
+    if not os.path.exists(archive_dir):
+        raise ValueError(f"Archive directory not found: {archive_dir}")
     
+    if zip_output_path is None:
+        zip_output_path = f"{archive_dir}.zip"
+    
+    logger.info("Creating ZIP archive: %s...", zip_output_path)
+    _write_zip_files(archive_dir, zip_output_path)
     logger.info("ZIP archive created successfully: %s", zip_output_path)
     
     return zip_output_path

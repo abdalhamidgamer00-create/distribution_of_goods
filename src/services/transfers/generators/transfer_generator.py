@@ -139,35 +139,23 @@ def generate_transfer_for_pair(
 
 
 
-def generate_transfer_files(analytics_dir: str, transfers_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
-    """
-    Generate transfer CSV files for each source branch to all target branches
-    Uses the latest analytics file for each target branch
-    
-    Args:
-        analytics_dir: Directory containing analytics CSV files
-        transfers_dir: Directory to save transfer files
-        has_date_header: Whether to include date header in output files
-        first_line: First line (date header) to write if has_date_header is True
-        
-    Returns:
-        Dictionary mapping (source_branch, target_branch) to output file path
-    """
-    branches = get_branches()
+def _generate_for_all_pairs(branches: list, analytics_dir: str, transfers_dir: str,
+                             has_date_header: bool, first_line: str) -> dict:
+    """Generate transfers for all branch pairs."""
     transfer_files = {}
-    
     for source_branch in branches:
         for target_branch in branches:
-            if source_branch == target_branch:
-                continue
-            
-            transfer_path = generate_transfer_for_pair(
-                source_branch, target_branch, analytics_dir, transfers_dir,
-                has_date_header, first_line
-            )
-            
-            if transfer_path:
-                transfer_files[(source_branch, target_branch)] = transfer_path
-    
+            if source_branch != target_branch:
+                transfer_path = generate_transfer_for_pair(
+                    source_branch, target_branch, analytics_dir, transfers_dir,
+                    has_date_header, first_line
+                )
+                if transfer_path:
+                    transfer_files[(source_branch, target_branch)] = transfer_path
     return transfer_files
+
+
+def generate_transfer_files(analytics_dir: str, transfers_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
+    """Generate transfer CSV files for each source branch to all target branches."""
+    return _generate_for_all_pairs(get_branches(), analytics_dir, transfers_dir, has_date_header, first_line)
 

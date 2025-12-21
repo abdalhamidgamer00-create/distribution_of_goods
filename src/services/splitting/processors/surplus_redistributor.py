@@ -17,35 +17,36 @@ def _calculate_transferred_amount(analytics_data: dict, branch: str, product_idx
     return sum(w.get('surplus_from_branch', 0.0) for w in withdrawals_list[product_idx])
 
 
-def _find_eligible_branches(
-    branches: list,
-    analytics_data: dict,
-    product_idx: int,
-    balance_limit: float
-) -> list:
+def _calculate_branch_eligibility(branch: str, analytics_data: dict, product_idx: int, 
+                                   balance_limit: float) -> tuple:
+    """Calculate if a branch is eligible and its details."""
+    branch_df = analytics_data[branch][0]
+    balance = branch_df.iloc[product_idx]['balance']
+    needed = branch_df.iloc[product_idx]['needed_quantity']
+    
+    transferred_so_far = _calculate_transferred_amount(analytics_data, branch, product_idx)
+    current_balance = balance + transferred_so_far
+    
+    if needed <= 0 or current_balance >= balance_limit:
+        return None
+    
+    remaining_needed = needed - transferred_so_far
+    if remaining_needed <= 0:
+        return None
+    
+    remaining_capacity = min(remaining_needed, balance_limit - current_balance)
+    avg_sales = branch_df.iloc[product_idx]['avg_sales']
+    return (branch, avg_sales, current_balance, remaining_capacity)
+
+
+def _find_eligible_branches(branches: list, analytics_data: dict, product_idx: int, balance_limit: float) -> list:
     """Find branches eligible for second-round redistribution."""
     eligible = []
-    
     for branch in branches:
-        branch_df = analytics_data[branch][0]
-        balance = branch_df.iloc[product_idx]['balance']
-        needed = branch_df.iloc[product_idx]['needed_quantity']
-        
-        transferred_so_far = _calculate_transferred_amount(analytics_data, branch, product_idx)
-        current_balance = balance + transferred_so_far
-        
-        if needed <= 0 or current_balance >= balance_limit:
-            continue
-        
-        remaining_needed = needed - transferred_so_far
-        if remaining_needed <= 0:
-            continue
-        
-        remaining_capacity = min(remaining_needed, balance_limit - current_balance)
-        avg_sales = branch_df.iloc[product_idx]['avg_sales']
-        eligible.append((branch, avg_sales, current_balance, remaining_capacity))
+        result = _calculate_branch_eligibility(branch, analytics_data, product_idx, balance_limit)
+        if result:
+            eligible.append(result)
     
-    # Sort by priority: lowest balance first, then highest avg_sales
     eligible.sort(key=lambda x: (x[2], -x[1]))
     return eligible
 

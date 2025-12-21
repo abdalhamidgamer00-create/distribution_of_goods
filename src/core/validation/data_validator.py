@@ -77,36 +77,33 @@ def validate_date_range_months(start_date: datetime, end_date: datetime, min_mon
     return total_months >= min_months
 
 
-def validate_csv_header(csv_path: str) -> tuple:
-    """
-    Validate CSV file header and extract date range
+def _build_date_message(start_date, end_date, is_valid: bool) -> str:
+    """Build validation message for date range."""
+    if is_valid:
+        return f"Date range valid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} (>= 3 months)"
     
-    Args:
-        csv_path: Path to CSV file
-        
-    Returns:
-        Tuple of (is_valid, start_date, end_date, message)
-    """
+    delta = relativedelta(end_date, start_date)
+    total_months = delta.years * 12 + delta.months
+    return f"Date range invalid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} ({total_months} months, required: >= 3 months)"
+
+
+def _extract_and_validate_dates(csv_path: str) -> tuple:
+    """Extract dates from header and validate."""
+    with open(csv_path, 'r', encoding='utf-8-sig') as f:
+        first_line = f.readline().strip()
+    
+    start_date, end_date = extract_dates_from_header(first_line)
+    if start_date is None or end_date is None:
+        return False, None, None, "Could not extract dates from header"
+    
+    is_valid = validate_date_range_months(start_date, end_date, 3)
+    return is_valid, start_date, end_date, _build_date_message(start_date, end_date, is_valid)
+
+
+def validate_csv_header(csv_path: str) -> tuple:
+    """Validate CSV file header and extract date range."""
     try:
-        with open(csv_path, 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline().strip()
-        
-        start_date, end_date = extract_dates_from_header(first_line)
-        
-        if start_date is None or end_date is None:
-            return False, None, None, "Could not extract dates from header"
-        
-        is_valid = validate_date_range_months(start_date, end_date, 3)
-        
-        if is_valid:
-            message = f"Date range valid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} (>= 3 months)"
-        else:
-            delta = relativedelta(end_date, start_date)
-            total_months = delta.years * 12 + delta.months
-            message = f"Date range invalid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} ({total_months} months, required: >= 3 months)"
-        
-        return is_valid, start_date, end_date, message
-        
+        return _extract_and_validate_dates(csv_path)
     except Exception as e:
         return False, None, None, f"Error reading file: {e}"
 
@@ -172,35 +169,38 @@ def _build_validation_result(errors: list, warnings: list, required_count: int) 
     return is_valid, errors, message
 
 
+def _check_all_headers(actual_headers: list, required_headers: list, optional_headers: list) -> tuple:
+    """Check all headers and return errors and warnings."""
+    errors, warnings = [], []
+    
+    missing_required = _check_missing_required(actual_headers, required_headers)
+    if missing_required:
+        errors.append(f"Missing required columns: {', '.join(missing_required)}")
+    
+    unknown_columns = _check_unknown_columns(actual_headers, required_headers, optional_headers)
+    if unknown_columns:
+        warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
+    
+    present_optional = [col for col in optional_headers if col in actual_headers]
+    if present_optional:
+        warnings.append(f"Optional columns detected (will be recalculated): {len(present_optional)} columns")
+    
+    return errors, warnings
+
+
 def validate_csv_headers(csv_path: str) -> tuple:
     """Validate CSV file column headers (row 2)."""
     required_headers = _get_required_headers()
     optional_headers = _get_optional_headers()
-    errors = []
-    warnings = []
     
     try:
         second_line = _read_header_line(csv_path)
-        
         if not second_line:
             return False, ["Header row is empty"], "Header row is empty"
         
         actual_headers = [col.strip() for col in second_line.split(',')]
-        
-        missing_required = _check_missing_required(actual_headers, required_headers)
-        if missing_required:
-            errors.append(f"Missing required columns: {', '.join(missing_required)}")
-        
-        unknown_columns = _check_unknown_columns(actual_headers, required_headers, optional_headers)
-        if unknown_columns:
-            warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
-        
-        present_optional = [col for col in optional_headers if col in actual_headers]
-        if present_optional:
-            warnings.append(f"Optional columns detected (will be recalculated): {len(present_optional)} columns")
-        
+        errors, warnings = _check_all_headers(actual_headers, required_headers, optional_headers)
         return _build_validation_result(errors, warnings, len(required_headers))
-        
     except Exception as e:
         return False, [f"Error reading file: {e}"], f"Error reading file: {e}"
 

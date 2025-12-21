@@ -101,34 +101,32 @@ def get_file_size_str(size_bytes: int) -> str:
     return f"{size_bytes:.1f} TB"
 
 
+def _find_branch_from_path(file_info: Dict) -> str:
+    """Find branch name from file path."""
+    path_parts = file_info.get("relative_path", "").split(os.sep)
+    for part in path_parts:
+        if part in BRANCH_NAMES:
+            return part
+    return None
+
+
+def _find_branch_from_filename(file_info: Dict) -> str:
+    """Find branch name from filename."""
+    filename = file_info.get("name", "").lower()
+    for key in BRANCH_NAMES.keys():
+        if key in filename:
+            return key
+    return None
+
+
 def organize_files_by_branch(files: List[Dict]) -> Dict[str, List[Dict]]:
     """تنظيم الملفات حسب الفرع."""
     organized = {}
     
     for file_info in files:
-        # استخراج اسم الفرع من المسار
-        path_parts = file_info.get("relative_path", "").split(os.sep)
-        branch = None
-        
-        for part in path_parts:
-            if part in BRANCH_NAMES:
-                branch = part
-                break
-        
-        if not branch:
-            # محاولة من اسم الملف
-            filename = file_info.get("name", "")
-            for key in BRANCH_NAMES.keys():
-                if key in filename.lower():
-                    branch = key
-                    break
-        
-        if not branch:
-            branch = "other"
-        
+        branch = _find_branch_from_path(file_info) or _find_branch_from_filename(file_info) or "other"
         if branch not in organized:
             organized[branch] = []
-        
         organized[branch].append(file_info)
     
     return organized
