@@ -9,8 +9,53 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _find_transfer_files(transfers_base_dir: str) -> list:
+    """Find all transfer CSV files that haven't been split yet."""
+    categories = get_product_categories()
+    transfer_files = []
+    
+    for root, dirs, files in os.walk(transfers_base_dir):
+        for file in files:
+            if not file.endswith('.csv'):
+                continue
+            
+            is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories) or \
+                           any(file == f'{cat}.csv' for cat in categories)
+            if not is_split_file:
+                transfer_files.append(os.path.join(root, file))
+    
+    return transfer_files
+
+
+def _extract_date_header(sample_file: str) -> tuple:
+    """Extract date header from sample file."""
+    try:
+        with open(sample_file, 'r', encoding='utf-8-sig') as f:
+            first_line = f.readline().strip()
+            from src.core.validation.data_validator import extract_dates_from_header
+            start_date, end_date = extract_dates_from_header(first_line)
+            if start_date and end_date:
+                return True, first_line
+    except Exception:
+        pass
+    return False, ""
+
+
+def _log_split_summary(all_output_files: dict, categories: list) -> None:
+    """Log summary of split files."""
+    category_counts = {cat: 0 for cat in categories}
+    for (source_target, base_filename, category), file_path in all_output_files.items():
+        category_counts[category] = category_counts.get(category, 0) + 1
+    
+    logger.info("Generated %s split files:", len(all_output_files))
+    for category in categories:
+        count = category_counts[category]
+        if count > 0:
+            logger.info("  - %s: %s files", category, count)
+
+
 def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
-    """Step 8: Split transfer files by product type"""
+    """Step 8: Split transfer files by product type."""
     transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
     
     if not os.path.exists(transfers_base_dir):
@@ -18,17 +63,7 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
         logger.error("Please run step 6 (Generate Transfer Files) first to generate transfer files")
         return False
     
-    transfer_files = []
-    categories = get_product_categories()
-    for root, dirs, files in os.walk(transfers_base_dir):
-        for file in files:
-            if file.endswith('.csv'):
-                file_path = os.path.join(root, file)
-                # Skip files that are already split (category files with timestamp pattern)
-                # Check if file ends with category name (new naming) or is just category name (old naming)
-                is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories) or any(file == f'{cat}.csv' for cat in categories)
-                if not is_split_file:
-                    transfer_files.append(file_path)
+    transfer_files = _find_transfer_files(transfers_base_dir)
     
     if not transfer_files:
         logger.error("No transfer files found in %s", transfers_base_dir)
@@ -36,19 +71,7 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
         return False
     
     try:
-        has_date_header = False
-        first_line = ""
-        
-        try:
-            sample_file = transfer_files[0]
-            with open(sample_file, 'r', encoding='utf-8-sig') as f:
-                first_line = f.readline().strip()
-                from src.core.validation.data_validator import extract_dates_from_header
-                start_date, end_date = extract_dates_from_header(first_line)
-                if start_date and end_date:
-                    has_date_header = True
-        except Exception:
-            pass
+        has_date_header, first_line = _extract_date_header(transfer_files[0])
         
         logger.info("Splitting transfer files by product type...")
         logger.info("-" * 50)
@@ -61,24 +84,9 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
             return False
         
         categories = get_product_categories()
-        category_counts = {cat: 0 for cat in categories}
-        
-        for (source_target, base_filename, category), file_path in all_output_files.items():
-            category_counts[category] = category_counts.get(category, 0) + 1
-        
-        logger.info("Generated %s split files:", len(all_output_files))
-        for category in categories:
-            count = category_counts[category]
-            if count > 0:
-                logger.info("  - %s: %s files", category, count)
-        
-
+        _log_split_summary(all_output_files, categories)
         logger.info("Split files saved to: %s", transfers_base_dir)
         
-
-        logger.info("Split files saved to: %s", transfers_base_dir)
-        
-        # Execute Excel conversion
         logger.info("-" * 50)
         logger.info("Starting Excel conversion...")
         return _convert_to_excel(transfers_base_dir)
@@ -86,6 +94,7 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during file splitting: %s", e)
         return False
+
 
 
 def _convert_to_excel(transfers_base_dir: str) -> bool:

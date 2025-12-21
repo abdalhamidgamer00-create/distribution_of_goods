@@ -16,48 +16,83 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
-    """Step 7: Generate transfer CSV files between branches"""
-    analytics_dir = os.path.join("data", "output", "branches", "analytics")
-    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
-    
-    branches = get_branches()
-    
+def _validate_analytics_directories(analytics_dir: str, branches: list) -> bool:
+    """Validate that analytics directories exist for all branches."""
     for branch in branches:
-        analytics_branch_dir = os.path.join(analytics_dir, branch)
-        if not os.path.exists(analytics_branch_dir):
-            logger.error("Analytics directory not found: %s", analytics_branch_dir)
+        branch_dir = os.path.join(analytics_dir, branch)
+        if not os.path.exists(branch_dir):
+            logger.error("Analytics directory not found: %s", branch_dir)
             logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
             return False
-    
+    return True
+
+
+def _get_analytics_files(analytics_dir: str, branches: list) -> dict:
+    """Get analytics files for all branches."""
     analytics_files = {}
     for branch in branches:
         branch_files = get_csv_files(os.path.join(analytics_dir, branch))
         if branch_files:
             analytics_files[branch] = branch_files
+    return analytics_files
+
+
+def _extract_date_header_info(analytics_dir: str, analytics_files: dict) -> tuple:
+    """Extract date header information from first analytics file."""
+    try:
+        first_branch = list(analytics_files.keys())[0]
+        latest_file = get_latest_file(os.path.join(analytics_dir, first_branch), '.csv')
+        if latest_file:
+            sample_path = os.path.join(analytics_dir, first_branch, latest_file)
+            with open(sample_path, 'r', encoding='utf-8-sig') as f:
+                first_line = f.readline().strip()
+                from src.core.validation.data_validator import extract_dates_from_header
+                start_date, end_date = extract_dates_from_header(first_line)
+                if start_date and end_date:
+                    return True, first_line
+    except Exception:
+        pass
+    return False, ""
+
+
+def _log_transfer_summary(transfer_files: dict, transfers_base_dir: str) -> None:
+    """Log summary of generated transfer files."""
+    logger.info("Generated %s transfer files:", len(transfer_files))
     
+    files_by_source = {}
+    for (source, target), file_path in transfer_files.items():
+        if source not in files_by_source:
+            files_by_source[source] = []
+        files_by_source[source].append((target, file_path))
+    
+    for source in sorted(files_by_source.keys()):
+        files_list = files_by_source[source]
+        logger.info("\n  From %s (%d files):", source, len(files_list))
+        for target, file_path in sorted(files_list):
+            file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+            size_str = _format_file_size(file_size)
+            logger.info("    → %s: %s (%s)", target, os.path.basename(file_path), size_str)
+    
+    logger.info("\nTransfer files saved to: %s", transfers_base_dir)
+
+
+def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
+    """Step 7: Generate transfer CSV files between branches."""
+    analytics_dir = os.path.join("data", "output", "branches", "analytics")
+    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
+    branches = get_branches()
+    
+    if not _validate_analytics_directories(analytics_dir, branches):
+        return False
+    
+    analytics_files = _get_analytics_files(analytics_dir, branches)
     if not analytics_files:
         logger.error("No analytics files found in %s", analytics_dir)
         logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
         return False
     
     try:
-        has_date_header = False
-        first_line = ""
-        
-        try:
-            first_branch = list(analytics_files.keys())[0]
-            latest_file = get_latest_file(os.path.join(analytics_dir, first_branch), '.csv')
-            if latest_file:
-                sample_analytics_path = os.path.join(analytics_dir, first_branch, latest_file)
-                with open(sample_analytics_path, 'r', encoding='utf-8-sig') as f:
-                    first_line = f.readline().strip()
-                    from src.core.validation.data_validator import extract_dates_from_header
-                    start_date, end_date = extract_dates_from_header(first_line)
-                    if start_date and end_date:
-                        has_date_header = True
-        except Exception:
-            pass
+        has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
         
         logger.info("Generating transfer files...")
         logger.info("-" * 50)
@@ -69,26 +104,7 @@ def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
             logger.warning("No transfers found between branches")
             return False
         
-        logger.info("Generated %s transfer files:", len(transfer_files))
-        
-        # تجميع الملفات حسب الفرع المصدر
-        files_by_source = {}
-        for (source, target), file_path in transfer_files.items():
-            if source not in files_by_source:
-                files_by_source[source] = []
-            files_by_source[source].append((target, file_path))
-        
-        # عرض الملفات مجمعة مع معلومات إضافية
-        for source in sorted(files_by_source.keys()):
-            files_list = files_by_source[source]
-            logger.info("\n  From %s (%d files):", source, len(files_list))
-            for target, file_path in sorted(files_list):
-                file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
-                size_str = _format_file_size(file_size)
-                logger.info("    → %s: %s (%s)", target, os.path.basename(file_path), size_str)
-        
-        logger.info("\nTransfer files saved to: %s", transfers_base_dir)
-        
+        _log_transfer_summary(transfer_files, transfers_base_dir)
         return True
         
     except ValueError as e:
@@ -97,6 +113,7 @@ def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during transfer generation: %s", e)
         return False
+
 
 
 def _format_file_size(size_bytes: int) -> str:

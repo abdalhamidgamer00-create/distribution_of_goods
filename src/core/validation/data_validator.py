@@ -111,20 +111,23 @@ def validate_csv_header(csv_path: str) -> tuple:
         return False, None, None, f"Error reading file: {e}"
 
 
-def validate_csv_headers(csv_path: str) -> tuple:
-    """
-    Validate CSV file column headers (row 2)
-    
-    Only validates required columns. Optional columns (avg_sales, totals) are allowed but not required.
-    
-    Args:
-        csv_path: Path to CSV file
+def _read_header_line(csv_path: str) -> tuple:
+    """Read and parse header line from CSV file."""
+    with open(csv_path, 'r', encoding='utf-8-sig') as f:
+        first_line = f.readline().strip()
         
-    Returns:
-        Tuple of (is_valid, errors_list, message)
-    """
-    # Required columns only (sales and balance, not averages or totals)
-    required_headers = [
+        start_date, end_date = extract_dates_from_header(first_line)
+        if start_date and end_date:
+            second_line = f.readline().strip()
+        else:
+            second_line = first_line
+    
+    return second_line
+
+
+def _get_required_headers() -> list:
+    """Get list of required column headers."""
+    return [
         "كود", "إسم الصنف", "سعر البيع", "الشركة", "الوحدة",
         "مبيعات الادارة", "رصيد الادارة",
         "مبيعات الشهيد", "رصيد الشهيد",
@@ -133,26 +136,42 @@ def validate_csv_headers(csv_path: str) -> tuple:
         "مبيعات النجوم", "رصيد النجوم",
         "مبيعات الوردانى", "رصيد الوردانى"
     ]
-    
-    # Optional columns (will be ignored if present, calculated if absent)
-    optional_headers = [
+
+
+def _get_optional_headers() -> list:
+    """Get list of optional column headers."""
+    return [
         "متوسط مبيعات الادارة", "متوسط مبيعات الشهيد", "متوسط مبيعات العشرين",
         "متوسط مبيعات العقبى", "متوسط مبيعات النجوم", "متوسط مبيعات الوردانى",
         "إجمالى المبيعات", "إجمالى رصيد الصنف"
     ]
+
+
+def _check_missing_required(actual_headers: list, required_headers: list) -> list:
+    """Check for missing required columns."""
+    return [req for req in required_headers if req not in actual_headers]
+
+
+def _check_unknown_columns(actual_headers: list, required_headers: list, optional_headers: list) -> list:
+    """Check for unknown columns not in required or optional."""
+    all_known = required_headers + optional_headers
+    return [h for h in actual_headers if h and h not in all_known]
+
+
+def validate_csv_headers(csv_path: str) -> tuple:
+    """
+    Validate CSV file column headers (row 2).
     
+    Returns:
+        Tuple of (is_valid, errors_list, message)
+    """
+    required_headers = _get_required_headers()
+    optional_headers = _get_optional_headers()
     errors = []
     warnings = []
     
     try:
-        with open(csv_path, 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline().strip()
-            
-            start_date, end_date = extract_dates_from_header(first_line)
-            if start_date and end_date:
-                second_line = f.readline().strip()
-            else:
-                second_line = first_line
+        second_line = _read_header_line(csv_path)
         
         if not second_line:
             return False, ["Header row is empty"], "Header row is empty"
@@ -160,25 +179,16 @@ def validate_csv_headers(csv_path: str) -> tuple:
         actual_headers = [col.strip() for col in second_line.split(',')]
         
         # Check for required columns
-        missing_required = []
-        for required in required_headers:
-            if required not in actual_headers:
-                missing_required.append(required)
-        
+        missing_required = _check_missing_required(actual_headers, required_headers)
         if missing_required:
             errors.append(f"Missing required columns: {', '.join(missing_required)}")
         
-        # Check for unknown columns (not in required or optional)
-        all_known = required_headers + optional_headers
-        unknown_columns = []
-        for header in actual_headers:
-            if header and header not in all_known:
-                unknown_columns.append(header)
-        
+        # Check for unknown columns
+        unknown_columns = _check_unknown_columns(actual_headers, required_headers, optional_headers)
         if unknown_columns:
             warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
         
-        # Check if optional columns are present
+        # Check for optional columns
         present_optional = [col for col in optional_headers if col in actual_headers]
         if present_optional:
             warnings.append(f"Optional columns detected (will be recalculated): {len(present_optional)} columns")
@@ -196,4 +206,5 @@ def validate_csv_headers(csv_path: str) -> tuple:
         
     except Exception as e:
         return False, [f"Error reading file: {e}"], f"Error reading file: {e}"
+
 
