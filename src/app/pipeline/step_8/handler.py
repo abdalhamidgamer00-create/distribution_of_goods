@@ -97,41 +97,66 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
 
 
 
-def _convert_to_excel(transfers_base_dir: str) -> bool:
-    """Convert split transfer CSV files to Excel format"""
-    from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
-    
-    excel_output_dir = os.path.join("data", "output", "transfers", "excel")
-    
-    # Find all split CSV files
-    split_files = []
+def _find_split_csv_files(transfers_base_dir: str) -> list:
+    """Find all split CSV files (files ending with category name)."""
     categories = get_product_categories()
+    split_files = []
+    
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
             if file.endswith('.csv'):
-                # Only process split category files (files ending with category name)
                 is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories)
                 if is_split_file:
                     split_files.append(os.path.join(root, file))
     
+    return split_files
+
+
+def _count_excel_by_category(excel_output_dir: str) -> dict:
+    """Count Excel files by category."""
+    categories = get_product_categories()
+    category_counts = {cat: 0 for cat in categories}
+    
+    if not os.path.exists(excel_output_dir):
+        return category_counts
+    
+    for root, dirs, files in os.walk(excel_output_dir):
+        for file in files:
+            if file.endswith('.xlsx'):
+                for cat in categories:
+                    if file.endswith(f'_{cat}.xlsx'):
+                        category_counts[cat] += 1
+                        break
+    
+    return category_counts
+
+
+def _log_excel_summary(excel_count: int, excel_output_dir: str) -> None:
+    """Log summary of generated Excel files."""
+    categories = get_product_categories()
+    category_counts = _count_excel_by_category(excel_output_dir)
+    
+    logger.info("Generated %s Excel files:", excel_count)
+    for category in categories:
+        count = category_counts[category]
+        if count > 0:
+            logger.info("  - %s: %s files", category, count)
+    logger.info("Excel files saved to: %s", excel_output_dir)
+
+
+def _convert_to_excel(transfers_base_dir: str) -> bool:
+    """Convert split transfer CSV files to Excel format."""
+    from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
+    
+    excel_output_dir = os.path.join("data", "output", "transfers", "excel")
+    
+    split_files = _find_split_csv_files(transfers_base_dir)
     if not split_files:
         logger.error("No split CSV files found in %s", transfers_base_dir)
         return False
     
     try:
-        has_date_header = False
-        first_line = ""
-        
-        try:
-            sample_file = split_files[0]
-            with open(sample_file, 'r', encoding='utf-8-sig') as f:
-                first_line = f.readline().strip()
-                from src.core.validation.data_validator import extract_dates_from_header
-                start_date, end_date = extract_dates_from_header(first_line)
-                if start_date and end_date:
-                    has_date_header = True
-        except Exception:
-            pass
+        has_date_header, first_line = _extract_date_header(split_files[0])
         
         logger.info("Converting split CSV files to Excel format...")
         logger.info("Found %s split CSV files to convert", len(split_files))
@@ -142,30 +167,11 @@ def _convert_to_excel(transfers_base_dir: str) -> bool:
             logger.warning("No Excel files were created")
             return False
         
-        # Calculate statistics from created Excel files
-        category_counts = {cat: 0 for cat in categories}
-        
-        # Count Excel files by category
-        if os.path.exists(excel_output_dir):
-            for root, dirs, files in os.walk(excel_output_dir):
-                for file in files:
-                    if file.endswith('.xlsx'):
-                        for cat in categories:
-                            if file.endswith(f'_{cat}.xlsx'):
-                                category_counts[cat] = category_counts.get(cat, 0) + 1
-                                break
-        
-        logger.info("Generated %s Excel files:", excel_count)
-        for category in categories:
-            count = category_counts[category]
-            if count > 0:
-                logger.info("  - %s: %s files", category, count)
-        
-        logger.info("Excel files saved to: %s", excel_output_dir)
-        
+        _log_excel_summary(excel_count, excel_output_dir)
         return True
         
     except Exception as e:
         logger.exception("Error during Excel conversion: %s", e)
         return False
+
 

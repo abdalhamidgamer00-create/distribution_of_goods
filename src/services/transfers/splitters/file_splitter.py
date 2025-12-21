@@ -14,84 +14,90 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def split_transfer_file_by_type(transfer_file_path: str, output_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
+def _extract_target_branch(base_name: str) -> str:
+    """Extract target branch name from file name."""
+    if '_to_' in base_name:
+        parts = base_name.split('_to_')
+        if len(parts) > 1:
+            return parts[-1]
+    return None
+
+
+def _get_folder_name(transfer_file_path: str, base_name: str) -> str:
+    """Get folder name for output, adjusting for target branch."""
+    base_folder_name = os.path.basename(os.path.dirname(transfer_file_path))
+    target_branch = _extract_target_branch(base_name)
+    
+    if target_branch:
+        return base_folder_name.replace('_to_other_branches', f'_to_{target_branch}')
+    return base_folder_name
+
+
+def _save_category_file(
+    category_df: pd.DataFrame,
+    file_folder: str,
+    base_folder_name: str,
+    category: str,
+    timestamp: str,
+    has_date_header: bool,
+    first_line: str
+) -> str:
+    """Save a category DataFrame to CSV file."""
+    category_df = category_df.drop('product_type', axis=1)
+    category_df = category_df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
+    
+    category_file = f"{base_folder_name}_{timestamp}_{category}.csv"
+    category_path = os.path.join(file_folder, category_file)
+    
+    with open(category_path, 'w', encoding='utf-8-sig', newline='') as f:
+        if has_date_header:
+            f.write(first_line + '\n')
+        category_df.to_csv(f, index=False, lineterminator='\n')
+    
+    return category_path
+
+
+def split_transfer_file_by_type(
+    transfer_file_path: str,
+    output_dir: str,
+    has_date_header: bool = False,
+    first_line: str = ""
+) -> dict:
     """
-    Split a transfer CSV file into multiple files by product type
+    Split a transfer CSV file into multiple files by product type.
     
-    Each file's split files are saved in a dedicated subfolder
-    
-    Args:
-        transfer_file_path: Path to input transfer CSV file
-        output_dir: Directory to save split files
-        has_date_header: Whether to include date header in output files
-        first_line: First line (date header) to write if has_date_header is True
-        
     Returns:
         Dictionary mapping product type to output file path
     """
     try:
         df = pd.read_csv(transfer_file_path, encoding='utf-8-sig')
-        ensure_columns(
-            df,
-            ["code", "product_name", "quantity_to_transfer"],
-            context=f"transfer file {transfer_file_path}",
-        )
+        ensure_columns(df, ["code", "product_name", "quantity_to_transfer"], 
+                      context=f"transfer file {transfer_file_path}")
         
         df['product_type'] = df['product_name'].apply(classify_product_type)
         
-        categories = get_product_categories()
-        output_files = {}
-        
         base_name = os.path.splitext(os.path.basename(transfer_file_path))[0]
-        
-        # Get base folder name (the parent directory name)
-        base_folder_name = os.path.basename(os.path.dirname(transfer_file_path))
-        
-        # Extract target branch name from file name (e.g., "from_admin_to_wardani" -> "wardani")
-        target_branch = None
-        if '_to_' in base_name:
-            parts = base_name.split('_to_')
-            if len(parts) > 1:
-                target_branch = parts[-1]  # Get the last part after "_to_"
-        
-        # Replace "other_branches" with target branch name in base_folder_name
-        if target_branch:
-            base_folder_name = base_folder_name.replace('_to_other_branches', f'_to_{target_branch}')
-        
-        # Generate timestamp
+        base_folder_name = _get_folder_name(transfer_file_path, base_name)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Create a dedicated folder for this file's split files
         file_folder = os.path.join(output_dir, base_name)
         os.makedirs(file_folder, exist_ok=True)
         
-        for category in categories:
+        output_files = {}
+        for category in get_product_categories():
             category_df = df[df['product_type'] == category].copy()
-            
             if len(category_df) > 0:
-                category_df = category_df.drop('product_type', axis=1)
-                category_df = category_df.sort_values(
-                    'product_name', 
-                    ascending=True,
-                    key=lambda x: x.str.lower()
+                output_files[category] = _save_category_file(
+                    category_df, file_folder, base_folder_name, category,
+                    timestamp, has_date_header, first_line
                 )
-                
-                # Full filename with base folder name, timestamp, and category
-                category_file = f"{base_folder_name}_{timestamp}_{category}.csv"
-                category_path = os.path.join(file_folder, category_file)
-                
-                with open(category_path, 'w', encoding='utf-8-sig', newline='') as f:
-                    if has_date_header:
-                        f.write(first_line + '\n')
-                    category_df.to_csv(f, index=False, lineterminator='\n')
-                
-                output_files[category] = category_path
         
         return output_files
     
     except Exception as e:
         logger.exception("Error splitting file %s: %s", transfer_file_path, e)
         return {}
+
 
 
 def split_all_transfer_files(transfers_base_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
