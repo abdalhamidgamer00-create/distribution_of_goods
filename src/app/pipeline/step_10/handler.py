@@ -97,13 +97,41 @@ def _log_summary(generated_files: dict, categories: list, total_shortage: int) -
     logger.info("Excel files saved to: %s", EXCEL_OUTPUT_DIR)
 
 
-def step_10_generate_shortage_files(use_latest_file: bool = None) -> bool:
-    """
-    Step 10: Generate shortage files.
+def _prepare_shortage_data() -> tuple:
+    """Prepare shortage data and classify products."""
+    shortage_df, has_date_header, first_line = calculate_shortage_products(ANALYTICS_DIR)
     
-    Returns:
-        True if successful, False otherwise
-    """
+    if shortage_df.empty:
+        return None, None, None
+    
+    shortage_df['product_type'] = shortage_df['product_name'].apply(classify_product_type)
+    return shortage_df, has_date_header, first_line
+
+
+def _generate_all_files(shortage_df, has_date_header: bool, first_line: str) -> dict:
+    """Generate category files and combined file."""
+    os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
+    os.makedirs(EXCEL_OUTPUT_DIR, exist_ok=True)
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    base_name = "shortage_products"
+    categories = get_product_categories()
+    
+    generated_files = _generate_category_files(
+        shortage_df, categories, timestamp, base_name, has_date_header, first_line
+    )
+    
+    # Generate combined file
+    all_df = shortage_df.drop('product_type', axis=1).copy()
+    all_csv_path = os.path.join(CSV_OUTPUT_DIR, f"{base_name}_{timestamp}_all.csv")
+    _write_csv_file(all_df, all_csv_path, has_date_header, first_line)
+    generated_files['all'] = {'csv_path': all_csv_path, 'df': all_df, 'count': len(all_df)}
+    
+    return generated_files, categories
+
+
+def step_10_generate_shortage_files(use_latest_file: bool = None) -> bool:
+    """Step 10: Generate shortage files."""
     branches = get_branches()
     
     if not _validate_analytics_directories(branches):
@@ -113,33 +141,15 @@ def step_10_generate_shortage_files(use_latest_file: bool = None) -> bool:
         logger.info("Calculating shortage products...")
         logger.info("-" * 50)
         
-        shortage_df, has_date_header, first_line = calculate_shortage_products(ANALYTICS_DIR)
+        shortage_df, has_date_header, first_line = _prepare_shortage_data()
         
-        if shortage_df.empty:
+        if shortage_df is None:
             logger.info("No shortage products found. All needs are covered by surplus!")
             return True
         
         logger.info("Found %d products with shortage", len(shortage_df))
-        shortage_df['product_type'] = shortage_df['product_name'].apply(classify_product_type)
         
-        os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
-        os.makedirs(EXCEL_OUTPUT_DIR, exist_ok=True)
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_name = "shortage_products"
-        categories = get_product_categories()
-        
-        # Generate category files
-        generated_files = _generate_category_files(
-            shortage_df, categories, timestamp, base_name, has_date_header, first_line
-        )
-        
-        # Generate combined file
-        all_df = shortage_df.drop('product_type', axis=1).copy()
-        all_csv_path = os.path.join(CSV_OUTPUT_DIR, f"{base_name}_{timestamp}_all.csv")
-        _write_csv_file(all_df, all_csv_path, has_date_header, first_line)
-        generated_files['all'] = {'csv_path': all_csv_path, 'df': all_df, 'count': len(all_df)}
-        
+        generated_files, categories = _generate_all_files(shortage_df, has_date_header, first_line)
         _convert_all_to_excel(generated_files)
         _log_summary(generated_files, categories, int(shortage_df['shortage_quantity'].sum()))
         

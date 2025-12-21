@@ -77,6 +77,17 @@ def _search_and_withdraw_surplus(
     return withdrawals_for_row, withdrawals, remaining_needed
 
 
+def _check_early_returns(needed: float, balance: float) -> tuple:
+    """Check early return conditions, return (should_return, withdrawal_record)."""
+    if needed <= 0:
+        return True, [_create_empty_withdrawal_record()], {}
+    
+    if should_skip_transfer(balance):
+        return True, [_create_empty_withdrawal_record(needed)], {}
+    
+    return False, None, None
+
+
 def find_surplus_sources_for_single_product(
     branch: str,
     product_idx: int,
@@ -85,20 +96,7 @@ def find_surplus_sources_for_single_product(
     existing_withdrawals: dict = None,
     proportional_allocation: dict = None
 ) -> tuple:
-    """
-    Find surplus sources for a single product for a specific branch.
-    
-    Args:
-        branch: Current branch name (receiving branch)
-        product_idx: Product index to process
-        branch_data: Dictionary of all branch dataframes
-        branches: List of all branch names
-        existing_withdrawals: Dictionary of withdrawals already made
-        proportional_allocation: Dictionary mapping product_idx to allocated amounts
-        
-    Returns:
-        Tuple of (withdrawals_list, withdrawals_dict)
-    """
+    """Find surplus sources for a single product for a specific branch."""
     if existing_withdrawals is None:
         existing_withdrawals = {}
     if proportional_allocation is None:
@@ -108,19 +106,15 @@ def find_surplus_sources_for_single_product(
     needed = branch_df.iloc[product_idx]['needed_quantity']
     balance = branch_df.iloc[product_idx]['balance']
     
-    # Early return: no need
-    if needed <= 0:
-        return [_create_empty_withdrawal_record()], {}
-    
-    # Early return: balance too high
-    if should_skip_transfer(balance):
-        return [_create_empty_withdrawal_record(needed)], {}
+    # Check early returns
+    should_return, result_list, result_dict = _check_early_returns(needed, balance)
+    if should_return:
+        return result_list, result_dict
     
     # Calculate target amount
     allocated = _get_allocated_amount(product_idx, branch, proportional_allocation)
     target_amount = calculate_target_amount(needed, balance, allocated)
     
-    # Early return: no transfer needed
     if target_amount <= 0:
         return [_create_empty_withdrawal_record(needed)], {}
     

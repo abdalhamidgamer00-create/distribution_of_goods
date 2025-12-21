@@ -50,6 +50,26 @@ def _find_eligible_branches(
     return eligible
 
 
+def _record_redistribution(branch: str, other_branch: str, product_idx: int, transfer_amount: float,
+                           available_surplus: float, analytics_data: dict, all_withdrawals: dict,
+                           max_withdrawals: int) -> int:
+    """Record a redistribution in the tracking structures."""
+    key = (other_branch, product_idx)
+    all_withdrawals[key] = all_withdrawals.get(key, 0.0) + transfer_amount
+    
+    withdrawals_list = analytics_data[branch][1]
+    if product_idx < len(withdrawals_list):
+        withdrawals_list[product_idx].append({
+            'surplus_from_branch': transfer_amount,
+            'available_branch': other_branch,
+            'surplus_remaining': available_surplus - transfer_amount,
+            'remaining_needed': 0.0
+        })
+        max_withdrawals = max(max_withdrawals, len(withdrawals_list[product_idx]))
+    
+    return max_withdrawals
+
+
 def _redistribute_to_branch(
     branch: str,
     product_idx: int,
@@ -78,20 +98,10 @@ def _redistribute_to_branch(
         if transfer_amount <= 0:
             continue
         
-        # Record the withdrawal
-        key = (other_branch, product_idx)
-        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + transfer_amount
-        
-        # Add to analytics
-        withdrawals_list = analytics_data[branch][1]
-        if product_idx < len(withdrawals_list):
-            withdrawals_list[product_idx].append({
-                'surplus_from_branch': transfer_amount,
-                'available_branch': other_branch,
-                'surplus_remaining': available_surplus - transfer_amount,
-                'remaining_needed': 0.0
-            })
-            max_withdrawals = max(max_withdrawals, len(withdrawals_list[product_idx]))
+        max_withdrawals = _record_redistribution(
+            branch, other_branch, product_idx, transfer_amount,
+            available_surplus, analytics_data, all_withdrawals, max_withdrawals
+        )
         
         remaining_capacity -= transfer_amount
         redistributed_count += 1
