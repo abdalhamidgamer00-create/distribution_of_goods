@@ -5,22 +5,31 @@ from src.app.gui.utils.translations import STEP_NAMES, STEP_DESCRIPTIONS, MESSAG
 import traceback
 
 
-def run_step(step_id: str, use_streamlit: bool = True) -> tuple:
-    """
-    تشغيل خطوة معينة وعرض النتائج.
-    
-    Args:
-        step_id: معرف الخطوة (1-11)
-        
-    Returns:
-        Tuple of (success: bool, message: str)
-    """
-    # البحث عن الخطوة
-    step = None
+def _find_step_by_id(step_id: str):
+    """Find step by its ID."""
     for s in AVAILABLE_STEPS:
         if s["id"] == step_id:
-            step = s
-            break
+            return s
+    return None
+
+
+def _execute_step_function(step, step_name: str, use_streamlit: bool) -> tuple:
+    """Execute step function with optional Streamlit spinner."""
+    if use_streamlit:
+        import streamlit as st
+        with st.spinner(f"{MESSAGES['running']} {step_name}..."):
+            result = step["function"](use_latest_file=True)
+    else:
+        result = step["function"](use_latest_file=True)
+    
+    if result:
+        return True, f"{MESSAGES['success']}: {step_name}"
+    return False, f"{MESSAGES['failed']}: {step_name}"
+
+
+def run_step(step_id: str, use_streamlit: bool = True) -> tuple:
+    """تشغيل خطوة معينة وعرض النتائج."""
+    step = _find_step_by_id(step_id)
     
     if not step:
         return False, f"خطوة غير موجودة: {step_id}"
@@ -28,19 +37,7 @@ def run_step(step_id: str, use_streamlit: bool = True) -> tuple:
     step_name = STEP_NAMES.get(step_id, step["name"])
     
     try:
-        # تشغيل الخطوة
-        if use_streamlit:
-            import streamlit as st
-            with st.spinner(f"{MESSAGES['running']} {step_name}..."):
-                result = step["function"](use_latest_file=True)
-        else:
-            result = step["function"](use_latest_file=True)
-        
-        if result:
-            return True, f"{MESSAGES['success']}: {step_name}"
-        else:
-            return False, f"{MESSAGES['failed']}: {step_name}"
-            
+        return _execute_step_function(step, step_name, use_streamlit)
     except Exception as e:
         error_msg = f"{MESSAGES['error']} في {step_name}: {str(e)}"
         if use_streamlit:
@@ -83,18 +80,44 @@ def get_all_steps() -> list:
     return steps
 
 
-def run_step_with_dependencies(step_id: str, use_streamlit: bool = True) -> tuple:
-    """
-    تشغيل جميع الخطوات من 1 إلى step_id بالترتيب.
+def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) -> tuple:
+    """Run steps with Streamlit progress bar."""
+    import streamlit as st
+    progress_bar = st.progress(0)
+    status_text = st.empty()
     
-    Args:
-        step_id: معرف الخطوة المستهدفة
-        use_streamlit: استخدام مكونات Streamlit للواجهة
+    for idx, step in enumerate(all_steps):
+        step_name = STEP_NAMES.get(step['id'], step['name'])
+        status_text.text(f"جاري تنفيذ الخطوة {step['id']}: {step_name}")
         
-    Returns:
-        Tuple of (success: bool, message: str)
-    """
-    # الحصول على جميع الخطوات حتى الخطوة المستهدفة
+        success, message = run_step(step['id'], use_streamlit=False)
+        
+        if not success:
+            progress_bar.empty()
+            status_text.empty()
+            st.error(f"❌ فشلت الخطوة {step['id']}: {step_name}")
+            st.error(message)
+            return False, f"فشلت الخطوة {step['id']}: {message}"
+        
+        progress_bar.progress((idx + 1) / len(all_steps))
+    
+    progress_bar.empty()
+    status_text.empty()
+    target_step_name = STEP_NAMES.get(step_id, AVAILABLE_STEPS[target_step_num - 1]['name'])
+    return True, f"✅ تم تنفيذ جميع الخطوات حتى الخطوة {step_id}: {target_step_name}"
+
+
+def _run_without_ui(all_steps: list, step_id: str) -> tuple:
+    """Run steps without UI."""
+    for step in all_steps:
+        success, message = run_step(step['id'], use_streamlit=False)
+        if not success:
+            return False, f"فشلت الخطوة {step['id']}: {message}"
+    return True, f"تم تنفيذ جميع الخطوات حتى الخطوة {step_id} بنجاح"
+
+
+def run_step_with_dependencies(step_id: str, use_streamlit: bool = True) -> tuple:
+    """تشغيل جميع الخطوات من 1 إلى step_id بالترتيب."""
     try:
         target_step_num = int(step_id)
     except ValueError:
@@ -106,35 +129,5 @@ def run_step_with_dependencies(step_id: str, use_streamlit: bool = True) -> tupl
         return False, f"لم يتم العثور على خطوات حتى الخطوة {step_id}"
     
     if use_streamlit:
-        import streamlit as st
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        for idx, step in enumerate(all_steps):
-            step_name = STEP_NAMES.get(step['id'], step['name'])
-            status_text.text(f"جاري تنفيذ الخطوة {step['id']}: {step_name}")
-            
-            # تشغيل الخطوة بدون واجهة Streamlit لتجنب التداخل
-            success, message = run_step(step['id'], use_streamlit=False)
-            
-            if not success:
-                progress_bar.empty()
-                status_text.empty()
-                st.error(f"❌ فشلت الخطوة {step['id']}: {step_name}")
-                st.error(message)
-                return False, f"فشلت الخطوة {step['id']}: {message}"
-            
-            progress_bar.progress((idx + 1) / len(all_steps))
-        
-        progress_bar.empty()
-        status_text.empty()
-        target_step_name = STEP_NAMES.get(step_id, AVAILABLE_STEPS[target_step_num - 1]['name'])
-        return True, f"✅ تم تنفيذ جميع الخطوات حتى الخطوة {step_id}: {target_step_name}"
-    else:
-        # تشغيل بدون واجهة
-        for step in all_steps:
-            success, message = run_step(step['id'], use_streamlit=False)
-            if not success:
-                return False, f"فشلت الخطوة {step['id']}: {message}"
-        
-        return True, f"تم تنفيذ جميع الخطوات حتى الخطوة {step_id} بنجاح"
+        return _run_with_streamlit_ui(all_steps, step_id, target_step_num)
+    return _run_without_ui(all_steps, step_id)

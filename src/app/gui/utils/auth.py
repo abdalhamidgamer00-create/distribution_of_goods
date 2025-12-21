@@ -7,35 +7,41 @@ DEFAULT_PASSWORDS = {
     "user": "user123"
 }
 
-def check_password():
-    """Returns `True` if the user had a correct password."""
 
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        # Try to get passwords from secrets, fall back to defaults
-        try:
-            passwords = st.secrets["passwords"]
-        except (FileNotFoundError, KeyError):
-            passwords = DEFAULT_PASSWORDS
-            st.warning("⚠️ استخدام كلمات المرور الافتراضية. يرجى إنشاء ملف .streamlit/secrets.toml للأمان.")
-        
-        if (
-            st.session_state["username"] in passwords
-            and hmac.compare_digest(
-                st.session_state["password"],
-                passwords[st.session_state["username"]],
-            )
-        ):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store password
-            del st.session_state["username"]
-        else:
-            st.session_state["password_correct"] = False
+def _get_passwords() -> dict:
+    """Get passwords from secrets or defaults."""
+    try:
+        return st.secrets["passwords"]
+    except (FileNotFoundError, KeyError):
+        st.warning("⚠️ استخدام كلمات المرور الافتراضية. يرجى إنشاء ملف .streamlit/secrets.toml للأمان.")
+        return DEFAULT_PASSWORDS
 
-    if st.session_state.get("password_correct", False):
-        return True
 
-    # Show inputs for username and password
+def _verify_credentials(passwords: dict) -> bool:
+    """Verify username and password."""
+    return (
+        st.session_state["username"] in passwords
+        and hmac.compare_digest(
+            st.session_state["password"],
+            passwords[st.session_state["username"]],
+        )
+    )
+
+
+def _password_entered():
+    """Checks whether a password entered by the user is correct."""
+    passwords = _get_passwords()
+    
+    if _verify_credentials(passwords):
+        st.session_state["password_correct"] = True
+        del st.session_state["password"]
+        del st.session_state["username"]
+    else:
+        st.session_state["password_correct"] = False
+
+
+def _show_login_form():
+    """Display the login form."""
     st.markdown(
         """
         <style>
@@ -52,10 +58,17 @@ def check_password():
         st.text_input("كلمة المرور", type="password", key="password")
         
         if st.button("دخول", type="primary", use_container_width=True):
-            password_entered()
+            _password_entered()
             if st.session_state.get("password_correct") == False:
                 st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
             else:
                 st.rerun()
 
+
+def check_password():
+    """Returns `True` if the user had a correct password."""
+    if st.session_state.get("password_correct", False):
+        return True
+    
+    _show_login_form()
     return False
