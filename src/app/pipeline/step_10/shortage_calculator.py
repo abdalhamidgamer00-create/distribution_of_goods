@@ -64,13 +64,25 @@ def _initialize_product_totals(product_name: str, branches: list) -> dict:
     }
 
 
+def _update_product_totals(product_totals: dict, df, branch: str, branches: list) -> None:
+    """Update product totals from a single branch DataFrame."""
+    for _, row in df.iterrows():
+        code = row['code']
+        if pd.isna(code):
+            continue
+        
+        code = str(code)
+        if code not in product_totals:
+            product_totals[code] = _initialize_product_totals(row['product_name'], branches)
+        
+        product_totals[code]['total_surplus'] += float(row['surplus_quantity'] or 0)
+        product_totals[code]['total_needed'] += float(row['needed_quantity'] or 0)
+        product_totals[code]['total_sales'] += float(row['sales'] or 0)
+        product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
+
+
 def _aggregate_branch_totals(analytics_dir: str, branches: list) -> tuple:
-    """
-    Aggregate totals across all branches.
-    
-    Returns:
-        Tuple of (product_totals dict, has_date_header, first_line)
-    """
+    """Aggregate totals across all branches."""
     product_totals = {}
     has_date_header = False
     first_line = ''
@@ -86,29 +98,14 @@ def _aggregate_branch_totals(analytics_dir: str, branches: list) -> tuple:
         analytics_path = os.path.join(branch_dir, latest_file)
         df, branch_has_date_header, branch_first_line = read_analytics_file(analytics_path)
         
-        if df is None:
+        if df is None or not _has_required_columns(df, analytics_path):
             continue
         
         if not has_date_header and branch_has_date_header:
             has_date_header = True
             first_line = branch_first_line
         
-        if not _has_required_columns(df, analytics_path):
-            continue
-        
-        for _, row in df.iterrows():
-            code = row['code']
-            if pd.isna(code):
-                continue
-            
-            code = str(code)
-            if code not in product_totals:
-                product_totals[code] = _initialize_product_totals(row['product_name'], branches)
-            
-            product_totals[code]['total_surplus'] += float(row['surplus_quantity'] or 0)
-            product_totals[code]['total_needed'] += float(row['needed_quantity'] or 0)
-            product_totals[code]['total_sales'] += float(row['sales'] or 0)
-            product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
+        _update_product_totals(product_totals, df, branch, branches)
     
     return product_totals, has_date_header, first_line
 

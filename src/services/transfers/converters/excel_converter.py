@@ -9,46 +9,29 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def convert_split_csv_to_excel(csv_file_path: str, excel_output_dir: str, has_date_header: bool = False, first_line: str = "") -> str:
-    """
-    Convert a split CSV file to Excel format
+def _build_excel_output_path(csv_file_path: str, excel_output_dir: str) -> str:
+    """Build output path for Excel file maintaining folder structure."""
+    csv_dir = os.path.dirname(csv_file_path)
+    csv_filename = os.path.basename(csv_file_path)
     
-    Args:
-        csv_file_path: Path to input CSV file
-        excel_output_dir: Base directory for Excel output files
-        has_date_header: Whether the CSV has a date header
-        first_line: First line (date header) if has_date_header is True
-        
-    Returns:
-        Output Excel file path if successful, None otherwise
-    """
+    subfolder_name = os.path.basename(csv_dir)
+    parent_dir_path = os.path.dirname(csv_dir)
+    parent_dir = os.path.basename(parent_dir_path)
+    
+    excel_parent_dir = parent_dir.replace('transfers', 'transfers_excel')
+    excel_subfolder = os.path.join(excel_output_dir, excel_parent_dir, subfolder_name)
+    os.makedirs(excel_subfolder, exist_ok=True)
+    
+    excel_filename = os.path.splitext(csv_filename)[0] + '.xlsx'
+    return os.path.join(excel_subfolder, excel_filename)
+
+
+def convert_split_csv_to_excel(csv_file_path: str, excel_output_dir: str, has_date_header: bool = False, first_line: str = "") -> str:
+    """Convert a split CSV file to Excel format."""
     try:
-        # Read CSV file
         df = pd.read_csv(csv_file_path, encoding='utf-8-sig')
+        excel_path = _build_excel_output_path(csv_file_path, excel_output_dir)
         
-        # Get relative path from transfers directory to maintain folder structure
-        # Extract the path structure: transfers_from_X_to_Y/file_name/category_file.csv
-        csv_dir = os.path.dirname(csv_file_path)
-        csv_filename = os.path.basename(csv_file_path)
-        
-        # Get the subfolder name (e.g., selled_stock_drug_only_20251115_220448_from_admin_to_wardani)
-        subfolder_name = os.path.basename(csv_dir)
-        
-        # Get the parent directory name (e.g., transfers_from_admin_to_other_branches)
-        # Go up one level from csv_dir
-        parent_dir_path = os.path.dirname(csv_dir)
-        parent_dir = os.path.basename(parent_dir_path)
-        
-        # Create corresponding Excel directory structure
-        excel_parent_dir = parent_dir.replace('transfers', 'transfers_excel')
-        excel_subfolder = os.path.join(excel_output_dir, excel_parent_dir, subfolder_name)
-        os.makedirs(excel_subfolder, exist_ok=True)
-        
-        # Change file extension from .csv to .xlsx
-        excel_filename = os.path.splitext(csv_filename)[0] + '.xlsx'
-        excel_path = os.path.join(excel_subfolder, excel_filename)
-        
-        # Write to Excel
         with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Sheet1')
         
