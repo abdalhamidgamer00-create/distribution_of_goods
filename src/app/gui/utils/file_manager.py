@@ -9,74 +9,56 @@ from typing import List, Dict, Optional
 from src.app.gui.utils.translations import BRANCH_NAMES, CATEGORY_NAMES, MESSAGES
 
 
+def _build_file_info(file_path: str, filename: str, ext: str, directory: str) -> Dict:
+    """Build file info dictionary."""
+    return {
+        "name": filename,
+        "path": file_path,
+        "relative_path": os.path.relpath(file_path, directory),
+        "size": os.path.getsize(file_path),
+        "extension": ext
+    }
+
+
 def list_output_files(directory: str, file_extensions: List[str] = None) -> List[Dict]:
-    """
-    قائمة بجميع الملفات في مجلد معين.
-    
-    Args:
-        directory: مسار المجلد
-        file_extensions: قائمة بامتدادات الملفات (مثل ['.csv', '.xlsx'])
-        
-    Returns:
-        List of dictionaries with file info
-    """
+    """قائمة بجميع الملفات في مجلد معين."""
     if file_extensions is None:
         file_extensions = ['.csv', '.xlsx']
     
-    files = []
     if not os.path.exists(directory):
-        return files
+        return []
     
+    files = []
     for root, dirs, filenames in os.walk(directory):
         for filename in filenames:
-            file_path = os.path.join(root, filename)
             _, ext = os.path.splitext(filename)
-            
             if ext.lower() in file_extensions:
-                rel_path = os.path.relpath(file_path, directory)
-                files.append({
-                    "name": filename,
-                    "path": file_path,
-                    "relative_path": rel_path,
-                    "size": os.path.getsize(file_path),
-                    "extension": ext
-                })
+                file_path = os.path.join(root, filename)
+                files.append(_build_file_info(file_path, filename, ext, directory))
     
     return sorted(files, key=lambda x: x["name"])
 
 
-def read_file_for_display(file_path: str, max_rows: int = 100) -> Optional[pd.DataFrame]:
-    """
-    قراءة ملف لعرضه في Streamlit.
+def _read_csv_file_for_display(file_path: str, max_rows: int) -> Optional[pd.DataFrame]:
+    """Read CSV file with date header detection."""
+    with open(file_path, 'r', encoding='utf-8-sig') as f:
+        first_line = f.readline().strip()
     
-    Args:
-        file_path: مسار الملف
-        max_rows: الحد الأقصى لعدد الصفوف للعرض
-        
-    Returns:
-        DataFrame أو None في حالة الخطأ
-    """
+    from src.core.validation.data_validator import extract_dates_from_header
+    start_date, end_date = extract_dates_from_header(first_line)
+    
+    if start_date and end_date:
+        return pd.read_csv(file_path, skiprows=1, encoding='utf-8-sig', nrows=max_rows)
+    return pd.read_csv(file_path, encoding='utf-8-sig', nrows=max_rows)
+
+
+def read_file_for_display(file_path: str, max_rows: int = 100) -> Optional[pd.DataFrame]:
+    """قراءة ملف لعرضه في Streamlit."""
     try:
         if file_path.endswith('.csv'):
-            # التحقق من وجود date header
-            with open(file_path, 'r', encoding='utf-8-sig') as f:
-                first_line = f.readline().strip()
-            
-            from src.core.validation.data_validator import extract_dates_from_header
-            start_date, end_date = extract_dates_from_header(first_line)
-            has_date_header = bool(start_date and end_date)
-            
-            if has_date_header:
-                df = pd.read_csv(file_path, skiprows=1, encoding='utf-8-sig', nrows=max_rows)
-            else:
-                df = pd.read_csv(file_path, encoding='utf-8-sig', nrows=max_rows)
-            
-            return df
-            
+            return _read_csv_file_for_display(file_path, max_rows)
         elif file_path.endswith('.xlsx'):
-            df = pd.read_excel(file_path, nrows=max_rows)
-            return df
-            
+            return pd.read_excel(file_path, nrows=max_rows)
     except Exception as e:
         st.error(f"خطأ في قراءة الملف: {str(e)}")
         return None

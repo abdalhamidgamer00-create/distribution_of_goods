@@ -92,38 +92,36 @@ def _redistribute_allocations(
     return allocated_dict
 
 
+def _process_single_product_allocation(idx: int, matrices: dict, total_surplus: pd.Series, 
+                                        total_needed: pd.Series, branches: list, branch_data: dict) -> dict:
+    """Process allocation for a single product."""
+    if total_needed.loc[idx] <= 0:
+        return None
+    
+    total_scores = _calculate_weighted_scores(matrices, idx)
+    allocated_dict = _allocate_by_proportions(
+        matrices, idx, total_scores, total_surplus.loc[idx], total_needed.loc[idx], branches
+    )
+    
+    needed_dict = matrices['needed'].loc[idx].to_dict()
+    return _redistribute_allocations(allocated_dict, needed_dict, branch_data, idx)
+
+
 def calculate_proportional_allocations_vectorized(branch_data: dict, branches: list) -> dict:
-    """
-    Vectorized proportional allocation across all products.
-    
-    Args:
-        branch_data: Dictionary of branch dataframes.
-        branches: Ordered list of branches.
-    
-    Returns:
-        Dict mapping product index -> {branch: allocated_amount}
-    """
+    """Vectorized proportional allocation across all products."""
     if not branch_data:
         return {}
     
     matrices = _build_branch_matrices(branch_data, branches)
-    
     total_needed = matrices['needed'].clip(lower=0).sum(axis=1)
     total_surplus = matrices['surplus'].clip(lower=0).sum(axis=1)
     needs_mask = (total_needed > 0) & (total_surplus > 0) & (total_surplus < total_needed)
     
     allocations = {}
     for idx in total_needed[needs_mask].index:
-        if total_needed.loc[idx] <= 0:
-            continue
-        
-        total_scores = _calculate_weighted_scores(matrices, idx)
-        allocated_dict = _allocate_by_proportions(
-            matrices, idx, total_scores, total_surplus.loc[idx], total_needed.loc[idx], branches
-        )
-        
-        needed_dict = matrices['needed'].loc[idx].to_dict()
-        allocations[idx] = _redistribute_allocations(allocated_dict, needed_dict, branch_data, idx)
+        result = _process_single_product_allocation(idx, matrices, total_surplus, total_needed, branches, branch_data)
+        if result:
+            allocations[idx] = result
     
     return allocations
 
