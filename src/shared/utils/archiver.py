@@ -9,34 +9,39 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _count_directory_contents(directory: str) -> tuple:
+    """Count files and directories in a path."""
+    file_count = 0
+    dir_count = 0
+    for root, dirs, files in os.walk(directory):
+        dir_count += len(dirs)
+        file_count += len(files)
+    return file_count, dir_count
+
+
+def _copy_directory_tree(source: str, destination: str) -> None:
+    """Copy complete directory tree, removing destination if exists."""
+    if os.path.exists(destination):
+        shutil.rmtree(destination)
+    shutil.copytree(source, destination)
+
+
 def archive_output_directory(output_dir: str, archive_base_dir: str = "data/archive") -> dict:
     """
-    Archive ALL files and directories from output directory to a timestamped archive directory
+    Archive ALL files and directories from output directory to a timestamped archive.
     
-    This function archives the complete contents of the output directory, including:
-    - All subdirectories (analytics, branches, converted, renamed, transfers, transfers_excel)
-    - All files in all subdirectories
-    - Preserves the complete directory structure
-    
-    Args:
-        output_dir: Directory to archive (e.g., "data/output")
-        archive_base_dir: Base directory for archives (default: "data/archive")
-        
     Returns:
         Dictionary with archive information including file and directory counts
     """
     if not os.path.exists(output_dir):
         raise ValueError(f"Output directory not found: {output_dir}")
     
-    # Create timestamp for archive folder name
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     archive_dir = os.path.join(archive_base_dir, f"archive_{timestamp}")
     
-    # Create archive directory
     os.makedirs(archive_base_dir, exist_ok=True)
     os.makedirs(archive_dir, exist_ok=True)
     
-    # Copy all contents from output to archive
     output_name = os.path.basename(output_dir.rstrip('/'))
     archive_output_dir = os.path.join(archive_dir, output_name)
     
@@ -44,28 +49,13 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
     logger.info("  Source: %s", output_dir)
     logger.info("  Destination: %s", archive_output_dir)
     
-    # Count files and directories before archiving
-    file_count = 0
-    dir_count = 0
-    for root, dirs, files in os.walk(output_dir):
-        dir_count += len(dirs)
-        file_count += len(files)
-    
+    file_count, dir_count = _count_directory_contents(output_dir)
     logger.info("  Found %s files in %s directories", file_count, dir_count)
     
-    # Copy complete directory tree (all files and subdirectories)
     if os.path.exists(output_dir):
-        # Remove destination if it exists (for compatibility with older Python versions)
-        if os.path.exists(archive_output_dir):
-            shutil.rmtree(archive_output_dir)
-        shutil.copytree(output_dir, archive_output_dir)
+        _copy_directory_tree(output_dir, archive_output_dir)
     
-    # Verify archive
-    archived_file_count = 0
-    archived_dir_count = 0
-    for root, dirs, files in os.walk(archive_output_dir):
-        archived_dir_count += len(dirs)
-        archived_file_count += len(files)
+    archived_file_count, archived_dir_count = _count_directory_contents(archive_output_dir)
     
     logger.info("Archive created successfully!")
     logger.info("  - Archive location: %s", archive_dir)
@@ -76,6 +66,7 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
         'file_count': archived_file_count,
         'dir_count': archived_dir_count
     }
+
 
 
 def create_zip_archive(archive_dir: str, zip_output_path: str = None) -> str:
