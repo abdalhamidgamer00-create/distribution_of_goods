@@ -16,38 +16,28 @@ from src.app.pipeline.step_9.analytics_reader import (
 logger = get_logger(__name__)
 
 
+def _process_branch_withdrawals(analytics_dir: str, other_branch: str, source_branch: str, 
+                                  total_withdrawals: dict) -> None:
+    """Process withdrawals from a single analytics file."""
+    analytics_path = get_latest_analytics_path(analytics_dir, other_branch)
+    if not analytics_path:
+        return
+    
+    df, _, _ = read_analytics_file(analytics_path)
+    if df is None:
+        return
+    
+    branch_withdrawals = extract_withdrawals_from_branch(df, source_branch)
+    for product_code, amount in branch_withdrawals.items():
+        total_withdrawals[product_code] = total_withdrawals.get(product_code, 0.0) + amount
+
+
 def calculate_total_withdrawals(analytics_dir: str, branch: str) -> dict:
-    """
-    Calculate total withdrawals FROM a specific branch across all analytics files.
-    
-    Reads all branch analytics files and sums up withdrawals
-    that were taken from the specified branch.
-    
-    Args:
-        analytics_dir: Base analytics directory
-        branch: The source branch to calculate withdrawals from
-        
-    Returns:
-        Dictionary mapping product_code -> total_withdrawn_quantity
-    """
+    """Calculate total withdrawals FROM a specific branch across all analytics files."""
     total_withdrawals = {}
-    branches = get_branches()
     
-    for other_branch in branches:
-        analytics_path = get_latest_analytics_path(analytics_dir, other_branch)
-        if not analytics_path:
-            continue
-        
-        df, _, _ = read_analytics_file(analytics_path)
-        if df is None:
-            continue
-        
-        # Extract withdrawals from our branch
-        branch_withdrawals = extract_withdrawals_from_branch(df, branch)
-        
-        # Accumulate totals
-        for product_code, amount in branch_withdrawals.items():
-            total_withdrawals[product_code] = total_withdrawals.get(product_code, 0.0) + amount
+    for other_branch in get_branches():
+        _process_branch_withdrawals(analytics_dir, other_branch, branch, total_withdrawals)
     
     return total_withdrawals
 

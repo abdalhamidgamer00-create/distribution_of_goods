@@ -36,18 +36,8 @@ def _resolve_date_range(first_line: str, start_date, end_date) -> tuple:
     return start_date, end_date, header_contained_dates
 
 
-def _validate_date_range(start_date, end_date, require_dates: bool) -> int:
-    """
-    Validate date range and calculate number of days.
-    
-    Returns:
-        Number of days in the range
-        
-    Raises:
-        ValueError: If dates are invalid or required but missing
-    """
-    has_date_info = bool(start_date and end_date)
-    
+def _raise_date_error_if_required(has_date_info: bool, require_dates: bool) -> None:
+    """Raise error if dates are required but missing."""
     if require_dates and not has_date_info:
         raise ValueError(
             "❌ خطأ: لم يتم العثور على معلومات التاريخ!\n"
@@ -55,17 +45,28 @@ def _validate_date_range(start_date, end_date, require_dates: bool) -> int:
             "1. في السطر الأول من الملف بالصيغة: من: DD/MM/YYYY HH:MM إلى: DD/MM/YYYY HH:MM\n"
             "2. أو تمريرها كمعاملات (start_date, end_date)"
         )
+
+
+def _calculate_and_validate_days(start_date, end_date) -> int:
+    """Calculate days and validate the result."""
+    num_days = calculate_days_between(start_date, end_date)
+    if num_days <= 0:
+        raise ValueError(
+            f"❌ خطأ: نطاق التاريخ غير صالح!\n"
+            f"تاريخ البداية: {start_date}\n"
+            f"تاريخ النهاية: {end_date}"
+        )
+    logger.info(f"✅ Date range: {num_days} days from {start_date} to {end_date}")
+    return num_days
+
+
+def _validate_date_range(start_date, end_date, require_dates: bool) -> int:
+    """Validate date range and calculate number of days."""
+    has_date_info = bool(start_date and end_date)
+    _raise_date_error_if_required(has_date_info, require_dates)
     
     if has_date_info:
-        num_days = calculate_days_between(start_date, end_date)
-        if num_days <= 0:
-            raise ValueError(
-                f"❌ خطأ: نطاق التاريخ غير صالح!\n"
-                f"تاريخ البداية: {start_date}\n"
-                f"تاريخ النهاية: {end_date}"
-            )
-        logger.info(f"✅ Date range: {num_days} days from {start_date} to {end_date}")
-        return num_days
+        return _calculate_and_validate_days(start_date, end_date)
     
     logger.warning(f"⚠️ No date information found. Using default: {DEFAULT_DAYS_FOR_AVG_SALES} days")
     return DEFAULT_DAYS_FOR_AVG_SALES
@@ -109,19 +110,19 @@ def _create_branch_dataframe(df: pd.DataFrame, branch: str, base_columns: list, 
     return calculate_basic_quantities(branch_df)
 
 
-def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_dates=False) -> tuple:
-    """
-    Prepare branch data from CSV file.
+def _build_branch_data_dict(df: pd.DataFrame, branches: list, base_columns: list, num_days: int) -> dict:
+    """Build dictionary of branch DataFrames."""
+    branch_data = {}
+    for branch in branches:
+        branch_data[branch] = _create_branch_dataframe(df, branch, base_columns, num_days)
+        logger.info(f"✅ Calculated avg_sales for {branch}: sales / {num_days} days")
     
-    Args:
-        csv_path: Input CSV file path
-        start_date: Optional start date
-        end_date: Optional end date
-        require_dates: If True, raise error if no dates found
-        
-    Returns:
-        Tuple of (branch_data dict, has_date_header bool, first_line str)
-    """
+    logger.info("Prepared data for %d branches, %d products", len(branches), len(branch_data[branches[0]]))
+    return branch_data
+
+
+def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_dates=False) -> tuple:
+    """Prepare branch data from CSV file."""
     first_line = _read_first_line(csv_path)
     start_date, end_date, header_contained_dates = _resolve_date_range(first_line, start_date, end_date)
     num_days = _validate_date_range(start_date, end_date, require_dates)
@@ -132,13 +133,7 @@ def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_d
     base_columns = get_base_columns()
     _validate_required_columns(df, branches, base_columns)
     
-    branch_data = {}
-    for branch in branches:
-        branch_data[branch] = _create_branch_dataframe(df, branch, base_columns, num_days)
-        logger.info(f"✅ Calculated avg_sales for {branch}: sales / {num_days} days")
-    
-    logger.info("Prepared data for %d branches, %d products", len(branches), len(branch_data[branches[0]]))
-    
+    branch_data = _build_branch_data_dict(df, branches, base_columns, num_days)
     return branch_data, header_contained_dates, first_line
 
 
