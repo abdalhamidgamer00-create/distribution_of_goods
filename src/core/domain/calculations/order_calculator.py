@@ -32,44 +32,40 @@ def get_needing_branches_order_for_product(product_index: int, branch_data: dict
     return [b[0] for b in needing_branches]
 
 
-def get_surplus_branches_order_for_product(product_index: int, branch: str, branch_data: dict, branches: list, existing_withdrawals: dict = None) -> list:
-    """
-    Get order of branches to search for surplus based on available surplus quantity
+def _calculate_single_branch_surplus(other_branch: str, product_index: int, branch_data: dict, 
+                                      existing_withdrawals: dict) -> tuple:
+    """Calculate available surplus for a single branch."""
+    original_surplus = branch_data[other_branch].iloc[product_index]['surplus_quantity']
+    already_withdrawn = existing_withdrawals.get((other_branch, product_index), 0.0)
+    available_surplus = round(max(0, original_surplus - already_withdrawn), 2)
     
-    Sorting priority:
-    1. Higher available surplus (descending)
-    2. Higher balance (descending) - richer branches give first
-    3. Lower avg_sales (ascending) - less active branches give first
-    
-    Args:
-        product_index: Product index to check
-        branch: Current branch name (excluded from search)
-        branch_data: Dictionary of all branch dataframes
-        branches: List of all branch names
-        existing_withdrawals: Dictionary of withdrawals already made (branch, product_index) -> amount
-        
-    Returns:
-        List of branch names sorted by priority
-    """
+    if available_surplus > 0:
+        balance = branch_data[other_branch].iloc[product_index]['balance']
+        avg_sales = branch_data[other_branch].iloc[product_index]['avg_sales']
+        return (other_branch, available_surplus, balance, avg_sales)
+    return None
+
+
+def _collect_branch_surpluses(product_index: int, branch: str, branch_data: dict, 
+                               branches: list, existing_withdrawals: dict) -> list:
+    """Collect surplus info for all branches except current."""
+    branch_surplus = []
+    for other_branch in branches:
+        if other_branch != branch:
+            result = _calculate_single_branch_surplus(other_branch, product_index, branch_data, existing_withdrawals)
+            if result:
+                branch_surplus.append(result)
+    return branch_surplus
+
+
+def get_surplus_branches_order_for_product(product_index: int, branch: str, branch_data: dict, 
+                                           branches: list, existing_withdrawals: dict = None) -> list:
+    """Get order of branches to search for surplus based on available surplus quantity."""
     if existing_withdrawals is None:
         existing_withdrawals = {}
     
-    branch_surplus = []
-    
-    for other_branch in branches:
-        if other_branch != branch:
-            original_surplus = branch_data[other_branch].iloc[product_index]['surplus_quantity']
-            already_withdrawn = existing_withdrawals.get((other_branch, product_index), 0.0)
-            available_surplus = round(max(0, original_surplus - already_withdrawn), 2)
-            
-            if available_surplus > 0:
-                balance = branch_data[other_branch].iloc[product_index]['balance']
-                avg_sales = branch_data[other_branch].iloc[product_index]['avg_sales']
-                branch_surplus.append((other_branch, available_surplus, balance, avg_sales))
-    
-    # Sort by: surplus (desc), balance (desc), avg_sales (asc)
+    branch_surplus = _collect_branch_surpluses(product_index, branch, branch_data, branches, existing_withdrawals)
     branch_surplus.sort(key=lambda x: (-x[1], -x[2], x[3]))
-    
     return [b[0] for b in branch_surplus]
 
 
