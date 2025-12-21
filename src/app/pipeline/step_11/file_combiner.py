@@ -183,131 +183,97 @@ def _extract_target_branch(filename: str) -> str:
     return 'unknown'
 
 
+def _sort_by_product_name(df: pd.DataFrame) -> pd.DataFrame:
+    """Sort DataFrame by product_name A to Z (case-insensitive)."""
+    if 'product_name' in df.columns:
+        return df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
+    return df
+
+
+def _process_product_type_file(df: pd.DataFrame, product_type: str, filepath: str) -> Optional[dict]:
+    """Process and save a product type file, return file info."""
+    type_df = df[df['product_type'] == product_type]
+    
+    if type_df.empty:
+        return None
+    
+    output_df = _prepare_output_columns(type_df)
+    output_df = _sort_by_product_name(output_df)
+    output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
+    
+    return {'path': filepath, 'product_type': product_type, 'count': len(output_df)}
+
+
 def generate_merged_files(df: pd.DataFrame, branch: str, csv_output_dir: str, timestamp: str = None) -> List[Dict]:
-    """
-    Generate merged files (all targets in one file per product type).
-    
-    Args:
-        df: Combined DataFrame
-        branch: Source branch name
-        csv_output_dir: Output directory
-        timestamp: Timestamp for filenames
-    
-    Returns:
-        List of file info dicts
-    """
+    """Generate merged files (all targets in one file per product type)."""
     if df is None or df.empty:
         return []
     
-    if timestamp is None:
-        timestamp = get_timestamp()
-    
-    # Create branch output directory with timestamp
+    timestamp = timestamp or get_timestamp()
     branch_output_dir = os.path.join(csv_output_dir, f"combined_transfers_from_{branch}_{timestamp}")
     os.makedirs(branch_output_dir, exist_ok=True)
     
-    files_info = []
-    
-    # Add product_type column if not present
     if 'product_type' not in df.columns:
         df = _add_product_type_column(df)
     
-    # Generate file for each product type
+    files_info = []
     for product_type in PRODUCT_TYPES:
-        type_df = df[df['product_type'] == product_type]
-        
+        filename = f"{branch}_combined_{product_type}.csv"
+        filepath = os.path.join(branch_output_dir, filename)
+        file_info = _process_product_type_file(df, product_type, filepath)
+        if file_info:
+            files_info.append(file_info)
+            logger.debug(f"Generated merged: {filename} ({file_info['count']} products)")
+    
+    return files_info
+
+
+def _process_target_branch_files(df: pd.DataFrame, target: str, branch: str, target_output_dir: str, timestamp: str) -> List[Dict]:
+    """Process all product type files for a target branch."""
+    target_df = df[df['target_branch'] == target]
+    files_info = []
+    
+    for product_type in PRODUCT_TYPES:
+        type_df = target_df[target_df['product_type'] == product_type]
         if type_df.empty:
             continue
         
-        # Select and order columns
         output_df = _prepare_output_columns(type_df)
+        output_df = _sort_by_product_name(output_df)
         
-        # Sort by product_name A to Z (case-insensitive)
-        if 'product_name' in output_df.columns:
-            output_df = output_df.sort_values(
-                'product_name', 
-                ascending=True, 
-                key=lambda x: x.str.lower()
-            )
-        
-        filename = f"{branch}_combined_{product_type}.csv"
-        filepath = os.path.join(branch_output_dir, filename)
-        
+        filename = f"transfer_from_{branch}_to_{target}_{product_type}_{timestamp}.csv"
+        filepath = os.path.join(target_output_dir, filename)
         output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
         
         files_info.append({
             'path': filepath,
             'product_type': product_type,
+            'target': target,
             'count': len(output_df),
         })
-        
-        logger.debug(f"Generated merged: {filename} ({len(output_df)} products)")
     
     return files_info
 
 
 def generate_separate_files(df: pd.DataFrame, branch: str, csv_output_dir: str, timestamp: str = None) -> List[Dict]:
-    """
-    Generate separate files (one file per target branch per product type).
-    Files are organized in subdirectories by target branch.
-    
-    Structure:
-        csv_output_dir/تحويلات_من_{branch}_{timestamp}/{target}/{filename}.csv
-    
-    Returns:
-        List of file info dicts
-    """
+    """Generate separate files (one file per target branch per product type)."""
     if df is None or df.empty:
         return []
     
-    if timestamp is None:
-        timestamp = get_timestamp()
+    timestamp = timestamp or get_timestamp()
     
-    files_info = []
-    
-    # Add product_type column if not present
     if 'product_type' not in df.columns:
         df = _add_product_type_column(df)
     
-    # Get unique target branches
-    target_branches = df['target_branch'].unique()
+    files_info = []
+    source_dir = os.path.join(csv_output_dir, f"transfers_from_{branch}_{timestamp}")
     
-    for target in target_branches:
-        # Create subdirectory for each target branch
-        source_dir = os.path.join(csv_output_dir, f"transfers_from_{branch}_{timestamp}")
+    for target in df['target_branch'].unique():
         target_output_dir = os.path.join(source_dir, f"to_{target}")
         os.makedirs(target_output_dir, exist_ok=True)
         
-        target_df = df[df['target_branch'] == target]
-        
-        for product_type in PRODUCT_TYPES:
-            type_df = target_df[target_df['product_type'] == product_type]
-            
-            if type_df.empty:
-                continue
-            
-            # Select and order columns
-            output_df = _prepare_output_columns(type_df)
-            
-            # Sort by product_name A to Z (case-insensitive)
-            if 'product_name' in output_df.columns:
-                output_df = output_df.sort_values(
-                    'product_name', 
-                    ascending=True, 
-                    key=lambda x: x.str.lower()
-                )
-            
-            filename = f"transfer_from_{branch}_to_{target}_{product_type}_{timestamp}.csv"
-            filepath = os.path.join(target_output_dir, filename)
-            
-            output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
-            
-            files_info.append({
-                'path': filepath,
-                'product_type': product_type,
-                'target': target,
-                'count': len(output_df),
-            })
+        target_files = _process_target_branch_files(df, target, branch, target_output_dir, timestamp)
+        files_info.extend(target_files)
     
     return files_info
 
