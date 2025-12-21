@@ -6,7 +6,7 @@ import math
 def calculate_available_surplus(
     branch_data: dict, 
     branch: str, 
-    idx: int, 
+    product_index: int, 
     existing_withdrawals: dict
 ) -> float:
     """
@@ -16,20 +16,20 @@ def calculate_available_surplus(
     Args:
         branch_data: Dictionary of all branch dataframes
         branch: Branch name to check
-        idx: Product index
-        existing_withdrawals: Dictionary of withdrawals already made (branch, idx) -> amount
+        product_index: Product index to check
+        existing_withdrawals: Dictionary of withdrawals already made (branch, product_index) -> amount
         
     Returns:
         Available surplus quantity (as integer)
     """
-    original_surplus = branch_data[branch].iloc[idx]['surplus_quantity']
-    already_withdrawn = existing_withdrawals.get((branch, idx), 0.0)
+    original_surplus = branch_data[branch].iloc[product_index]['surplus_quantity']
+    already_withdrawn = existing_withdrawals.get((branch, product_index), 0.0)
     return math.floor(max(0, original_surplus - already_withdrawn))
 
 
 def process_single_withdrawal(
     other_branch: str,
-    idx: int,
+    product_index: int,
     remaining_needed: float,
     target_amount: float,
     available_surplus: float,
@@ -42,7 +42,7 @@ def process_single_withdrawal(
     
     Args:
         other_branch: Branch providing surplus
-        idx: Product index
+        product_index: Product index being processed
         remaining_needed: Remaining quantity needed by requesting branch
         target_amount: Maximum target amount to take
         available_surplus: Available surplus in the providing branch
@@ -63,9 +63,10 @@ def process_single_withdrawal(
             'surplus_remaining': surplus_remaining,
             'remaining_needed': math.ceil(max(0, remaining_needed - amount_to_take))
         })
-        withdrawals[(other_branch, idx)] = withdrawals.get((other_branch, idx), 0.0) + amount_to_take
+        withdrawals[(other_branch, product_index)] = withdrawals.get((other_branch, product_index), 0.0) + amount_to_take
         remaining_needed = math.ceil(max(0, remaining_needed - amount_to_take))
         target_amount = math.ceil(max(0, target_amount - amount_to_take))
     
     return remaining_needed, target_amount
+
 

@@ -7,7 +7,7 @@ import pytest
 from src.services.splitting.processors.target_calculator import (
     calculate_target_amount,
     should_skip_transfer,
-    MAX_ALLOWED_BALANCE
+    MAXIMUM_BRANCH_BALANCE_THRESHOLD
 )
 from src.services.splitting.processors.surplus_helpers import (
     calculate_available_surplus,
@@ -31,7 +31,7 @@ class TestCalculateTargetAmount:
         # balance = 20, needed = 15, needed + balance = 35 > 30
         # Should return 30 - 20 = 10
         result = calculate_target_amount(needed=15.0, balance=20.0)
-        assert result == MAX_ALLOWED_BALANCE - 20.0  # 10
+        assert result == MAXIMUM_BRANCH_BALANCE_THRESHOLD - 20.0  # 10
     
     def test_needed_plus_balance_below_max(self):
         """Test when needed + balance <= 30"""
@@ -54,7 +54,7 @@ class TestCalculateTargetAmount:
         )
         
         # Should respect proportional allocation
-        assert result <= 10.0 or result <= MAX_ALLOWED_BALANCE - 5.0
+        assert result <= 10.0 or result <= MAXIMUM_BRANCH_BALANCE_THRESHOLD - 5.0
     
     def test_proportional_allocation_exceeds_max(self):
         """Test when proportional + balance > max"""
@@ -65,7 +65,7 @@ class TestCalculateTargetAmount:
         )
         
         # Should cap at 30 - 25 = 5
-        assert result <= MAX_ALLOWED_BALANCE - 25.0
+        assert result <= MAXIMUM_BRANCH_BALANCE_THRESHOLD - 25.0
 
 
 class TestShouldSkipTransfer:
@@ -148,7 +148,7 @@ class TestProcessSingleWithdrawal:
         
         remaining, target = process_single_withdrawal(
             other_branch='branch1',
-            idx=0,
+            product_index=0,
             remaining_needed=10.0,
             target_amount=10.0,
             available_surplus=5.0,
@@ -169,7 +169,7 @@ class TestProcessSingleWithdrawal:
         
         remaining, target = process_single_withdrawal(
             other_branch='branch1',
-            idx=0,
+            product_index=0,
             remaining_needed=10.0,
             target_amount=10.0,
             available_surplus=3.0,
@@ -188,7 +188,7 @@ class TestProcessSingleWithdrawal:
         
         remaining, target = process_single_withdrawal(
             other_branch='branch1',
-            idx=0,
+            product_index=0,
             remaining_needed=10.0,
             target_amount=10.0,
             available_surplus=3.0,
@@ -206,7 +206,7 @@ class TestProcessSingleWithdrawal:
         
         remaining, target = process_single_withdrawal(
             other_branch='branch1',
-            idx=0,
+            product_index=0,
             remaining_needed=10.0,
             target_amount=10.0,
             available_surplus=0.0,
@@ -218,3 +218,4 @@ class TestProcessSingleWithdrawal:
         assert len(withdrawals_for_row) == 0
         assert remaining == 10.0
         assert target == 10.0
+

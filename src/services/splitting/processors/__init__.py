@@ -10,7 +10,7 @@ from src.services.splitting.processors.surplus_helpers import (
 from src.services.splitting.processors.target_calculator import (
     calculate_target_amount,
     should_skip_transfer,
-    MAX_ALLOWED_BALANCE,
+    MAXIMUM_BRANCH_BALANCE_THRESHOLD,
 )
 
 __all__ = [
@@ -19,6 +19,6 @@ __all__ = [
     'process_single_withdrawal',
     'calculate_target_amount',
     'should_skip_transfer',
-    'MAX_ALLOWED_BALANCE',
+    'MAXIMUM_BRANCH_BALANCE_THRESHOLD',
 ]
 

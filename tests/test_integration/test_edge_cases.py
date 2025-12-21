@@ -311,20 +311,20 @@ class TestTargetCalculatorEdgeCases:
         """Test should_skip_transfer at exact boundary (line 46)"""
         from src.services.splitting.processors.target_calculator import (
             should_skip_transfer,
-            MAX_ALLOWED_BALANCE
+            MAXIMUM_BRANCH_BALANCE_THRESHOLD
         )
         
         # At exact max balance
-        assert should_skip_transfer(MAX_ALLOWED_BALANCE) is True
+        assert should_skip_transfer(MAXIMUM_BRANCH_BALANCE_THRESHOLD) is True
         
         # Just below max
-        assert should_skip_transfer(MAX_ALLOWED_BALANCE - 0.01) is False
+        assert should_skip_transfer(MAXIMUM_BRANCH_BALANCE_THRESHOLD - 0.01) is False
     
     def test_calculate_target_with_allocation(self):
         """Test calculate_target_amount with proportional allocation (line 59)"""
         from src.services.splitting.processors.target_calculator import (
             calculate_target_amount,
-            MAX_ALLOWED_BALANCE
+            MAXIMUM_BRANCH_BALANCE_THRESHOLD
         )
         
         # Test with allocation that exceeds max
@@ -334,7 +334,7 @@ class TestTargetCalculatorEdgeCases:
             proportional_allocation=10.0  # 25 + 10 > 30, should cap
         )
         
-        assert result <= MAX_ALLOWED_BALANCE - 25.0
+        assert result <= MAXIMUM_BRANCH_BALANCE_THRESHOLD - 25.0
 
 
 # ===================== Data Preparer Edge Cases =====================
