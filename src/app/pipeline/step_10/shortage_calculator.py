@@ -110,38 +110,40 @@ def _aggregate_branch_totals(analytics_dir: str, branches: list) -> tuple:
     return product_totals, has_date_header, first_line
 
 
+def _get_shortage_columns() -> list:
+    """Get ordered column list for shortage DataFrame."""
+    ordered_branches = get_search_order()
+    return ['code', 'product_name', 'shortage_quantity', 'total_sales'] + [f'balance_{b}' for b in ordered_branches]
+
+
+def _build_shortage_row(code: str, totals: dict, branches: list) -> dict:
+    """Build a single shortage row."""
+    shortage_quantity = int(totals['total_needed'] - totals['total_surplus'])
+    row_data = {
+        'code': code,
+        'product_name': totals['product_name'],
+        'shortage_quantity': shortage_quantity,
+        'total_sales': int(totals['total_sales'])
+    }
+    for branch in branches:
+        row_data[f'balance_{branch}'] = totals['branch_balances'].get(branch, 0)
+    return row_data
+
+
 def _build_shortage_dataframe(product_totals: dict, branches: list) -> pd.DataFrame:
     """Build DataFrame from products with shortage (needed > surplus)."""
-    shortage_data = []
+    shortage_data = [
+        _build_shortage_row(code, totals, branches)
+        for code, totals in product_totals.items()
+        if totals['total_needed'] > totals['total_surplus']
+    ]
     
-    for code, totals in product_totals.items():
-        if totals['total_needed'] <= totals['total_surplus']:
-            continue
-        
-        shortage_quantity = int(totals['total_needed'] - totals['total_surplus'])
-        row_data = {
-            'code': code,
-            'product_name': totals['product_name'],
-            'shortage_quantity': shortage_quantity,
-            'total_sales': int(totals['total_sales'])
-        }
-        
-        for branch in branches:
-            row_data[f'balance_{branch}'] = totals['branch_balances'].get(branch, 0)
-        
-        shortage_data.append(row_data)
-    
+    columns = _get_shortage_columns()
     if not shortage_data:
-        ordered_branches = get_search_order()
-        columns = ['code', 'product_name', 'shortage_quantity', 'total_sales'] + [f'balance_{b}' for b in ordered_branches]
         return pd.DataFrame(columns=columns)
     
-    result_df = pd.DataFrame(shortage_data)
-    result_df = result_df.sort_values('shortage_quantity', ascending=False)
-    
-    ordered_branches = get_search_order()
-    column_order = ['code', 'product_name', 'shortage_quantity', 'total_sales'] + [f'balance_{b}' for b in ordered_branches]
-    return result_df[column_order]
+    result_df = pd.DataFrame(shortage_data).sort_values('shortage_quantity', ascending=False)
+    return result_df[columns]
 
 
 def calculate_shortage_products(analytics_dir: str) -> tuple:

@@ -100,28 +100,16 @@ def _finalize_withdrawals(withdrawals_for_row: list, remaining_needed: float) ->
     return withdrawals_for_row, None  # None signals to use existing withdrawals
 
 
-def find_surplus_sources_for_single_product(
-    branch: str,
-    product_idx: int,
-    branch_data: dict,
-    branches: list,
-    existing_withdrawals: dict = None,
-    proportional_allocation: dict = None
-) -> tuple:
-    """Find surplus sources for a single product for a specific branch."""
-    if existing_withdrawals is None:
-        existing_withdrawals = {}
-    if proportional_allocation is None:
-        proportional_allocation = {}
-    
+def _get_product_data(branch_data: dict, branch: str, product_idx: int) -> tuple:
+    """Get needed and balance for a product."""
     branch_df = branch_data[branch]
-    needed = branch_df.iloc[product_idx]['needed_quantity']
-    balance = branch_df.iloc[product_idx]['balance']
-    
-    should_return, result_list, result_dict = _check_early_returns(needed, balance)
-    if should_return:
-        return result_list, result_dict
-    
+    return branch_df.iloc[product_idx]['needed_quantity'], branch_df.iloc[product_idx]['balance']
+
+
+def _handle_target_and_search(branch: str, product_idx: int, branch_data: dict, branches: list,
+                               existing_withdrawals: dict, proportional_allocation: dict, 
+                               needed: float, balance: float) -> tuple:
+    """Handle target calculation and surplus search."""
     allocated = _get_allocated_amount(product_idx, branch, proportional_allocation)
     target_amount = calculate_target_amount(needed, balance, allocated)
     
@@ -134,4 +122,20 @@ def find_surplus_sources_for_single_product(
     
     result_list, result_dict = _finalize_withdrawals(withdrawals_for_row, remaining_needed)
     return result_list, result_dict if result_dict is not None else withdrawals
+
+
+def find_surplus_sources_for_single_product(branch: str, product_idx: int, branch_data: dict, branches: list,
+                                            existing_withdrawals: dict = None, proportional_allocation: dict = None) -> tuple:
+    """Find surplus sources for a single product for a specific branch."""
+    existing_withdrawals = existing_withdrawals or {}
+    proportional_allocation = proportional_allocation or {}
+    
+    needed, balance = _get_product_data(branch_data, branch, product_idx)
+    
+    should_return, result_list, result_dict = _check_early_returns(needed, balance)
+    if should_return:
+        return result_list, result_dict
+    
+    return _handle_target_and_search(branch, product_idx, branch_data, branches, 
+                                      existing_withdrawals, proportional_allocation, needed, balance)
 
