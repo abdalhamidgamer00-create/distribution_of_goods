@@ -1,27 +1,23 @@
 """Branch ordering calculations"""
 
+# Weights matching proportional allocation
+BALANCE_WEIGHT = 0.60
+NEEDED_WEIGHT = 0.30
+AVG_SALES_WEIGHT = 0.10
+
+
+def _calculate_priority_score(needed: float, balance: float, avg_sales: float) -> float:
+    """Calculate weighted priority score for a branch."""
+    inverse_balance_score = 1.0 / (balance + 0.1)  # +0.1 to avoid division by zero
+    return (
+        BALANCE_WEIGHT * inverse_balance_score +
+        NEEDED_WEIGHT * needed +
+        AVG_SALES_WEIGHT * avg_sales
+    )
+
 
 def get_needing_branches_order_for_product(product_index: int, branch_data: dict, branches: list) -> list:
-    """
-    Get order of branches that need products, sorted by weighted score.
-    Uses same weights as proportional allocation for consistency:
-    - balance: 60% (lower balance = higher priority)
-    - needed: 30% (higher need = higher priority)  
-    - avg_sales: 10% (higher sales = higher priority)
-    
-    Args:
-        product_index: Product index to check
-        branch_data: Dictionary of all branch dataframes
-        branches: List of all branch names
-        
-    Returns:
-        List of branch names that need the product, sorted by priority score (descending)
-    """
-    # Weights matching proportional allocation
-    BALANCE_WEIGHT = 0.60
-    NEEDED_WEIGHT = 0.30
-    AVG_SALES_WEIGHT = 0.10
-    
+    """Get order of branches that need products, sorted by weighted priority score."""
     needing_branches = []
     
     for branch in branches:
@@ -29,23 +25,10 @@ def get_needing_branches_order_for_product(product_index: int, branch_data: dict
         if needed > 0:
             avg_sales = branch_data[branch].iloc[product_index]['avg_sales']
             balance = branch_data[branch].iloc[product_index]['balance']
-            
-            # Calculate weighted score
-            # Higher score = higher priority
-            inverse_balance_score = 1.0 / (balance + 0.1)  # +0.1 to avoid division by zero
-            
-            # Weighted score (no normalization needed for ordering)
-            score = (
-                BALANCE_WEIGHT * inverse_balance_score +
-                NEEDED_WEIGHT * needed +
-                AVG_SALES_WEIGHT * avg_sales
-            )
-            
-            needing_branches.append((branch, score, avg_sales, balance))
+            score = _calculate_priority_score(needed, balance, avg_sales)
+            needing_branches.append((branch, score))
     
-    # Sort by score (descending) - higher score = higher priority
     needing_branches.sort(key=lambda x: -x[1])
-    
     return [b[0] for b in needing_branches]
 
 

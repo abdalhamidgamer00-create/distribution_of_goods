@@ -62,49 +62,41 @@ def get_latest_analytics_path(analytics_dir: str, branch: str) -> str:
     return os.path.join(branch_dir, latest_file)
 
 
-def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:
-    """
-    Extract all withdrawals made FROM a specific branch.
-    
-    Searches the DataFrame for columns indicating withdrawals
-    and sums up quantities taken from the source branch.
-    
-    Args:
-        df: DataFrame containing analytics data
-        source_branch: The branch we're looking for withdrawals FROM
-        
-    Returns:
-        Dictionary mapping product_code -> total_withdrawn
-    """
+def _process_withdrawal_row(row, source_branch: str, withdrawal_pairs: list) -> dict:
+    """Process a single row and extract withdrawals from source branch."""
     withdrawals = {}
+    product_code = row.get('code')
     
-    # Find withdrawal columns
+    if pd.isna(product_code):
+        return withdrawals
+    
+    product_code = str(product_code)
+    
+    for available_col, surplus_col in withdrawal_pairs:
+        if pd.notna(row.get(available_col)) and str(row[available_col]).strip() == source_branch:
+            if pd.notna(row.get(surplus_col)):
+                try:
+                    amount = float(row[surplus_col])
+                    withdrawals[product_code] = withdrawals.get(product_code, 0.0) + amount
+                except (ValueError, TypeError):
+                    pass
+    
+    return withdrawals
+
+
+def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:
+    """Extract all withdrawals made FROM a specific branch."""
     surplus_from_cols = [col for col in df.columns if col.startswith('surplus_from_branch_')]
     available_branch_cols = [col for col in df.columns if col.startswith('available_branch_')]
     
     min_cols = min(len(surplus_from_cols), len(available_branch_cols))
+    withdrawal_pairs = list(zip(available_branch_cols[:min_cols], surplus_from_cols[:min_cols]))
     
+    all_withdrawals = {}
     for _, row in df.iterrows():
-        product_code = row.get('code')
-        if pd.isna(product_code):
-            continue
-        
-        product_code = str(product_code)
-        
-        # Check each withdrawal column
-        for i in range(min_cols):
-            available_col = available_branch_cols[i]
-            surplus_col = surplus_from_cols[i]
-            
-            # Check if this withdrawal was from our source branch
-            if pd.notna(row.get(available_col)):
-                if str(row[available_col]).strip() == source_branch:
-                    if pd.notna(row.get(surplus_col)):
-                        try:
-                            amount = float(row[surplus_col])
-                            withdrawals[product_code] = withdrawals.get(product_code, 0.0) + amount
-                        except (ValueError, TypeError):
-                            pass
+        row_withdrawals = _process_withdrawal_row(row, source_branch, withdrawal_pairs)
+        for code, amount in row_withdrawals.items():
+            all_withdrawals[code] = all_withdrawals.get(code, 0.0) + amount
     
-    return withdrawals
+    return all_withdrawals
 
