@@ -32,42 +32,33 @@ CSV_OUTPUT_DIR = os.path.join("data", "output", "remaining_surplus", "csv")
 EXCEL_OUTPUT_DIR = os.path.join("data", "output", "remaining_surplus", "excel")
 
 
+def _process_all_branches(branches: list) -> dict:
+    """Process all branches and collect generated files."""
+    all_branch_files = {}
+    
+    for branch in branches:
+        branch_files = _process_branch(branch)
+        if branch_files:
+            all_branch_files[branch] = branch_files
+    
+    return all_branch_files
+
+
 def step_9_generate_remaining_surplus(use_latest_file: bool = None) -> bool:
-    """
-    Step 9: Generate remaining surplus files for each branch.
-    
-    Creates CSV and Excel files containing products with remaining surplus
-    after distribution to all needing branches.
-    
-    Args:
-        use_latest_file: Not used, kept for consistency with other handlers
-        
-    Returns:
-        True if successful, False otherwise
-    """
+    """Step 9: Generate remaining surplus files for each branch."""
     branches = get_branches()
     
-    # Validate analytics directories exist
     if not _validate_analytics_directories(branches):
         return False
     
     try:
-        all_branch_files = {}
-        
-        # Process each branch
-        for branch in branches:
-            branch_files = _process_branch(branch)
-            if branch_files:
-                all_branch_files[branch] = branch_files
+        all_branch_files = _process_all_branches(branches)
         
         if not all_branch_files:
             logger.warning("No remaining surplus files were created")
             return False
         
-        # Convert to Excel
         _convert_all_to_excel(all_branch_files)
-        
-        # Log summary
         _log_summary(all_branch_files)
         
         return True

@@ -26,16 +26,8 @@ def _copy_directory_tree(source: str, destination: str) -> None:
     shutil.copytree(source, destination)
 
 
-def archive_output_directory(output_dir: str, archive_base_dir: str = "data/archive") -> dict:
-    """
-    Archive ALL files and directories from output directory to a timestamped archive.
-    
-    Returns:
-        Dictionary with archive information including file and directory counts
-    """
-    if not os.path.exists(output_dir):
-        raise ValueError(f"Output directory not found: {output_dir}")
-    
+def _prepare_archive_directory(output_dir: str, archive_base_dir: str) -> tuple:
+    """Prepare archive directory and paths."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     archive_dir = os.path.join(archive_base_dir, f"archive_{timestamp}")
     
@@ -44,6 +36,29 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
     
     output_name = os.path.basename(output_dir.rstrip('/'))
     archive_output_dir = os.path.join(archive_dir, output_name)
+    
+    return archive_dir, archive_output_dir
+
+
+def _log_archive_result(archive_dir: str, file_count: int, dir_count: int) -> dict:
+    """Log archive results and return info dict."""
+    logger.info("Archive created successfully!")
+    logger.info("  - Archive location: %s", archive_dir)
+    logger.info("  - Archived %s files in %s directories", file_count, dir_count)
+    
+    return {
+        'archive_dir': archive_dir,
+        'file_count': file_count,
+        'dir_count': dir_count
+    }
+
+
+def archive_output_directory(output_dir: str, archive_base_dir: str = "data/archive") -> dict:
+    """Archive ALL files and directories from output directory to a timestamped archive."""
+    if not os.path.exists(output_dir):
+        raise ValueError(f"Output directory not found: {output_dir}")
+    
+    archive_dir, archive_output_dir = _prepare_archive_directory(output_dir, archive_base_dir)
     
     logger.info("Archiving complete contents of %s...", output_dir)
     logger.info("  Source: %s", output_dir)
@@ -57,15 +72,7 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
     
     archived_file_count, archived_dir_count = _count_directory_contents(archive_output_dir)
     
-    logger.info("Archive created successfully!")
-    logger.info("  - Archive location: %s", archive_dir)
-    logger.info("  - Archived %s files in %s directories", archived_file_count, archived_dir_count)
-    
-    return {
-        'archive_dir': archive_dir,
-        'file_count': archived_file_count,
-        'dir_count': archived_dir_count
-    }
+    return _log_archive_result(archive_dir, archived_file_count, archived_dir_count)
 
 
 
