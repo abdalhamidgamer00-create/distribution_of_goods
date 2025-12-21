@@ -42,32 +42,23 @@ def convert_split_csv_to_excel(csv_file_path: str, excel_output_dir: str, has_da
         return None
 
 
-def convert_all_split_files_to_excel(transfers_base_dir: str, excel_output_dir: str, has_date_header: bool = False, first_line: str = "") -> int:
-    """
-    Convert all split CSV files to Excel format
-    
-    Args:
-        transfers_base_dir: Base directory containing split CSV files
-        excel_output_dir: Base directory for Excel output files
-        has_date_header: Whether CSV files have date headers
-        first_line: First line (date header) if has_date_header is True
-        
-    Returns:
-        Number of Excel files successfully created
-    """
+def _process_split_files(transfers_base_dir: str, excel_output_dir: str, has_date_header: bool, 
+                          first_line: str, categories: list) -> int:
+    """Process all split CSV files and convert to Excel."""
     count = 0
-    categories = get_product_categories()
-    
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
             if file.endswith('.csv'):
-                # Only process split category files (files ending with category name)
                 is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories)
                 if is_split_file:
                     csv_file_path = os.path.join(root, file)
                     excel_path = convert_split_csv_to_excel(csv_file_path, excel_output_dir, has_date_header, first_line)
                     if excel_path:
                         count += 1
-    
     return count
+
+
+def convert_all_split_files_to_excel(transfers_base_dir: str, excel_output_dir: str, has_date_header: bool = False, first_line: str = "") -> int:
+    """Convert all split CSV files to Excel format."""
+    return _process_split_files(transfers_base_dir, excel_output_dir, has_date_header, first_line, get_product_categories())
 

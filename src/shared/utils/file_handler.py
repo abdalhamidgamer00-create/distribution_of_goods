@@ -49,20 +49,8 @@ def get_csv_files(directory: str) -> list:
     return sorted(files)
 
 
-def get_latest_file(directory: str, extension: str = None) -> str:
-    """
-    Get latest file in directory by modification time
-    
-    Args:
-        directory: Directory path
-        extension: File extension filter (e.g., '.csv', '.xlsx') or None for all files
-        
-    Returns:
-        Latest filename or None if no files found
-    """
-    if not os.path.exists(directory):
-        return None
-    
+def _find_latest_in_directory(directory: str, extension: str) -> str:
+    """Find the latest file by modification time in directory."""
     latest_file = None
     latest_time = 0
     
@@ -74,6 +62,12 @@ def get_latest_file(directory: str, extension: str = None) -> str:
                 if mtime > latest_time:
                     latest_time = mtime
                     latest_file = filename
-    
     return latest_file
+
+
+def get_latest_file(directory: str, extension: str = None) -> str:
+    """Get latest file in directory by modification time."""
+    if not os.path.exists(directory):
+        return None
+    return _find_latest_in_directory(directory, extension)
 
