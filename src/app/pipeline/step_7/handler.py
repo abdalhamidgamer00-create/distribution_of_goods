@@ -76,37 +76,49 @@ def _log_transfer_summary(transfer_files: dict, transfers_base_dir: str) -> None
     logger.info("\nTransfer files saved to: %s", transfers_base_dir)
 
 
+def _validate_and_get_files(analytics_dir: str, branches: list) -> dict:
+    """Validate and get analytics files."""
+    if not _validate_analytics_directories(analytics_dir, branches):
+        return None
+    
+    analytics_files = _get_analytics_files(analytics_dir, branches)
+    if not analytics_files:
+        logger.error("No analytics files found in %s", analytics_dir)
+        logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
+        return None
+    return analytics_files
+
+
+def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
+    """Execute the transfer generation process."""
+    has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
+    
+    logger.info("Generating transfer files...")
+    logger.info("-" * 50)
+    logger.info("Using latest analytics files for each target branch...")
+    
+    transfer_files = generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
+    
+    if not transfer_files:
+        logger.warning("No transfers found between branches")
+        return False
+    
+    _log_transfer_summary(transfer_files, transfers_base_dir)
+    return True
+
+
 def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
     """Step 7: Generate transfer CSV files between branches."""
     analytics_dir = os.path.join("data", "output", "branches", "analytics")
     transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
     branches = get_branches()
     
-    if not _validate_analytics_directories(analytics_dir, branches):
-        return False
-    
-    analytics_files = _get_analytics_files(analytics_dir, branches)
-    if not analytics_files:
-        logger.error("No analytics files found in %s", analytics_dir)
-        logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
+    analytics_files = _validate_and_get_files(analytics_dir, branches)
+    if analytics_files is None:
         return False
     
     try:
-        has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
-        
-        logger.info("Generating transfer files...")
-        logger.info("-" * 50)
-        logger.info("Using latest analytics files for each target branch...")
-        
-        transfer_files = generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
-        
-        if not transfer_files:
-            logger.warning("No transfers found between branches")
-            return False
-        
-        _log_transfer_summary(transfer_files, transfers_base_dir)
-        return True
-        
+        return _execute_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
     except ValueError as e:
         logger.error("Error: %s", e)
         return False

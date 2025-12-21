@@ -105,40 +105,38 @@ def split_transfer_file_by_type(
 
 
 
-def split_all_transfer_files(transfers_base_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
-    """
-    Split all transfer files by product type
+def _is_already_split_file(filename: str, categories: list) -> bool:
+    """Check if file is already a split category file."""
+    return any(filename.endswith(f'_{cat}.csv') for cat in categories) or \
+           any(filename == f'{cat}.csv' for cat in categories)
+
+
+def _process_transfer_file(transfer_file_path: str, transfers_base_dir: str, has_date_header: bool, 
+                            first_line: str, all_output_files: dict) -> None:
+    """Process a single transfer file and add to results."""
+    relative_path = os.path.relpath(transfer_file_path, transfers_base_dir)
+    output_dir = os.path.dirname(os.path.join(transfers_base_dir, relative_path))
     
-    Args:
-        transfers_base_dir: Base directory containing transfer files
-        has_date_header: Whether to include date header in output files
-        first_line: First line (date header) to write if has_date_header is True
-        
-    Returns:
-        Dictionary mapping (source_branch, target_branch, category) to output file path
-    """
+    split_files = split_transfer_file_by_type(transfer_file_path, output_dir, has_date_header, first_line)
+    base_filename = os.path.splitext(os.path.basename(transfer_file_path))[0]
+    
+    for category, file_path in split_files.items():
+        source_target = os.path.basename(os.path.dirname(transfer_file_path))
+        all_output_files[(source_target, base_filename, category)] = file_path
+
+
+def split_all_transfer_files(transfers_base_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
+    """Split all transfer files by product type."""
     all_output_files = {}
     categories = get_product_categories()
     
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
-            if file.endswith('.csv'):
-                # Skip files that are already split (category files with timestamp pattern or old naming)
-                is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories) or any(file == f'{cat}.csv' for cat in categories)
-                if not is_split_file:
-                    transfer_file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(transfer_file_path, transfers_base_dir)
-                    output_dir = os.path.dirname(os.path.join(transfers_base_dir, relative_path))
-                    
-                    split_files = split_transfer_file_by_type(transfer_file_path, output_dir, has_date_header, first_line)
-                    
-                    # Use base filename (without extension) to make key unique for each transfer file
-                    base_filename = os.path.splitext(os.path.basename(transfer_file_path))[0]
-                    
-                    for category, file_path in split_files.items():
-                        source_target = os.path.basename(os.path.dirname(transfer_file_path))
-                        key = (source_target, base_filename, category)
-                        all_output_files[key] = file_path
+            if file.endswith('.csv') and not _is_already_split_file(file, categories):
+                _process_transfer_file(os.path.join(root, file), transfers_base_dir, 
+                                       has_date_header, first_line, all_output_files)
+    
+    return all_output_files
     
     return all_output_files
 
