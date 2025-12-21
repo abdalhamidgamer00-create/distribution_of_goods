@@ -158,13 +158,22 @@ def _check_unknown_columns(actual_headers: list, required_headers: list, optiona
     return [h for h in actual_headers if h and h not in all_known]
 
 
-def validate_csv_headers(csv_path: str) -> tuple:
-    """
-    Validate CSV file column headers (row 2).
+def _build_validation_result(errors: list, warnings: list, required_count: int) -> tuple:
+    """Build validation result tuple."""
+    is_valid = len(errors) == 0
     
-    Returns:
-        Tuple of (is_valid, errors_list, message)
-    """
+    if is_valid:
+        message = f"✅ Column headers validation successful: All {required_count} required columns present"
+        if warnings:
+            message += f"\n⚠️ {len(warnings)} warning(s): " + "; ".join(warnings)
+    else:
+        message = f"❌ Column headers validation failed: {len(errors)} error(s) found"
+    
+    return is_valid, errors, message
+
+
+def validate_csv_headers(csv_path: str) -> tuple:
+    """Validate CSV file column headers (row 2)."""
     required_headers = _get_required_headers()
     optional_headers = _get_optional_headers()
     errors = []
@@ -178,31 +187,19 @@ def validate_csv_headers(csv_path: str) -> tuple:
         
         actual_headers = [col.strip() for col in second_line.split(',')]
         
-        # Check for required columns
         missing_required = _check_missing_required(actual_headers, required_headers)
         if missing_required:
             errors.append(f"Missing required columns: {', '.join(missing_required)}")
         
-        # Check for unknown columns
         unknown_columns = _check_unknown_columns(actual_headers, required_headers, optional_headers)
         if unknown_columns:
             warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
         
-        # Check for optional columns
         present_optional = [col for col in optional_headers if col in actual_headers]
         if present_optional:
             warnings.append(f"Optional columns detected (will be recalculated): {len(present_optional)} columns")
         
-        is_valid = len(errors) == 0
-        
-        if is_valid:
-            message = f"✅ Column headers validation successful: All {len(required_headers)} required columns present"
-            if warnings:
-                message += f"\n⚠️ {len(warnings)} warning(s): " + "; ".join(warnings)
-        else:
-            message = f"❌ Column headers validation failed: {len(errors)} error(s) found"
-        
-        return is_valid, errors, message
+        return _build_validation_result(errors, warnings, len(required_headers))
         
     except Exception as e:
         return False, [f"Error reading file: {e}"], f"Error reading file: {e}"

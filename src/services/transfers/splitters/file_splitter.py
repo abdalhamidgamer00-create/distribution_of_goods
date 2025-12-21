@@ -57,24 +57,38 @@ def _save_category_file(
     return category_path
 
 
+def _prepare_transfer_dataframe(transfer_file_path: str) -> pd.DataFrame:
+    """Load and prepare transfer DataFrame with product types."""
+    df = pd.read_csv(transfer_file_path, encoding='utf-8-sig')
+    ensure_columns(df, ["code", "product_name", "quantity_to_transfer"], 
+                  context=f"transfer file {transfer_file_path}")
+    df['product_type'] = df['product_name'].apply(classify_product_type)
+    return df
+
+
+def _process_categories(df: pd.DataFrame, file_folder: str, base_folder_name: str, 
+                        timestamp: str, has_date_header: bool, first_line: str) -> dict:
+    """Process each category and save to files."""
+    output_files = {}
+    for category in get_product_categories():
+        category_df = df[df['product_type'] == category].copy()
+        if len(category_df) > 0:
+            output_files[category] = _save_category_file(
+                category_df, file_folder, base_folder_name, category,
+                timestamp, has_date_header, first_line
+            )
+    return output_files
+
+
 def split_transfer_file_by_type(
     transfer_file_path: str,
     output_dir: str,
     has_date_header: bool = False,
     first_line: str = ""
 ) -> dict:
-    """
-    Split a transfer CSV file into multiple files by product type.
-    
-    Returns:
-        Dictionary mapping product type to output file path
-    """
+    """Split a transfer CSV file into multiple files by product type."""
     try:
-        df = pd.read_csv(transfer_file_path, encoding='utf-8-sig')
-        ensure_columns(df, ["code", "product_name", "quantity_to_transfer"], 
-                      context=f"transfer file {transfer_file_path}")
-        
-        df['product_type'] = df['product_name'].apply(classify_product_type)
+        df = _prepare_transfer_dataframe(transfer_file_path)
         
         base_name = os.path.splitext(os.path.basename(transfer_file_path))[0]
         base_folder_name = _get_folder_name(transfer_file_path, base_name)
@@ -83,16 +97,7 @@ def split_transfer_file_by_type(
         file_folder = os.path.join(output_dir, base_name)
         os.makedirs(file_folder, exist_ok=True)
         
-        output_files = {}
-        for category in get_product_categories():
-            category_df = df[df['product_type'] == category].copy()
-            if len(category_df) > 0:
-                output_files[category] = _save_category_file(
-                    category_df, file_folder, base_folder_name, category,
-                    timestamp, has_date_header, first_line
-                )
-        
-        return output_files
+        return _process_categories(df, file_folder, base_folder_name, timestamp, has_date_header, first_line)
     
     except Exception as e:
         logger.exception("Error splitting file %s: %s", transfer_file_path, e)
