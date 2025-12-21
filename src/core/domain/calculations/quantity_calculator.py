@@ -32,33 +32,21 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
     return branch_df
 
 
+def _calculate_branch_remaining(branch_df: pd.DataFrame, branch: str, withdrawals: dict) -> list:
+    """Calculate surplus remaining for a single branch."""
+    surplus_remaining_list = []
+    for idx in range(len(branch_df)):
+        original_surplus = branch_df.iloc[idx]['surplus_quantity']
+        withdrawn = withdrawals.get((branch, idx), 0.0)
+        remaining = math.floor(max(0, original_surplus - withdrawn))
+        surplus_remaining_list.append(remaining)
+    return surplus_remaining_list
+
+
 def calculate_surplus_remaining(branches: list, branch_data: dict, withdrawals: dict) -> dict:
-    """
-    Calculate surplus_remaining for each branch based on withdrawals
-    Using floor to ensure whole numbers
-    
-    Args:
-        branches: List of branch names
-        branch_data: Dictionary of all branch dataframes
-        withdrawals: Dictionary mapping (branch, idx) to amount withdrawn
-        
-    Returns:
-        Dictionary mapping branch name to list of surplus_remaining values (all as integers)
-    """
-    surplus_remaining_dict = {}
-    
-    for branch in branches:
-        branch_df = branch_data[branch]
-        surplus_remaining_list = []
-        
-        for idx in range(len(branch_df)):
-            original_surplus = branch_df.iloc[idx]['surplus_quantity']
-            withdrawn = withdrawals.get((branch, idx), 0.0)
-            # استخدام floor لتقريب للأسفل
-            remaining = math.floor(max(0, original_surplus - withdrawn))
-            surplus_remaining_list.append(remaining)
-        
-        surplus_remaining_dict[branch] = surplus_remaining_list
-    
-    return surplus_remaining_dict
+    """Calculate surplus_remaining for each branch based on withdrawals."""
+    return {
+        branch: _calculate_branch_remaining(branch_data[branch], branch, withdrawals)
+        for branch in branches
+    }
 
