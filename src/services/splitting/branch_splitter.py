@@ -150,7 +150,7 @@ def split_csv_by_branches(csv_path: str, output_base_dir: str, base_filename: st
             all_withdrawals=all_withdrawals,
             max_withdrawals=max_withdrawals,
             num_products=num_products,
-            balance_limit=15.0
+            balance_limit=30.0
         )
         timing_stats["second_round_time"] = second_round_time
         
