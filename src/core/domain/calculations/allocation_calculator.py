@@ -63,12 +63,27 @@ def _allocate_by_proportions(
     return {branch: int(amount) for branch, amount in allocated.items()}
 
 
-def _redistribute_allocations(
-    allocated_dict: dict,
-    needed_dict: dict,
-    branch_data: dict,
-    product_index: int
-) -> dict:
+def _get_sorted_zero_branches(branches_with_zero: list, branch_data: dict, product_index: int) -> list:
+    """Sort zero-allocation branches by avg_sales (desc) then balance (asc)."""
+    scored = [(b, branch_data[b].iloc[product_index]['avg_sales'], branch_data[b].iloc[product_index]['balance']) 
+              for b in branches_with_zero]
+    scored.sort(key=lambda x: (-x[1], x[2]))
+    return [b[0] for b in scored]
+
+
+def _perform_redistribution(allocated_dict: dict, branches_with_more: list, branches_with_zero: list) -> dict:
+    """Redistribute from branches with >1 to branches with 0."""
+    for donor_branch in branches_with_more:
+        if not branches_with_zero:
+            break
+        allocated_dict[donor_branch] -= 1
+        recipient = branches_with_zero.pop(0)
+        allocated_dict[recipient] = 1
+    return allocated_dict
+
+
+def _redistribute_allocations(allocated_dict: dict, needed_dict: dict, 
+                              branch_data: dict, product_index: int) -> dict:
     """Redistribute from branches with >1 to branches with 0."""
     branches_with_more = [b for b, amt in allocated_dict.items() if amt > 1 and needed_dict.get(b, 0) > 0]
     branches_with_zero = [b for b, amt in allocated_dict.items() if amt == 0 and needed_dict.get(b, 0) > 0]
@@ -76,18 +91,8 @@ def _redistribute_allocations(
     if not branches_with_zero:
         return allocated_dict
     
-    # Sort zero-allocation branches by avg_sales (desc) then balance (asc)
-    scored = [(b, branch_data[b].iloc[product_index]['avg_sales'], branch_data[b].iloc[product_index]['balance']) 
-              for b in branches_with_zero]
-    scored.sort(key=lambda x: (-x[1], x[2]))
-    branches_with_zero = [b[0] for b in scored]
-    
-    for donor_branch in branches_with_more:
-        if not branches_with_zero:
-            break
-        allocated_dict[donor_branch] -= 1
-        recipient = branches_with_zero.pop(0)
-        allocated_dict[recipient] = 1
+    sorted_zeros = _get_sorted_zero_branches(branches_with_zero, branch_data, product_index)
+    return _perform_redistribution(allocated_dict, branches_with_more, sorted_zeros)
     
     return allocated_dict
 
