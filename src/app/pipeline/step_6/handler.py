@@ -50,36 +50,43 @@ def _log_split_results(output_files: dict, timing_stats: dict, total_duration: f
                    timing_stats.get("num_products"), len(output_files))
 
 
-def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
-    """Step 6: Split CSV file by branches."""
-    renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    branches_dir = os.path.join("data", "output", "branches", "files")
-    analytics_dir = os.path.join("data", "output", "branches", "analytics")
-    
+def _setup_and_validate(renamed_dir: str) -> tuple:
+    """Setup directories and validate input files."""
     csv_files = get_csv_files(renamed_dir)
     if not csv_files:
         logger.error("No CSV files found in %s", renamed_dir)
+        return None, None, None
+    return csv_files, os.path.join("data", "output", "branches", "files"), os.path.join("data", "output", "branches", "analytics")
+
+
+def _execute_split(csv_path: str, csv_file: str, branches_dir: str, analytics_dir: str) -> bool:
+    """Execute the split operation."""
+    branches = get_branches()
+    _ensure_branch_directories(branches, branches_dir, analytics_dir)
+    
+    base_filename = _generate_base_filename(csv_file)
+    logger.info("Splitting %s by branches...", csv_file)
+    logger.info("-" * 50)
+    
+    total_start = perf_counter()
+    output_files, timing_stats = split_csv_by_branches(csv_path, branches_dir, base_filename, analytics_dir)
+    total_duration = perf_counter() - total_start
+    
+    _log_split_results(output_files, timing_stats, total_duration, branches_dir, analytics_dir)
+    return True
+
+
+def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
+    """Step 6: Split CSV file by branches."""
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    csv_files, branches_dir, analytics_dir = _setup_and_validate(renamed_dir)
+    if csv_files is None:
         return False
     
     try:
         csv_file = select_csv_file(renamed_dir, csv_files, use_latest_file)
         csv_path = get_file_path(csv_file, renamed_dir)
-        
-        branches = get_branches()
-        _ensure_branch_directories(branches, branches_dir, analytics_dir)
-        
-        base_filename = _generate_base_filename(csv_file)
-        
-        logger.info("Splitting %s by branches...", csv_file)
-        logger.info("-" * 50)
-        total_start = perf_counter()
-        
-        output_files, timing_stats = split_csv_by_branches(csv_path, branches_dir, base_filename, analytics_dir)
-        total_duration = perf_counter() - total_start
-        
-        _log_split_results(output_files, timing_stats, total_duration, branches_dir, analytics_dir)
-        return True
-        
+        return _execute_split(csv_path, csv_file, branches_dir, analytics_dir)
     except ValueError as e:
         logger.error("Error: %s", e)
         return False

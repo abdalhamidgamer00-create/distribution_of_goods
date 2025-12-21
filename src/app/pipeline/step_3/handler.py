@@ -53,6 +53,26 @@ def _remove_first_row(csv_path: str, csv_file: str) -> bool:
         return False
 
 
+def _perform_validation(csv_path: str) -> tuple:
+    """Perform date and headers validation."""
+    is_valid_date, start_date, end_date, date_message = validate_csv_header(csv_path)
+    _log_date_validation(is_valid_date, start_date, end_date, date_message)
+    
+    is_valid_headers, errors, headers_message = validate_csv_headers(csv_path)
+    _log_headers_validation(is_valid_headers, errors, headers_message)
+    
+    return is_valid_date and is_valid_headers
+
+
+def _handle_post_validation(overall_valid: bool, csv_path: str, csv_file: str) -> bool:
+    """Handle post-validation actions."""
+    _log_overall_result(overall_valid)
+    
+    if overall_valid and not _remove_first_row(csv_path, csv_file):
+        return False
+    return overall_valid
+
+
 def step_3_validate_data(use_latest_file: bool = None):
     """Step 3: Validate CSV data and date range."""
     output_dir = os.path.join("data", "output", "converted", "csv")
@@ -69,19 +89,8 @@ def step_3_validate_data(use_latest_file: bool = None):
         logger.info("Validating %s...", csv_file)
         logger.info("-" * 50)
         
-        is_valid_date, start_date, end_date, date_message = validate_csv_header(csv_path)
-        _log_date_validation(is_valid_date, start_date, end_date, date_message)
-        
-        is_valid_headers, errors, headers_message = validate_csv_headers(csv_path)
-        _log_headers_validation(is_valid_headers, errors, headers_message)
-        
-        overall_valid = is_valid_date and is_valid_headers
-        _log_overall_result(overall_valid)
-        
-        if overall_valid and not _remove_first_row(csv_path, csv_file):
-            return False
-        
-        return overall_valid
+        overall_valid = _perform_validation(csv_path)
+        return _handle_post_validation(overall_valid, csv_path, csv_file)
         
     except ValueError:
         logger.error("Invalid input! Please enter a number.")

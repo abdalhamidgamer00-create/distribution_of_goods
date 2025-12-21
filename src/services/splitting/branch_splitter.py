@@ -47,40 +47,46 @@ def _create_empty_withdrawal_record() -> dict:
     }
 
 
-def _process_all_products(
-    branches: list,
-    branch_data: dict,
-    analytics_data: dict,
-    proportional_allocation: dict,
-    num_products: int
-) -> tuple:
+def _update_analytics_data(branch: str, product_idx: int, withdrawals_list: list, 
+                            analytics_data: dict, max_withdrawals: int) -> int:
+    """Update analytics data with new withdrawals."""
+    existing_withdrawals_list = analytics_data[branch][1]
+    while len(existing_withdrawals_list) < product_idx:
+        existing_withdrawals_list.append([_create_empty_withdrawal_record()])
+    existing_withdrawals_list.append(withdrawals_list)
+    return max(max_withdrawals, len(withdrawals_list))
+
+
+def _process_single_product_for_branch(branch: str, product_idx: int, branch_data: dict, branches: list,
+                                        analytics_data: dict, all_withdrawals: dict, 
+                                        proportional_allocation: dict, max_withdrawals: int) -> int:
+    """Process a single product for a single branch."""
+    branch_df = analytics_data[branch][0]
+    if branch_df.iloc[product_idx]['needed_quantity'] <= 0:
+        return max_withdrawals
+    
+    withdrawals_list, withdrawals = find_surplus_sources_for_single_product(
+        branch, product_idx, branch_data, branches, all_withdrawals, proportional_allocation
+    )
+    
+    for key, amount in withdrawals.items():
+        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
+    
+    return _update_analytics_data(branch, product_idx, withdrawals_list, analytics_data, max_withdrawals)
+
+
+def _process_all_products(branches: list, branch_data: dict, analytics_data: dict,
+                          proportional_allocation: dict, num_products: int) -> tuple:
     """Process all products and return withdrawals data."""
-    all_withdrawals = {}
-    max_withdrawals = 0
+    all_withdrawals, max_withdrawals = {}, 0
     
     for product_idx in range(num_products):
         needing_branches = get_needing_branches_order_for_product(product_idx, branch_data, branches)
-        
         for branch in needing_branches:
-            branch_df = analytics_data[branch][0]
-            needed = branch_df.iloc[product_idx]['needed_quantity']
-            
-            if needed <= 0:
-                continue
-            
-            withdrawals_list, withdrawals = find_surplus_sources_for_single_product(
-                branch, product_idx, branch_data, branches, all_withdrawals, proportional_allocation
+            max_withdrawals = _process_single_product_for_branch(
+                branch, product_idx, branch_data, branches, analytics_data,
+                all_withdrawals, proportional_allocation, max_withdrawals
             )
-            
-            for key, amount in withdrawals.items():
-                all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
-            
-            existing_withdrawals_list = analytics_data[branch][1]
-            while len(existing_withdrawals_list) < product_idx:
-                existing_withdrawals_list.append([_create_empty_withdrawal_record()])
-            existing_withdrawals_list.append(withdrawals_list)
-            
-            max_withdrawals = max(max_withdrawals, len(withdrawals_list))
     
     return all_withdrawals, max_withdrawals
 

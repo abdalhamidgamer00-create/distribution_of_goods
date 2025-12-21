@@ -20,36 +20,45 @@ def _generate_renamed_filename(csv_file: str) -> str:
     return f"{base_name_clean}_renamed_{date_str}.csv"
 
 
+def _get_input_files(output_dir: str) -> list:
+    """Get input CSV files and validate."""
+    csv_files = get_csv_files(output_dir)
+    if not csv_files:
+        logger.error("No CSV files found in %s", output_dir)
+        return None
+    return csv_files
+
+
+def _execute_rename(csv_path: str, csv_file: str, renamed_dir: str) -> bool:
+    """Execute the rename operation."""
+    output_file = _generate_renamed_filename(csv_file)
+    output_path = get_file_path(output_file, renamed_dir)
+    
+    logger.info("Renaming columns in %s...", csv_file)
+    logger.info("-" * 50)
+    
+    rename_csv_columns(csv_path, output_path)
+    
+    logger.info("Columns renamed successfully!")
+    logger.info("Output file: %s", output_file)
+    logger.info("Saved to: %s", renamed_dir)
+    return True
+
+
 def step_5_rename_columns(use_latest_file: bool = None) -> bool:
     """Step 5: Rename CSV columns from Arabic to English."""
     output_dir = os.path.join("data", "output", "converted", "csv")
     renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    
     ensure_directory_exists(renamed_dir)
     
-    csv_files = get_csv_files(output_dir)
-    if not csv_files:
-        logger.error("No CSV files found in %s", output_dir)
+    csv_files = _get_input_files(output_dir)
+    if csv_files is None:
         return False
     
     try:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
         csv_path = get_file_path(csv_file, output_dir)
-        
-        output_file = _generate_renamed_filename(csv_file)
-        output_path = get_file_path(output_file, renamed_dir)
-        
-        logger.info("Renaming columns in %s...", csv_file)
-        logger.info("-" * 50)
-        
-        rename_csv_columns(csv_path, output_path)
-        
-        logger.info("Columns renamed successfully!")
-        logger.info("Output file: %s", output_file)
-        logger.info("Saved to: %s", renamed_dir)
-        
-        return True
-        
+        return _execute_rename(csv_path, csv_file, renamed_dir)
     except ValueError as e:
         logger.error("Error: %s", e)
         return False
