@@ -31,98 +31,92 @@ OUTPUT_SEPARATE_CSV = os.path.join("data", "output", "combined_transfers", "sepa
 OUTPUT_SEPARATE_EXCEL = os.path.join("data", "output", "combined_transfers", "separate", "excel")
 
 
+def _generate_merged_output(combined_data, branch: str, timestamp: str) -> int:
+    """Generate merged files (all targets in one file) and convert to Excel."""
+    merged_files = generate_merged_files(
+        df=combined_data,
+        branch=branch,
+        csv_output_dir=OUTPUT_MERGED_CSV,
+        timestamp=timestamp,
+    )
+    
+    if merged_files:
+        convert_to_excel_with_formatting(
+            csv_files=merged_files,
+            excel_output_dir=OUTPUT_MERGED_EXCEL,
+        )
+        return len(merged_files)
+    return 0
+
+
+def _generate_separate_output(combined_data, branch: str, timestamp: str) -> int:
+    """Generate separate files (per target branch) and convert to Excel."""
+    separate_files = generate_separate_files(
+        df=combined_data,
+        branch=branch,
+        csv_output_dir=OUTPUT_SEPARATE_CSV,
+        timestamp=timestamp,
+    )
+    
+    if separate_files:
+        convert_to_excel_with_formatting(
+            csv_files=separate_files,
+            excel_output_dir=OUTPUT_SEPARATE_EXCEL,
+        )
+        return len(separate_files)
+    return 0
+
+
+def _process_single_branch(branch: str, timestamp: str) -> tuple:
+    """Process a single branch and return (merged_count, separate_count)."""
+    logger.info(f"Processing branch: {branch}")
+    
+    combined_data = combine_transfers_and_surplus(
+        branch=branch,
+        transfers_dir=TRANSFERS_DIR,
+        surplus_dir=REMAINING_SURPLUS_DIR,
+        analytics_dir=ANALYTICS_DIR,
+    )
+    
+    if combined_data is None or combined_data.empty:
+        logger.warning(f"No data to combine for branch: {branch}")
+        return 0, 0
+    
+    merged_count = _generate_merged_output(combined_data, branch, timestamp)
+    separate_count = _generate_separate_output(combined_data, branch, timestamp)
+    
+    return merged_count, separate_count
+
+
 def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
     """
     Step 11: Generate combined transfer files with remaining surplus.
     
-    Creates both merged and separate output modes:
-    - Merged: All target branches in one file per product type
-    - Separate: One file per target branch per product type
-    
-    Includes:
-    - sender_balance: Balance of sending branch (colored)
-    - receiver_balance: Balance of receiving branch (colored)
-    - transfer_type: 'normal' or 'surplus'
-    
-    Args:
-        use_latest_file: Not used, kept for consistency
-        
     Returns:
         True if successful, False otherwise
     """
-    branches = get_branches()
-    
-    # Validate input directories
     if not _validate_input_directories():
         return False
     
-    # Create output directories
     _create_output_directories()
-    
-    # Generate shared timestamp for all files in this run
     timestamp = get_timestamp()
     
     try:
         total_merged = 0
         total_separate = 0
         
-        # Process each branch
-        # Note: admin sends transfers to other branches but doesn't have remaining surplus
-        for branch in branches:
-            logger.info(f"Processing branch: {branch}")
-            
-            # Combine transfers and surplus data
-            combined_data = combine_transfers_and_surplus(
-                branch=branch,
-                transfers_dir=TRANSFERS_DIR,
-                surplus_dir=REMAINING_SURPLUS_DIR,
-                analytics_dir=ANALYTICS_DIR,
-            )
-            
-            if combined_data is None or combined_data.empty:
-                logger.warning(f"No data to combine for branch: {branch}")
-                continue
-            
-            # Generate merged files (all targets in one file)
-            merged_files = generate_merged_files(
-                df=combined_data,
-                branch=branch,
-                csv_output_dir=OUTPUT_MERGED_CSV,
-                timestamp=timestamp,
-            )
-            
-            if merged_files:
-                # Convert to Excel with conditional formatting
-                convert_to_excel_with_formatting(
-                    csv_files=merged_files,
-                    excel_output_dir=OUTPUT_MERGED_EXCEL,
-                )
-                total_merged += len(merged_files)
-            
-            # Generate separate files (per target branch)
-            separate_files = generate_separate_files(
-                df=combined_data,
-                branch=branch,
-                csv_output_dir=OUTPUT_SEPARATE_CSV,
-                timestamp=timestamp,
-            )
-            
-            if separate_files:
-                # Convert to Excel with conditional formatting
-                convert_to_excel_with_formatting(
-                    csv_files=separate_files,
-                    excel_output_dir=OUTPUT_SEPARATE_EXCEL,
-                )
-                total_separate += len(separate_files)
+        for branch in get_branches():
+            merged, separate = _process_single_branch(branch, timestamp)
+            total_merged += merged
+            total_separate += separate
         
-        # Log summary
         _log_summary(total_merged, total_separate)
-        
         return total_merged > 0 or total_separate > 0
         
     except Exception as e:
         logger.exception(f"Error generating combined transfer files: {e}")
         return False
+
 
 
 def _validate_input_directories() -> bool:

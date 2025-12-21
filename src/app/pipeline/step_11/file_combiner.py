@@ -65,125 +65,107 @@ def combine_transfers_and_surplus(
     return combined
 
 
+def _add_balance_columns(df: pd.DataFrame, sender_balances: dict, receiver_balances: dict) -> pd.DataFrame:
+    """Add sender and receiver balance columns to DataFrame."""
+    df['sender_balance'] = df['code'].apply(lambda x: sender_balances.get(str(x), 0))
+    df['receiver_balance'] = df['code'].apply(lambda x: receiver_balances.get(str(x), 0))
+    return df
+
+
+def _process_single_transfer_file(filepath: str, filename: str, sender_balances: dict, analytics_dir: str) -> Optional[pd.DataFrame]:
+    """Process a single transfer file and add required columns."""
+    try:
+        df = pd.read_csv(filepath)
+        if df.empty:
+            return None
+        
+        target_branch = _extract_target_branch(filename)
+        receiver_balances = get_branch_balances(analytics_dir, target_branch)
+        
+        df['target_branch'] = target_branch
+        df['transfer_type'] = 'normal'
+        return _add_balance_columns(df, sender_balances, receiver_balances)
+        
+    except Exception as e:
+        logger.warning(f"Error reading {filepath}: {e}")
+        return None
+
+
 def _read_transfer_files(branch: str, transfers_dir: str, analytics_dir: str) -> Optional[pd.DataFrame]:
     """Read all transfer files for a branch."""
-    # Correct path: transfers_from_{branch}_to_other_branches
     branch_transfers_dir = os.path.join(transfers_dir, f"transfers_from_{branch}_to_other_branches")
     
     if not os.path.exists(branch_transfers_dir):
         logger.debug(f"No transfers directory for {branch}: {branch_transfers_dir}")
         return None
     
-    all_transfers = []
-    
-    # Get balance data for this branch
     sender_balances = get_branch_balances(analytics_dir, branch)
+    all_transfers = []
     
     for filename in os.listdir(branch_transfers_dir):
         if not filename.endswith('.csv'):
             continue
         
         filepath = os.path.join(branch_transfers_dir, filename)
-        
-        try:
-            df = pd.read_csv(filepath)
-            
-            if df.empty:
-                continue
-            
-            # Extract target branch from filename
-            target_branch = _extract_target_branch(filename)
-            
-            # Get receiver balances
-            receiver_balances = get_branch_balances(analytics_dir, target_branch)
-            
-            # Add columns
-            df['target_branch'] = target_branch
-            df['transfer_type'] = 'normal'
-            
-            # Add balance columns (convert code to string for lookup)
-            df['sender_balance'] = df['code'].apply(
-                lambda x: sender_balances.get(str(x), 0)
-            )
-            df['receiver_balance'] = df['code'].apply(
-                lambda x: receiver_balances.get(str(x), 0)
-            )
-            
+        df = _process_single_transfer_file(filepath, filename, sender_balances, analytics_dir)
+        if df is not None:
             all_transfers.append(df)
-            
-        except Exception as e:
-            logger.warning(f"Error reading {filepath}: {e}")
     
-    if not all_transfers:
+    return pd.concat(all_transfers, ignore_index=True) if all_transfers else None
+
+
+def _normalize_surplus_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize surplus column names to standard quantity columns."""
+    surplus_cols = ['surplus_remaining', 'remaining_surplus', 'surplus_quantity']
+    for col in surplus_cols:
+        if col in df.columns:
+            df['quantity'] = df[col]
+            df['quantity_to_transfer'] = df[col]
+            break
+    return df
+
+
+def _process_single_surplus_file(filepath: str, sender_balances: dict, admin_balances: dict) -> Optional[pd.DataFrame]:
+    """Process a single surplus file and format as admin transfer."""
+    try:
+        df = pd.read_csv(filepath)
+        if df.empty:
+            return None
+        
+        df = _normalize_surplus_columns(df)
+        df['target_branch'] = 'admin'
+        df['transfer_type'] = 'surplus'
+        return _add_balance_columns(df, sender_balances, admin_balances)
+        
+    except Exception as e:
+        logger.warning(f"Error reading {filepath}: {e}")
         return None
-    
-    return pd.concat(all_transfers, ignore_index=True)
 
 
 def _read_surplus_as_admin_transfer(branch: str, surplus_dir: str, analytics_dir: str) -> Optional[pd.DataFrame]:
     """Read remaining surplus and format as transfer to admin."""
-    # Admin doesn't send surplus to itself
     if branch == 'admin':
         return None
     
     branch_surplus_dir = os.path.join(surplus_dir, branch)
-    
     if not os.path.exists(branch_surplus_dir):
         logger.debug(f"No surplus directory for {branch}")
         return None
     
-    all_surplus = []
-    
-    # Get balances
     sender_balances = get_branch_balances(analytics_dir, branch)
     admin_balances = get_branch_balances(analytics_dir, 'admin')
+    all_surplus = []
     
     for filename in os.listdir(branch_surplus_dir):
         if not filename.endswith('.csv'):
             continue
         
         filepath = os.path.join(branch_surplus_dir, filename)
-        
-        try:
-            df = pd.read_csv(filepath)
-            
-            if df.empty:
-                continue
-            
-            # Rename surplus column to quantity for consistency
-            # Also set quantity_to_transfer for surplus transfers
-            # Note: Column name could be 'surplus_remaining', 'remaining_surplus', or 'surplus_quantity'
-            if 'surplus_remaining' in df.columns:
-                df['quantity'] = df['surplus_remaining']
-                df['quantity_to_transfer'] = df['surplus_remaining']
-            elif 'remaining_surplus' in df.columns:
-                df['quantity'] = df['remaining_surplus']
-                df['quantity_to_transfer'] = df['remaining_surplus']
-            elif 'surplus_quantity' in df.columns:
-                df['quantity'] = df['surplus_quantity']
-                df['quantity_to_transfer'] = df['surplus_quantity']
-            
-            # Add columns
-            df['target_branch'] = 'admin'
-            df['transfer_type'] = 'surplus'
-            
-            # Add balance columns (convert code to string for lookup)
-            df['sender_balance'] = df['code'].apply(
-                lambda x: sender_balances.get(str(x), 0)
-            )
-            df['receiver_balance'] = df['code'].apply(
-                lambda x: admin_balances.get(str(x), 0)
-            )
-            
+        df = _process_single_surplus_file(filepath, sender_balances, admin_balances)
+        if df is not None:
             all_surplus.append(df)
-            
-        except Exception as e:
-            logger.warning(f"Error reading {filepath}: {e}")
     
-    if not all_surplus:
-        return None
-    
-    return pd.concat(all_surplus, ignore_index=True)
+    return pd.concat(all_surplus, ignore_index=True) if all_surplus else None
 
 
 def _extract_target_branch(filename: str) -> str:

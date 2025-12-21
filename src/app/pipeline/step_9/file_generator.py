@@ -30,6 +30,30 @@ def add_product_type_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _process_category_dataframe(df: pd.DataFrame, category: str) -> pd.DataFrame:
+    """Filter, sort and clean category DataFrame."""
+    category_df = df[df['product_type'] == category].copy()
+    
+    if len(category_df) == 0:
+        return None
+    
+    category_df = category_df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
+    return category_df.drop('product_type', axis=1)
+
+
+def _write_category_csv(
+    category_df: pd.DataFrame,
+    file_path: str,
+    has_date_header: bool,
+    first_line: str
+) -> None:
+    """Write category DataFrame to CSV file."""
+    with open(file_path, 'w', encoding='utf-8-sig', newline='') as f:
+        if has_date_header:
+            f.write(first_line + '\n')
+        category_df.to_csv(f, index=False, lineterminator='\n')
+
+
 def generate_csv_files(
     df: pd.DataFrame,
     branch: str,
@@ -42,50 +66,23 @@ def generate_csv_files(
     """
     Generate CSV files split by product category.
     
-    Args:
-        df: DataFrame with product data (must have 'product_type' column)
-        branch: Branch name
-        output_dir: Base output directory for CSV files
-        base_name: Base name for output files
-        timestamp: Timestamp string for file naming
-        has_date_header: Whether to include date header
-        first_line: Date header line content
-        
     Returns:
         Dictionary mapping category -> file info dict
     """
-    # Create branch directory
     branch_dir = os.path.join(output_dir, branch)
     os.makedirs(branch_dir, exist_ok=True)
     
-    categories = get_product_categories()
     generated_files = {}
     
-    for category in categories:
-        category_df = df[df['product_type'] == category].copy()
-        
-        if len(category_df) == 0:
+    for category in get_product_categories():
+        category_df = _process_category_dataframe(df, category)
+        if category_df is None:
             continue
         
-        # Sort by product_name (A to Z, case-insensitive)
-        category_df = category_df.sort_values(
-            'product_name', 
-            ascending=True,
-            key=lambda x: x.str.lower()
-        )
-        
-        # Remove product_type column before saving
-        category_df = category_df.drop('product_type', axis=1)
-        
-        # Generate filename and path
         filename = f"{base_name}_{branch}_remaining_surplus_{timestamp}_{category}.csv"
         file_path = os.path.join(branch_dir, filename)
         
-        # Write CSV file
-        with open(file_path, 'w', encoding='utf-8-sig', newline='') as f:
-            if has_date_header:
-                f.write(first_line + '\n')
-            category_df.to_csv(f, index=False, lineterminator='\n')
+        _write_category_csv(category_df, file_path, has_date_header, first_line)
         
         generated_files[category] = {
             'csv_path': file_path,
@@ -95,6 +92,7 @@ def generate_csv_files(
         }
     
     return generated_files
+
 
 
 def generate_excel_files(files_info: dict, branch: str, output_dir: str) -> int:
