@@ -10,11 +10,52 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+def _log_date_validation(is_valid: bool, start_date, end_date, message: str) -> None:
+    """Log date range validation results."""
+    logger.info("[1] Date Range Validation: %s", message)
+    if start_date and end_date:
+        logger.info("    Start: %s, End: %s", 
+                   start_date.strftime('%d/%m/%Y %H:%M'),
+                   end_date.strftime('%d/%m/%Y %H:%M'))
+    status = ">= 3 months" if is_valid else "less than 3 months"
+    logger.info("    %s Date range is %s", "✓" if is_valid else "✗", status)
+
+
+def _log_headers_validation(is_valid: bool, errors: list, message: str) -> None:
+    """Log column headers validation results."""
+    logger.info("[2] Column Headers Validation: %s", message)
+    if is_valid:
+        logger.info("    ✓ All column headers match expected order")
+    else:
+        logger.warning("    ✗ Column headers validation failed:")
+        for error in errors:
+            logger.warning("      - %s", error)
+
+
+def _log_overall_result(is_valid: bool) -> None:
+    """Log overall validation result."""
+    logger.info("=" * 50)
+    result = "SUCCESSFUL" if is_valid else "FAILED"
+    logger.info("%s Overall validation: %s", "✓" if is_valid else "✗", result)
+    logger.info("=" * 50)
+
+
+def _remove_first_row(csv_path: str, csv_file: str) -> bool:
+    """Remove first row (header with date range) from CSV file."""
+    logger.info("Removing first row (header with date range) from %s...", csv_file)
+    try:
+        df = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
+        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        logger.info("✓ First row removed successfully")
+        return True
+    except Exception as e:
+        logger.exception("✗ Error removing first row: %s", e)
+        return False
+
+
 def step_3_validate_data(use_latest_file: bool = None):
-    """Step 3: Validate CSV data and date range"""
-    # التحقق من الملف المُحوّل من Excel إلى CSV
+    """Step 3: Validate CSV data and date range."""
     output_dir = os.path.join("data", "output", "converted", "csv")
-    
     csv_files = get_csv_files(output_dir)
     
     if not csv_files:
@@ -29,46 +70,16 @@ def step_3_validate_data(use_latest_file: bool = None):
         logger.info("-" * 50)
         
         is_valid_date, start_date, end_date, date_message = validate_csv_header(csv_path)
-        logger.info("[1] Date Range Validation: %s", date_message)
-        if start_date and end_date:
-            logger.info(
-                "    Start: %s, End: %s",
-                start_date.strftime('%d/%m/%Y %H:%M'),
-                end_date.strftime('%d/%m/%Y %H:%M'),
-            )
-        logger.info(
-            "    %s Date range is %s",
-            "✓" if is_valid_date else "✗",
-            ">= 3 months" if is_valid_date else "less than 3 months",
-        )
+        _log_date_validation(is_valid_date, start_date, end_date, date_message)
         
         is_valid_headers, errors, headers_message = validate_csv_headers(csv_path)
-        logger.info("[2] Column Headers Validation: %s", headers_message)
-        if is_valid_headers:
-            logger.info("    ✓ All column headers match expected order")
-        else:
-            logger.warning("    ✗ Column headers validation failed:")
-            for error in errors:
-                logger.warning("      - %s", error)
+        _log_headers_validation(is_valid_headers, errors, headers_message)
         
         overall_valid = is_valid_date and is_valid_headers
-        logger.info("%s", "=" * 50)
-        logger.info(
-            "%s Overall validation: %s",
-            "✓" if overall_valid else "✗",
-            "SUCCESSFUL" if overall_valid else "FAILED",
-        )
-        logger.info("%s", "=" * 50)
+        _log_overall_result(overall_valid)
         
-        if overall_valid:
-            logger.info("Removing first row (header with date range) from %s...", csv_file)
-            try:
-                df = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
-                df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-                logger.info("✓ First row removed successfully")
-            except Exception as e:
-                logger.exception("✗ Error removing first row: %s", e)
-                return False
+        if overall_valid and not _remove_first_row(csv_path, csv_file):
+            return False
         
         return overall_valid
         
@@ -78,4 +89,5 @@ def step_3_validate_data(use_latest_file: bool = None):
     except Exception as e:
         logger.exception("Error during validation: %s", e)
         return False
+
 
