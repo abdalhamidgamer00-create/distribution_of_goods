@@ -39,68 +39,87 @@ def show_metrics():
     col2.metric("عدد الفروع", 6)
 
 
-def show_file_management():
-    """Display file upload and selection interface"""
-    st.subheader("📁 إدارة الملفات")
+def _save_uploaded_file(uploaded_file) -> None:
+    """Save uploaded file to input directory."""
+    input_dir = os.path.join("data", "input")
+    os.makedirs(input_dir, exist_ok=True)
+    save_path = os.path.join(input_dir, uploaded_file.name)
     
-    col1, col2 = st.columns(2)
+    with open(save_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
     
-    # Upload section
-    with col1:
-        st.markdown("### 📤 رفع ملف جديد")
-        uploaded_file = st.file_uploader(
-            "اختر ملف Excel",
-            type=['xlsx', 'xls'],
-            help="قم برفع ملف Excel من جهازك",
-            key="file_uploader"
-        )
-        
-        if uploaded_file is not None:
-            input_dir = os.path.join("data", "input")
-            os.makedirs(input_dir, exist_ok=True)
-            save_path = os.path.join(input_dir, uploaded_file.name)
-            
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            
-            st.success(f"✅ تم رفع الملف: {uploaded_file.name}")
-            st.session_state['selected_file'] = uploaded_file.name
-            st.session_state['file_source'] = 'uploaded'
+    st.success(f"✅ تم رفع الملف: {uploaded_file.name}")
+    st.session_state['selected_file'] = uploaded_file.name
+    st.session_state['file_source'] = 'uploaded'
+
+
+def _show_upload_section() -> None:
+    """Display file upload section."""
+    st.markdown("### � رفع ملف جديد")
+    uploaded_file = st.file_uploader(
+        "اختر ملف Excel",
+        type=['xlsx', 'xls'],
+        help="قم برفع ملف Excel من جهازك",
+        key="file_uploader"
+    )
+    if uploaded_file is not None:
+        _save_uploaded_file(uploaded_file)
+
+
+def _display_latest_file_info(input_dir: str, latest_file: str) -> None:
+    """Display latest file information and selection button."""
+    file_path = os.path.join(input_dir, latest_file)
+    file_size = os.path.getsize(file_path) / 1024
+    file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
     
-    # Latest file section
-    with col2:
-        st.markdown("### 📂 استخدام أحدث ملف")
-        input_dir = os.path.join("data", "input")
-        
-        if os.path.exists(input_dir):
-            excel_files = [f for f in os.listdir(input_dir) if f.endswith(('.xlsx', '.xls'))]
-            excel_files.sort(key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), reverse=True)
-            
-            if excel_files:
-                latest_file = excel_files[0]
-                file_path = os.path.join(input_dir, latest_file)
-                file_size = os.path.getsize(file_path) / 1024  # KB
-                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
-                
-                st.info(f"📄 **{latest_file}**")
-                st.caption(f"الحجم: {file_size:.2f} KB")
-                st.caption(f"آخر تعديل: {file_mtime.strftime('%Y-%m-%d %H:%M')}")
-                
-                if st.button("استخدام هذا الملف", key="use_latest", use_container_width=True):
-                    st.session_state['selected_file'] = latest_file
-                    st.session_state['file_source'] = 'existing'
-                    st.success(f"✅ تم اختيار: {latest_file}")
-            else:
-                st.warning("⚠️ لا توجد ملفات Excel في المجلد")
-        else:
-            st.error("❌ مجلد البيانات غير موجود")
+    st.info(f"📄 **{latest_file}**")
+    st.caption(f"الحجم: {file_size:.2f} KB")
+    st.caption(f"آخر تعديل: {file_mtime.strftime('%Y-%m-%d %H:%M')}")
     
-    # Display selected file status
+    if st.button("استخدام هذا الملف", key="use_latest", use_container_width=True):
+        st.session_state['selected_file'] = latest_file
+        st.session_state['file_source'] = 'existing'
+        st.success(f"✅ تم اختيار: {latest_file}")
+
+
+def _show_latest_file_section() -> None:
+    """Display latest file selection section."""
+    st.markdown("### 📂 استخدام أحدث ملف")
+    input_dir = os.path.join("data", "input")
+    
+    if not os.path.exists(input_dir):
+        st.error("❌ مجلد البيانات غير موجود")
+        return
+    
+    excel_files = [f for f in os.listdir(input_dir) if f.endswith(('.xlsx', '.xls'))]
+    excel_files.sort(key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), reverse=True)
+    
+    if excel_files:
+        _display_latest_file_info(input_dir, excel_files[0])
+    else:
+        st.warning("⚠️ لا توجد ملفات Excel في المجلد")
+
+
+def _show_selected_file_status() -> None:
+    """Display currently selected file status."""
     if 'selected_file' in st.session_state:
         source_text = "مرفوع" if st.session_state.get('file_source') == 'uploaded' else "موجود"
         st.success(f"✅ الملف المختار حالياً: **{st.session_state['selected_file']}** ({source_text})")
     else:
         st.warning("⚠️ لم يتم اختيار ملف بعد. يرجى رفع ملف أو اختيار أحدث ملف.")
+
+
+def show_file_management():
+    """Display file upload and selection interface"""
+    st.subheader("📁 إدارة الملفات")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        _show_upload_section()
+    with col2:
+        _show_latest_file_section()
+    
+    _show_selected_file_status()
 
 
 def show_navigation_button(step_id):
