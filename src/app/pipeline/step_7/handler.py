@@ -113,16 +113,8 @@ def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, an
     return True
 
 
-def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
-    """Step 7: Generate transfer CSV files between branches."""
-    analytics_dir = os.path.join("data", "output", "branches", "analytics")
-    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
-    branches = get_branches()
-    
-    analytics_files = _validate_and_get_files(analytics_dir, branches)
-    if analytics_files is None:
-        return False
-    
+def _run_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
+    """Run transfer generation with error handling."""
     try:
         return _execute_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
     except ValueError as e:
@@ -131,6 +123,18 @@ def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during transfer generation: %s", e)
         return False
+
+
+def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
+    """Step 7: Generate transfer CSV files between branches."""
+    analytics_dir = os.path.join("data", "output", "branches", "analytics")
+    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
+    
+    analytics_files = _validate_and_get_files(analytics_dir, get_branches())
+    if analytics_files is None:
+        return False
+    
+    return _run_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
 
 
 
