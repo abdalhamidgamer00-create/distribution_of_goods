@@ -21,10 +21,7 @@ def _execute_step_function(step, step_name: str, use_streamlit: bool) -> tuple:
             result = step["function"](use_latest_file=True)
     else:
         result = step["function"](use_latest_file=True)
-    
-    if result:
-        return True, f"{MESSAGES['success']}: {step_name}"
-    return False, f"{MESSAGES['failed']}: {step_name}"
+    return (True, f"{MESSAGES['success']}: {step_name}") if result else (False, f"{MESSAGES['failed']}: {step_name}")
 
 
 def _handle_run_step_error(step_name: str, error: Exception, use_streamlit: bool) -> tuple:
