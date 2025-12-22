@@ -68,14 +68,11 @@ def generate_csv_files(df: pd.DataFrame, branch: str, output_dir: str, base_name
     """Generate CSV files split by product category."""
     branch_dir = os.path.join(output_dir, branch)
     os.makedirs(branch_dir, exist_ok=True)
-    
     generated_files = {}
     for category in get_product_categories():
         category_df = _process_category_dataframe(df, category)
         if category_df is not None:
-            generated_files[category] = _save_category_file(
-                category_df, branch_dir, base_name, branch, timestamp, category, has_date_header, first_line
-            )
+            generated_files[category] = _save_category_file(category_df, branch_dir, base_name, branch, timestamp, category, has_date_header, first_line)
     return generated_files
 
 

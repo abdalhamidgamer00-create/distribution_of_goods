@@ -22,13 +22,10 @@ def _process_branch_withdrawals(analytics_dir: str, other_branch: str, source_br
     analytics_path = get_latest_analytics_path(analytics_dir, other_branch)
     if not analytics_path:
         return
-    
     df, _, _ = read_analytics_file(analytics_path)
     if df is None:
         return
-    
-    branch_withdrawals = extract_withdrawals_from_branch(df, source_branch)
-    for product_code, amount in branch_withdrawals.items():
+    for product_code, amount in extract_withdrawals_from_branch(df, source_branch).items():
         total_withdrawals[product_code] = total_withdrawals.get(product_code, 0.0) + amount
 
 
@@ -45,16 +42,9 @@ def calculate_total_withdrawals(analytics_dir: str, branch: str) -> dict:
 def _filter_and_sort_remaining(df) -> pd.DataFrame:
     """Filter products with remaining surplus and sort by name."""
     remaining_df = df[df['calculated_remaining'] > 0].copy()
-    
     if remaining_df.empty:
         return pd.DataFrame(columns=['code', 'product_name', 'surplus_remaining'])
-    
-    result_df = pd.DataFrame({
-        'code': remaining_df['code'],
-        'product_name': remaining_df['product_name'],
-        'surplus_remaining': remaining_df['calculated_remaining'].astype(int)
-    })
-    
+    result_df = pd.DataFrame({'code': remaining_df['code'], 'product_name': remaining_df['product_name'], 'surplus_remaining': remaining_df['calculated_remaining'].astype(int)})
     return result_df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
 
 

@@ -50,16 +50,13 @@ def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
 def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
     """Get balance data for a branch from its analytics file."""
     branch_dir = os.path.join(analytics_dir, branch)
-    
     if not os.path.exists(branch_dir):
         logger.debug(f"Analytics directory not found for {branch}")
         return {}
-    
     latest_file = get_latest_file(branch_dir, '.csv')
     if not latest_file:
         logger.debug(f"No analytics file found for {branch}")
         return {}
-    
     return _read_balance_file(branch_dir, latest_file, branch)
 
 
