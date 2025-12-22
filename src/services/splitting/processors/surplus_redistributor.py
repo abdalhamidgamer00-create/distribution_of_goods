@@ -71,13 +71,24 @@ def _record_redistribution(branch: str, other_branch: str, product_idx: int, tra
     return max_withdrawals
 
 
+def _execute_transfer(branch: str, other_branch: str, product_idx: int, transfer_amount: float,
+                      available_surplus: float, remaining_capacity: float, analytics_data: dict,
+                      all_withdrawals: dict, max_withdrawals: int) -> tuple:
+    """Execute a redistribution transfer."""
+    max_withdrawals = _record_redistribution(
+        branch, other_branch, product_idx, transfer_amount,
+        available_surplus, analytics_data, all_withdrawals, max_withdrawals
+    )
+    
+    logger.debug(f"Second round: Transferred {transfer_amount:.2f} of product {product_idx} from {other_branch} to {branch}")
+    return max_withdrawals, 1, remaining_capacity - transfer_amount
+
+
 def _try_redistribute_from_branch(other_branch: str, branch: str, product_idx: int, remaining_capacity: float,
                                    branch_data: dict, analytics_data: dict, all_withdrawals: dict,
                                    max_withdrawals: int) -> tuple:
     """Try to redistribute from a single source branch."""
-    available_surplus = calculate_available_surplus(
-        branch_data, other_branch, product_idx, all_withdrawals
-    )
+    available_surplus = calculate_available_surplus(branch_data, other_branch, product_idx, all_withdrawals)
     
     if available_surplus <= 0:
         return max_withdrawals, 0, remaining_capacity
@@ -86,43 +97,32 @@ def _try_redistribute_from_branch(other_branch: str, branch: str, product_idx: i
     if transfer_amount <= 0:
         return max_withdrawals, 0, remaining_capacity
     
-    max_withdrawals = _record_redistribution(
-        branch, other_branch, product_idx, transfer_amount,
-        available_surplus, analytics_data, all_withdrawals, max_withdrawals
-    )
-    
-    logger.debug(
-        f"Second round: Transferred {transfer_amount:.2f} of product {product_idx} "
-        f"from {other_branch} to {branch}"
-    )
-    
-    return max_withdrawals, 1, remaining_capacity - transfer_amount
+    return _execute_transfer(branch, other_branch, product_idx, transfer_amount, 
+                             available_surplus, remaining_capacity, analytics_data, all_withdrawals, max_withdrawals)
 
 
-def _redistribute_to_branch(
-    branch: str,
-    product_idx: int,
-    remaining_capacity: float,
-    branches: list,
-    branch_data: dict,
-    analytics_data: dict,
-    all_withdrawals: dict,
-    max_withdrawals: int
-) -> tuple:
-    """Attempt to redistribute surplus to a single branch."""
+def _process_all_other_branches(branch: str, product_idx: int, remaining_capacity: float, branches: list,
+                                 branch_data: dict, analytics_data: dict, all_withdrawals: dict,
+                                 max_withdrawals: int) -> tuple:
+    """Process redistribution from all other branches."""
     redistributed_count = 0
-    
     for other_branch in branches:
         if other_branch == branch or remaining_capacity <= 0:
             continue
-        
         max_withdrawals, count, remaining_capacity = _try_redistribute_from_branch(
             other_branch, branch, product_idx, remaining_capacity,
             branch_data, analytics_data, all_withdrawals, max_withdrawals
         )
         redistributed_count += count
-    
     return max_withdrawals, redistributed_count
+
+
+def _redistribute_to_branch(branch: str, product_idx: int, remaining_capacity: float, branches: list,
+                            branch_data: dict, analytics_data: dict, all_withdrawals: dict,
+                            max_withdrawals: int) -> tuple:
+    """Attempt to redistribute surplus to a single branch."""
+    return _process_all_other_branches(branch, product_idx, remaining_capacity, branches,
+                                       branch_data, analytics_data, all_withdrawals, max_withdrawals)
 
 
 def _process_single_product(product_idx: int, branches: list, branch_data: dict, analytics_data: dict,
