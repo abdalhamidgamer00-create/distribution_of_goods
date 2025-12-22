@@ -27,21 +27,21 @@ def _read_csv_with_header(csv_path: str) -> tuple:
     return df, date_range
 
 
+def _calculate_empty_percentage(empty_cells: int, total_cells: int) -> float:
+    """Calculate empty cells percentage."""
+    return round((empty_cells / total_cells * 100) if total_cells > 0 else 0, 2)
+
+
 def _calculate_cell_stats(df) -> dict:
     """Calculate cell statistics from DataFrame."""
-    total_rows = len(df)
-    total_columns = len(df.columns)
+    total_rows, total_columns = len(df), len(df.columns)
     total_cells = total_rows * total_columns
-    empty_cells = df.isna().sum().sum()
-    percentage = (empty_cells / total_cells * 100) if total_cells > 0 else 0
+    empty_cells = int(df.isna().sum().sum())
     
     return {
-        'total_rows': total_rows,
-        'total_columns': total_columns,
-        'total_cells': total_cells,
-        'empty_cells': int(empty_cells),
-        'empty_cells_percentage': round(percentage, 2),
-        'filled_cells': int(total_cells - empty_cells)
+        'total_rows': total_rows, 'total_columns': total_columns, 'total_cells': total_cells,
+        'empty_cells': empty_cells, 'empty_cells_percentage': _calculate_empty_percentage(empty_cells, total_cells),
+        'filled_cells': total_cells - empty_cells
     }
 
 

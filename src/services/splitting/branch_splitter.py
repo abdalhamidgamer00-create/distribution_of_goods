@@ -57,6 +57,12 @@ def _update_analytics_data(branch: str, product_idx: int, withdrawals_list: list
     return max(max_withdrawals, len(withdrawals_list))
 
 
+def _merge_withdrawals(withdrawals: dict, all_withdrawals: dict) -> None:
+    """Merge new withdrawals into all_withdrawals."""
+    for key, amount in withdrawals.items():
+        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
+
+
 def _process_single_product_for_branch(branch: str, product_idx: int, branch_data: dict, branches: list,
                                         analytics_data: dict, all_withdrawals: dict, 
                                         proportional_allocation: dict, max_withdrawals: int) -> int:
@@ -65,13 +71,8 @@ def _process_single_product_for_branch(branch: str, product_idx: int, branch_dat
     if branch_df.iloc[product_idx]['needed_quantity'] <= 0:
         return max_withdrawals
     
-    withdrawals_list, withdrawals = find_surplus_sources_for_single_product(
-        branch, product_idx, branch_data, branches, all_withdrawals, proportional_allocation
-    )
-    
-    for key, amount in withdrawals.items():
-        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
-    
+    withdrawals_list, withdrawals = find_surplus_sources_for_single_product(branch, product_idx, branch_data, branches, all_withdrawals, proportional_allocation)
+    _merge_withdrawals(withdrawals, all_withdrawals)
     return _update_analytics_data(branch, product_idx, withdrawals_list, analytics_data, max_withdrawals)
 
 

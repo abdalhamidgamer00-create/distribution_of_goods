@@ -20,6 +20,18 @@ def _build_file_info(file_path: str, filename: str, ext: str, directory: str) ->
     }
 
 
+def _collect_matching_files(directory: str, file_extensions: List[str]) -> List[Dict]:
+    """Collect files matching extensions."""
+    files = []
+    for root, dirs, filenames in os.walk(directory):
+        for filename in filenames:
+            _, ext = os.path.splitext(filename)
+            if ext.lower() in file_extensions:
+                file_path = os.path.join(root, filename)
+                files.append(_build_file_info(file_path, filename, ext, directory))
+    return files
+
+
 def list_output_files(directory: str, file_extensions: List[str] = None) -> List[Dict]:
     """قائمة بجميع الملفات في مجلد معين."""
     if file_extensions is None:
@@ -28,15 +40,7 @@ def list_output_files(directory: str, file_extensions: List[str] = None) -> List
     if not os.path.exists(directory):
         return []
     
-    files = []
-    for root, dirs, filenames in os.walk(directory):
-        for filename in filenames:
-            _, ext = os.path.splitext(filename)
-            if ext.lower() in file_extensions:
-                file_path = os.path.join(root, filename)
-                files.append(_build_file_info(file_path, filename, ext, directory))
-    
-    return sorted(files, key=lambda x: x["name"])
+    return sorted(_collect_matching_files(directory, file_extensions), key=lambda x: x["name"])
 
 
 def _read_csv_file_for_display(file_path: str, max_rows: int) -> Optional[pd.DataFrame]:
