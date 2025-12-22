@@ -15,30 +15,23 @@ logger = get_logger(__name__)
 REQUIRED_COLUMNS = ['code', 'product_name', 'surplus_quantity', 'needed_quantity', 'balance', 'sales']
 
 
+def _load_analytics_dataframe(analytics_path: str, has_date_header: bool) -> pd.DataFrame:
+    """Load analytics DataFrame with optional header skip."""
+    skiprows = 1 if has_date_header else 0
+    return pd.read_csv(analytics_path, skiprows=skiprows, encoding='utf-8-sig')
+
+
 def read_analytics_file(analytics_path: str) -> tuple:
-    """
-    Read an analytics file and return its data.
-    
-    Args:
-        analytics_path: Path to the analytics CSV file
-        
-    Returns:
-        Tuple of (DataFrame, has_date_header, first_line)
-    """
+    """Read an analytics file and return its data."""
     try:
         with open(analytics_path, 'r', encoding='utf-8-sig') as f:
             first_line = f.readline().strip()
         
         start_date, end_date = extract_dates_from_header(first_line)
         has_date_header = bool(start_date and end_date)
-        
-        if has_date_header:
-            df = pd.read_csv(analytics_path, skiprows=1, encoding='utf-8-sig')
-        else:
-            df = pd.read_csv(analytics_path, encoding='utf-8-sig')
+        df = _load_analytics_dataframe(analytics_path, has_date_header)
         
         return df, has_date_header, first_line
-        
     except Exception as e:
         logger.error("Error reading analytics file %s: %s", analytics_path, e)
         return None, False, ''
