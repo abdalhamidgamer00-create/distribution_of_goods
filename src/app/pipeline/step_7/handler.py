@@ -37,22 +37,28 @@ def _get_analytics_files(analytics_dir: str, branches: list) -> dict:
     return analytics_files
 
 
+def _try_extract_date_header(analytics_dir: str, analytics_files: dict) -> tuple:
+    """Try to extract date header from analytics file."""
+    first_branch = list(analytics_files.keys())[0]
+    latest_file = get_latest_file(os.path.join(analytics_dir, first_branch), '.csv')
+    if not latest_file:
+        return None
+    
+    sample_path = os.path.join(analytics_dir, first_branch, latest_file)
+    with open(sample_path, 'r', encoding='utf-8-sig') as f:
+        first_line = f.readline().strip()
+        from src.core.validation.data_validator import extract_dates_from_header
+        start_date, end_date = extract_dates_from_header(first_line)
+        return (True, first_line) if start_date and end_date else None
+
+
 def _extract_date_header_info(analytics_dir: str, analytics_files: dict) -> tuple:
     """Extract date header information from first analytics file."""
     try:
-        first_branch = list(analytics_files.keys())[0]
-        latest_file = get_latest_file(os.path.join(analytics_dir, first_branch), '.csv')
-        if latest_file:
-            sample_path = os.path.join(analytics_dir, first_branch, latest_file)
-            with open(sample_path, 'r', encoding='utf-8-sig') as f:
-                first_line = f.readline().strip()
-                from src.core.validation.data_validator import extract_dates_from_header
-                start_date, end_date = extract_dates_from_header(first_line)
-                if start_date and end_date:
-                    return True, first_line
+        result = _try_extract_date_header(analytics_dir, analytics_files)
+        return result if result else (False, "")
     except Exception:
-        pass
-    return False, ""
+        return False, ""
 
 
 def _group_files_by_source(transfer_files: dict) -> dict:
@@ -95,15 +101,18 @@ def _validate_and_get_files(analytics_dir: str, branches: list) -> dict:
     return analytics_files
 
 
-def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
-    """Execute the transfer generation process."""
-    has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
-    
+def _log_and_generate(analytics_dir: str, transfers_base_dir: str, has_date_header: bool, first_line: str) -> dict:
+    """Log info and generate transfer files."""
     logger.info("Generating transfer files...")
     logger.info("-" * 50)
     logger.info("Using latest analytics files for each target branch...")
-    
-    transfer_files = generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
+    return generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
+
+
+def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
+    """Execute the transfer generation process."""
+    has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
+    transfer_files = _log_and_generate(analytics_dir, transfers_base_dir, has_date_header, first_line)
     
     if not transfer_files:
         logger.warning("No transfers found between branches")
