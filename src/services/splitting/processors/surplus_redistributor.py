@@ -99,21 +99,26 @@ def _execute_transfer(branch: str, other_branch: str, product_idx: int, transfer
     return max_withdrawals, 1, remaining_capacity - transfer_amount
 
 
+def _check_surplus_availability(branch_data: dict, other_branch: str, product_idx: int, 
+                                  all_withdrawals: dict, remaining_capacity: float) -> float:
+    """Check availability and return transfer amount or 0."""
+    available_surplus = calculate_available_surplus(branch_data, other_branch, product_idx, all_withdrawals)
+    if available_surplus <= 0:
+        return 0
+    return min(available_surplus, remaining_capacity)
+
+
 def _try_redistribute_from_branch(other_branch: str, branch: str, product_idx: int, remaining_capacity: float,
                                    branch_data: dict, analytics_data: dict, all_withdrawals: dict,
                                    max_withdrawals: int) -> tuple:
     """Try to redistribute from a single source branch."""
     available_surplus = calculate_available_surplus(branch_data, other_branch, product_idx, all_withdrawals)
+    transfer_amount = _check_surplus_availability(branch_data, other_branch, product_idx, all_withdrawals, remaining_capacity)
     
-    if available_surplus <= 0:
-        return max_withdrawals, 0, remaining_capacity
-    
-    transfer_amount = min(available_surplus, remaining_capacity)
     if transfer_amount <= 0:
         return max_withdrawals, 0, remaining_capacity
     
-    return _execute_transfer(branch, other_branch, product_idx, transfer_amount, 
-                             available_surplus, remaining_capacity, analytics_data, all_withdrawals, max_withdrawals)
+    return _execute_transfer(branch, other_branch, product_idx, transfer_amount, available_surplus, remaining_capacity, analytics_data, all_withdrawals, max_withdrawals)
 
 
 def _process_all_other_branches(branch: str, product_idx: int, remaining_capacity: float, branches: list,

@@ -67,20 +67,19 @@ def _execute_surplus_search(surplus_search_order: list, product_index: int, rema
     return remaining_needed, target_amount
 
 
+def _init_search_data(branch: str, product_index: int, branch_data: dict, branches: list, 
+                       existing_withdrawals: dict, needed: float) -> tuple:
+    """Initialize search data structures."""
+    surplus_search_order = get_surplus_branches_order_for_product(product_index, branch, branch_data, branches, existing_withdrawals)
+    return needed, [], {}, surplus_search_order
+
+
 def _search_and_withdraw_surplus(branch: str, product_index: int, branch_data: dict, branches: list,
                                  existing_withdrawals: dict, target_amount: float, needed: float) -> tuple:
     """Search for surplus in other branches and process withdrawals."""
-    remaining_needed, withdrawals_for_row, withdrawals = needed, [], {}
+    remaining_needed, withdrawals_for_row, withdrawals, surplus_search_order = _init_search_data(branch, product_index, branch_data, branches, existing_withdrawals, needed)
     
-    surplus_search_order = get_surplus_branches_order_for_product(
-        product_index, branch, branch_data, branches, existing_withdrawals
-    )
-    
-    remaining_needed, _ = _execute_surplus_search(
-        surplus_search_order, product_index, remaining_needed, target_amount,
-        branch_data, existing_withdrawals, withdrawals, withdrawals_for_row
-    )
-    
+    remaining_needed, _ = _execute_surplus_search(surplus_search_order, product_index, remaining_needed, target_amount, branch_data, existing_withdrawals, withdrawals, withdrawals_for_row)
     return withdrawals_for_row, withdrawals, remaining_needed
 
 
