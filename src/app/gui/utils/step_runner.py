@@ -109,12 +109,10 @@ def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) 
     import streamlit as st
     progress_bar = st.progress(0)
     status_text = st.empty()
-    
     for idx, step in enumerate(all_steps):
         success, message, step_name = _process_step_with_ui(step, progress_bar, status_text, idx, len(all_steps))
         if not success:
             return _cleanup_and_return_failure(progress_bar, status_text, step, step_name, message)
-    
     return _cleanup_and_return_success(progress_bar, status_text, step_id, target_step_num)
 
 

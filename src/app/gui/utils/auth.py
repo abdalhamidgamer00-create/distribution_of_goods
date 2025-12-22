@@ -52,13 +52,10 @@ def _render_login_inputs() -> None:
     st.markdown("### 🔐 تسجيل الدخول")
     st.text_input("اسم المستخدم", key="username")
     st.text_input("كلمة المرور", type="password", key="password")
-    
     if st.button("دخول", type="primary", use_container_width=True):
         _password_entered()
-        if st.session_state.get("password_correct") == False:
-            st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
-        else:
-            st.rerun()
+        if st.session_state.get("password_correct") == False: st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
+        else: st.rerun()
 
 
 def _show_login_form():
