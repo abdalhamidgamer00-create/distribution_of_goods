@@ -230,6 +230,12 @@ def generate_merged_files(df: pd.DataFrame, branch: str, csv_output_dir: str, ti
     return _create_merged_files(df, branch, branch_output_dir)
 
 
+def _save_and_record_file(output_df: pd.DataFrame, filepath: str, product_type: str, target: str) -> dict:
+    """Save DataFrame to file and return file info."""
+    output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
+    return {'path': filepath, 'product_type': product_type, 'target': target, 'count': len(output_df)}
+
+
 def _process_target_branch_files(df: pd.DataFrame, target: str, branch: str, target_output_dir: str, timestamp: str) -> List[Dict]:
     """Process all product type files for a target branch."""
     target_df = df[df['target_branch'] == target]
@@ -240,19 +246,10 @@ def _process_target_branch_files(df: pd.DataFrame, target: str, branch: str, tar
         if type_df.empty:
             continue
         
-        output_df = _prepare_output_columns(type_df)
-        output_df = _sort_by_product_name(output_df)
-        
+        output_df = _sort_by_product_name(_prepare_output_columns(type_df))
         filename = f"transfer_from_{branch}_to_{target}_{product_type}_{timestamp}.csv"
         filepath = os.path.join(target_output_dir, filename)
-        output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
-        
-        files_info.append({
-            'path': filepath,
-            'product_type': product_type,
-            'target': target,
-            'count': len(output_df),
-        })
+        files_info.append(_save_and_record_file(output_df, filepath, product_type, target))
     
     return files_info
 
