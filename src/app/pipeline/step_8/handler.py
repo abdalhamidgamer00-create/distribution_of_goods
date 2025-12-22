@@ -54,14 +54,8 @@ def _log_split_summary(all_output_files: dict, categories: list) -> None:
             logger.info("  - %s: %s files", category, count)
 
 
-def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) -> bool:
-    """Perform splitting and conversion to Excel."""
-    has_date_header, first_line = _extract_date_header(transfer_files[0])
-    
-    logger.info("Splitting transfer files by product type...")
-    logger.info("-" * 50)
-    logger.info("Found %s transfer files to split", len(transfer_files))
-    
+def _execute_split_and_log(transfer_files: list, transfers_base_dir: str, has_date_header: bool, first_line: str) -> bool:
+    """Execute splitting and log results."""
     all_output_files = split_all_transfer_files(transfers_base_dir, has_date_header, first_line)
     
     if not all_output_files:
@@ -71,6 +65,19 @@ def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) ->
     categories = get_product_categories()
     _log_split_summary(all_output_files, categories)
     logger.info("Split files saved to: %s", transfers_base_dir)
+    return True
+
+
+def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) -> bool:
+    """Perform splitting and conversion to Excel."""
+    has_date_header, first_line = _extract_date_header(transfer_files[0])
+    
+    logger.info("Splitting transfer files by product type...")
+    logger.info("-" * 50)
+    logger.info("Found %s transfer files to split", len(transfer_files))
+    
+    if not _execute_split_and_log(transfer_files, transfers_base_dir, has_date_header, first_line):
+        return False
     
     logger.info("-" * 50)
     logger.info("Starting Excel conversion...")
