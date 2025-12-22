@@ -1,29 +1,6 @@
 """قسم اتش ار"""
-
-import streamlit as st
-
-st.set_page_config(
-    page_title="قسم اتش ار",
-    page_icon="👥",
-    layout="wide"
-)
-
-st.title("👥 قسم اتش ار")
-st.markdown("---")
-
-st.info("""
-**قسم الموارد البشرية (اتش ار)**
-
-هذا القسم مخصص لإدارة الموارد البشرية.
-
-**الميزات القادمة:**
-- إدارة الموظفين
-- الحضور والانصراف
-- الرواتب والمكافآت
-- تقارير الموارد البشرية
-""")
-
-# زر العودة
-if st.button("← العودة إلى الرئيسية"):
-    st.switch_page("pages/00_الرئيسية.py")
-
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+from src.app.gui.page_config import DEPARTMENTS
+from src.app.gui.page_templates.department import render_department
+render_department(DEPARTMENTS['hr'])

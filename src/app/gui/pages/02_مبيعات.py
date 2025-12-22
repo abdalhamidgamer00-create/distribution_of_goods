@@ -1,28 +1,6 @@
 """قسم المبيعات"""
-
-import streamlit as st
-
-st.set_page_config(
-    page_title="قسم المبيعات",
-    page_icon="💰",
-    layout="wide"
-)
-
-st.title("💰 قسم المبيعات")
-st.markdown("---")
-
-st.info("""
-**قسم المبيعات**
-
-هذا القسم مخصص لإدارة المبيعات.
-
-**الميزات القادمة:**
-- إدارة المبيعات اليومية
-- تقارير المبيعات
-- تحليل المبيعات
-- إدارة العملاء
-""")
-
-# زر العودة
-if st.button("← العودة إلى الرئيسية"):
-    st.switch_page("pages/00_الرئيسية.py")
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+from src.app.gui.page_config import DEPARTMENTS
+from src.app.gui.page_templates.department import render_department
+render_department(DEPARTMENTS['sales'])
