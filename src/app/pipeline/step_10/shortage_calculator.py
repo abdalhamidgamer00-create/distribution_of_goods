@@ -74,20 +74,25 @@ def _update_product_totals(product_totals: dict, df, branch: str, branches: list
         product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
 
 
-def _process_single_branch_totals(analytics_dir: str, branch: str, branches: list, 
-                                   product_totals: dict, header_info: dict) -> None:
-    """Process a single branch and update product totals."""
+def _load_and_validate_branch_analytics(analytics_dir: str, branch: str) -> tuple:
+    """Load and validate analytics file for a branch."""
     branch_dir = os.path.join(analytics_dir, branch)
     latest_file = get_latest_file(branch_dir, '.csv')
     
     if not latest_file:
         logger.warning("No analytics file found for branch: %s", branch)
-        return
+        return None, False, ''
     
     analytics_path = os.path.join(branch_dir, latest_file)
-    df, branch_has_date_header, branch_first_line = read_analytics_file(analytics_path)
+    return read_analytics_file(analytics_path)
+
+
+def _process_single_branch_totals(analytics_dir: str, branch: str, branches: list, 
+                                   product_totals: dict, header_info: dict) -> None:
+    """Process a single branch and update product totals."""
+    df, branch_has_date_header, branch_first_line = _load_and_validate_branch_analytics(analytics_dir, branch)
     
-    if df is None or not _has_required_columns(df, analytics_path):
+    if df is None or not _has_required_columns(df, analytics_dir):
         return
     
     if not header_info['has_date_header'] and branch_has_date_header:
