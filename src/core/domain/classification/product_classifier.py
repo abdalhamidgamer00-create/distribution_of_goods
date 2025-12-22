@@ -18,27 +18,31 @@ def _match_keywords(product_lower: str, keywords: list) -> bool:
     return any(keyword in product_lower for keyword in keywords)
 
 
+def _check_special_cases(product_lower: str) -> str:
+    """Check for special case products, return category or None."""
+    if 'shampoo' in product_lower or 'شامبو' in product_lower:
+        return 'other'
+    if re.search(r'\bamp\b', product_lower):
+        return 'injections'
+    return None
+
+
+def _find_matching_category(product_lower: str) -> str:
+    """Find matching category from classification rules."""
+    for category, keywords in CLASSIFICATION_RULES.items():
+        if _match_keywords(product_lower, keywords):
+            return category
+    return 'other'
+
+
 def classify_product_type(product_name: str) -> str:
     """Classify product type based on product name."""
     if not product_name:
         return 'other'
     
     product_lower = product_name.lower()
-    
-    # Check for shampoo first to avoid false match with "amp"
-    if 'shampoo' in product_lower or 'شامبو' in product_lower:
-        return 'other'
-    
-    # Check for "amp" as standalone word
-    if re.search(r'\bamp\b', product_lower):
-        return 'injections'
-    
-    # Check classification rules
-    for category, keywords in CLASSIFICATION_RULES.items():
-        if _match_keywords(product_lower, keywords):
-            return category
-    
-    return 'other'
+    special_case = _check_special_cases(product_lower)
+    return special_case if special_case else _find_matching_category(product_lower)
 
 
 def get_product_categories() -> list:

@@ -5,28 +5,21 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
+def _parse_date_strings(dates: list) -> tuple:
+    """Parse date strings and return datetime objects."""
+    try:
+        start_date = datetime.strptime(dates[0], "%d/%m/%Y %H:%M")
+        end_date = datetime.strptime(dates[1], "%d/%m/%Y %H:%M")
+        return start_date, end_date
+    except ValueError:
+        return None, None
+
+
 def extract_dates_from_header(header_text: str) -> tuple:
-    """
-    Extract start and end dates from header text
-    
-    Args:
-        header_text: Header text containing date range
-        
-    Returns:
-        Tuple of (start_date, end_date) as datetime objects, or (None, None) if not found
-    """
+    """Extract start and end dates from header text."""
     date_pattern = r'(\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2})'
     dates = re.findall(date_pattern, header_text)
-    
-    if len(dates) >= 2:
-        try:
-            start_date = datetime.strptime(dates[0], "%d/%m/%Y %H:%M")
-            end_date = datetime.strptime(dates[1], "%d/%m/%Y %H:%M")
-            return start_date, end_date
-        except ValueError:
-            return None, None
-    
-    return None, None
+    return _parse_date_strings(dates) if len(dates) >= 2 else (None, None)
 
 
 def _validate_date_pair(start_date: datetime, end_date: datetime) -> bool:
