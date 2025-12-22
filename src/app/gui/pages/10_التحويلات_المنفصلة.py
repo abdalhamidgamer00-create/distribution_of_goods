@@ -124,21 +124,17 @@ def get_target_folders(source_folder_path):
     return folders
 
 
+def _build_file_info(folder_path: str, filename: str) -> dict:
+    """Build file info dict."""
+    filepath = os.path.join(folder_path, filename)
+    return {'name': filename, 'path': filepath, 'size': os.path.getsize(filepath), 'relative_path': filename}
+
+
 def list_files_in_folder(folder_path, extensions):
     """List files in a folder."""
-    files = []
     if not os.path.exists(folder_path):
-        return files
-    for filename in os.listdir(folder_path):
-        if any(filename.endswith(ext) for ext in extensions):
-            filepath = os.path.join(folder_path, filename)
-            files.append({
-                'name': filename,
-                'path': filepath,
-                'size': os.path.getsize(filepath),
-                'relative_path': filename
-            })
-    return files
+        return []
+    return [_build_file_info(folder_path, f) for f in os.listdir(folder_path) if any(f.endswith(e) for e in extensions)]
 
 
 # Only show files if a branch is selected

@@ -41,20 +41,24 @@ def _write_csv_file(df: pd.DataFrame, csv_path: str, has_date_header: bool, firs
         df.to_csv(f, index=False, lineterminator='\n')
 
 
-def _process_single_category(shortage_df: pd.DataFrame, category: str, timestamp: str,
-                              base_name: str, has_date_header: bool, first_line: str) -> dict:
-    """Process a single category and return file info or None."""
+def _prepare_category_df(shortage_df: pd.DataFrame, category: str) -> pd.DataFrame:
+    """Prepare category dataframe for output."""
     category_df = shortage_df[shortage_df['product_type'] == category].copy()
     if len(category_df) == 0:
         return None
-    
-    category_df = category_df.sort_values('shortage_quantity', ascending=False)
-    category_df = category_df.drop('product_type', axis=1)
+    return category_df.sort_values('shortage_quantity', ascending=False).drop('product_type', axis=1)
+
+
+def _process_single_category(shortage_df: pd.DataFrame, category: str, timestamp: str,
+                              base_name: str, has_date_header: bool, first_line: str) -> dict:
+    """Process a single category and return file info or None."""
+    category_df = _prepare_category_df(shortage_df, category)
+    if category_df is None:
+        return None
     
     csv_filename = f"{base_name}_{timestamp}_{category}.csv"
     csv_path = os.path.join(CSV_OUTPUT_DIR, csv_filename)
     _write_csv_file(category_df, csv_path, has_date_header, first_line)
-    
     return {'csv_path': csv_path, 'df': category_df, 'count': len(category_df)}
 
 
