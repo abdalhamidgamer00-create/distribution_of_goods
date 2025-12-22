@@ -12,31 +12,27 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def read_analytics_file(analytics_path: str) -> tuple:
-    """
-    Read an analytics file and return its data.
+def _parse_csv_with_date_header(analytics_path: str, first_line: str) -> tuple:
+    """Parse CSV with optional date header detection."""
+    start_date, end_date = extract_dates_from_header(first_line)
+    has_date_header = bool(start_date and end_date)
     
-    Args:
-        analytics_path: Path to the analytics CSV file
-        
-    Returns:
-        Tuple of (DataFrame, has_date_header, first_line)
-        Returns (None, False, '') if file cannot be read
-    """
+    if has_date_header:
+        df = pd.read_csv(analytics_path, skiprows=1, encoding='utf-8-sig')
+    else:
+        df = pd.read_csv(analytics_path, encoding='utf-8-sig')
+    
+    return df, has_date_header
+
+
+def read_analytics_file(analytics_path: str) -> tuple:
+    """Read an analytics file and return its data."""
     try:
         with open(analytics_path, 'r', encoding='utf-8-sig') as f:
             first_line = f.readline().strip()
         
-        start_date, end_date = extract_dates_from_header(first_line)
-        has_date_header = bool(start_date and end_date)
-        
-        if has_date_header:
-            df = pd.read_csv(analytics_path, skiprows=1, encoding='utf-8-sig')
-        else:
-            df = pd.read_csv(analytics_path, encoding='utf-8-sig')
-        
+        df, has_date_header = _parse_csv_with_date_header(analytics_path, first_line)
         return df, has_date_header, first_line
-        
     except Exception as e:
         logger.error("Error reading analytics file %s: %s", analytics_path, e)
         return None, False, ''
