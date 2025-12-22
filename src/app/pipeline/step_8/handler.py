@@ -9,6 +9,11 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _is_split_file(file: str, categories: list) -> bool:
+    """Check if file is a split file."""
+    return any(file.endswith(f'_{cat}.csv') for cat in categories) or any(file == f'{cat}.csv' for cat in categories)
+
+
 def _find_transfer_files(transfers_base_dir: str) -> list:
     """Find all transfer CSV files that haven't been split yet."""
     categories = get_product_categories()
@@ -16,12 +21,7 @@ def _find_transfer_files(transfers_base_dir: str) -> list:
     
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
-            if not file.endswith('.csv'):
-                continue
-            
-            is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories) or \
-                           any(file == f'{cat}.csv' for cat in categories)
-            if not is_split_file:
+            if file.endswith('.csv') and not _is_split_file(file, categories):
                 transfer_files.append(os.path.join(root, file))
     
     return transfer_files
@@ -166,15 +166,19 @@ def _log_excel_summary(excel_count: int, excel_output_dir: str) -> None:
     logger.info("Excel files saved to: %s", excel_output_dir)
 
 
+def _log_and_convert(transfers_base_dir: str, excel_output_dir: str, split_files: list, 
+                      has_date_header: bool, first_line: str) -> int:
+    """Log info and perform conversion."""
+    from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
+    logger.info("Converting split CSV files to Excel format...")
+    logger.info("Found %s split CSV files to convert", len(split_files))
+    return convert_all_split_files_to_excel(transfers_base_dir, excel_output_dir, has_date_header, first_line)
+
+
 def _execute_excel_conversion(transfers_base_dir: str, excel_output_dir: str, 
                                split_files: list, has_date_header: bool, first_line: str) -> bool:
     """Execute the Excel conversion process."""
-    from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
-    
-    logger.info("Converting split CSV files to Excel format...")
-    logger.info("Found %s split CSV files to convert", len(split_files))
-    
-    excel_count = convert_all_split_files_to_excel(transfers_base_dir, excel_output_dir, has_date_header, first_line)
+    excel_count = _log_and_convert(transfers_base_dir, excel_output_dir, split_files, has_date_header, first_line)
     
     if excel_count == 0:
         logger.warning("No Excel files were created")
