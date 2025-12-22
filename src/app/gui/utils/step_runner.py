@@ -47,24 +47,21 @@ def run_step(step_id: str, use_streamlit: bool = True) -> tuple:
         return False, error_msg
 
 
+def _build_step_info(step: dict) -> dict:
+    """Build step info dictionary."""
+    return {
+        "id": step["id"],
+        "name": STEP_NAMES.get(step["id"], step["name"]),
+        "description": STEP_DESCRIPTIONS.get(step["id"], step["description"]),
+        "function": step["function"]
+    }
+
+
 def get_step_info(step_id: str) -> dict:
-    """
-    الحصول على معلومات خطوة معينة.
-    
-    Args:
-        step_id: معرف الخطوة
-        
-    Returns:
-        Dictionary with step information
-    """
+    """الحصول على معلومات خطوة معينة."""
     for step in AVAILABLE_STEPS:
         if step["id"] == step_id:
-            return {
-                "id": step["id"],
-                "name": STEP_NAMES.get(step["id"], step["name"]),
-                "description": STEP_DESCRIPTIONS.get(step["id"], step["description"]),
-                "function": step["function"]
-            }
+            return _build_step_info(step)
     return None
 
 
