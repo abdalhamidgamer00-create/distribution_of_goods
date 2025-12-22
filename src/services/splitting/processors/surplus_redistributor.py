@@ -58,14 +58,9 @@ def _find_eligible_branches(branches: list, analytics_data: dict, product_idx: i
     return eligible
 
 
-def _record_redistribution(branch: str, other_branch: str, product_idx: int, transfer_amount: float,
-                           available_surplus: float, analytics_data: dict, all_withdrawals: dict,
-                           max_withdrawals: int) -> int:
-    """Record a redistribution in the tracking structures."""
-    key = (other_branch, product_idx)
-    all_withdrawals[key] = all_withdrawals.get(key, 0.0) + transfer_amount
-    
-    withdrawals_list = analytics_data[branch][1]
+def _append_withdrawal(withdrawals_list: list, product_idx: int, transfer_amount: float, 
+                        other_branch: str, available_surplus: float) -> int:
+    """Append withdrawal entry and return max withdrawals count."""
     if product_idx < len(withdrawals_list):
         withdrawals_list[product_idx].append({
             'surplus_from_branch': transfer_amount,
@@ -73,9 +68,19 @@ def _record_redistribution(branch: str, other_branch: str, product_idx: int, tra
             'surplus_remaining': available_surplus - transfer_amount,
             'remaining_needed': 0.0
         })
-        max_withdrawals = max(max_withdrawals, len(withdrawals_list[product_idx]))
+        return len(withdrawals_list[product_idx])
+    return 0
+
+
+def _record_redistribution(branch: str, other_branch: str, product_idx: int, transfer_amount: float,
+                           available_surplus: float, analytics_data: dict, all_withdrawals: dict,
+                           max_withdrawals: int) -> int:
+    """Record a redistribution in the tracking structures."""
+    key = (other_branch, product_idx)
+    all_withdrawals[key] = all_withdrawals.get(key, 0.0) + transfer_amount
     
-    return max_withdrawals
+    count = _append_withdrawal(analytics_data[branch][1], product_idx, transfer_amount, other_branch, available_surplus)
+    return max(max_withdrawals, count)
 
 
 def _execute_transfer(branch: str, other_branch: str, product_idx: int, transfer_amount: float,

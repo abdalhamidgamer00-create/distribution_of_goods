@@ -64,21 +64,28 @@ def _get_steps_up_to(step_id: str) -> list:
     return [s for s in AVAILABLE_STEPS if int(s['id']) <= target_step_num]
 
 
+def _log_step_header(idx: int, total: int, step: dict) -> None:
+    """Log step execution header."""
+    logger.info("")
+    logger.info("[%d/%d] Executing: %s", idx, total, step["name"])
+    logger.info("-" * 70)
+
+
+def _log_step_failure(step: dict) -> None:
+    """Log step failure message."""
+    logger.error("")
+    logger.error("✗ FAILED at step %s: %s", step['id'], step['name'])
+    logger.error("Stopping execution. Previous steps completed successfully.")
+
+
 def _run_step_sequence(all_steps: list) -> bool:
     """Run a sequence of steps, stopping on first failure."""
     for idx, step in enumerate(all_steps, 1):
-        logger.info("")
-        logger.info("[%d/%d] Executing: %s", idx, len(all_steps), step["name"])
-        logger.info("-" * 70)
+        _log_step_header(idx, len(all_steps), step)
         
-        success = execute_single_step(step, use_latest_file=False)
-        
-        if not success:
-            logger.error("")
-            logger.error("✗ FAILED at step %s: %s", step['id'], step['name'])
-            logger.error("Stopping execution. Previous steps completed successfully.")
+        if not execute_single_step(step, use_latest_file=False):
+            _log_step_failure(step)
             return False
-        
         logger.info("✓ Step %s completed", step['id'])
     
     return True

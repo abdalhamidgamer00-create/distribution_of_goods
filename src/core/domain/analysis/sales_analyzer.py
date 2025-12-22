@@ -5,23 +5,25 @@ import pandas as pd
 from src.core.validation.data_validator import extract_dates_from_header
 
 
+def _build_date_range(start_date, end_date) -> dict:
+    """Build date range dictionary from dates."""
+    if start_date and end_date:
+        return {
+            'start': start_date.strftime('%d/%m/%Y %H:%M'),
+            'end': end_date.strftime('%d/%m/%Y %H:%M')
+        }
+    return None
+
+
 def _read_csv_with_header(csv_path: str) -> tuple:
     """Read CSV and detect date header."""
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
         first_line = f.readline().strip()
     
     start_date, end_date = extract_dates_from_header(first_line)
-    date_range = None
+    date_range = _build_date_range(start_date, end_date)
     
-    if start_date and end_date:
-        date_range = {
-            'start': start_date.strftime('%d/%m/%Y %H:%M'),
-            'end': end_date.strftime('%d/%m/%Y %H:%M')
-        }
-        df = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
-    else:
-        df = pd.read_csv(csv_path, encoding='utf-8-sig')
-    
+    df = pd.read_csv(csv_path, skiprows=1 if date_range else 0, encoding='utf-8-sig')
     return df, date_range
 
 
