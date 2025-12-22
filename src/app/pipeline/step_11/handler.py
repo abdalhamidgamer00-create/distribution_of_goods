@@ -117,8 +117,4 @@ def _create_output_directories() -> None:
 
 def _log_summary(total_merged: int, total_separate: int) -> None:
     """Log summary of generated files."""
-    logger.info("=" * 50)
-    logger.info(f"Generated {total_merged} merged files (CSV + Excel)")
-    logger.info(f"Generated {total_separate} separate files (CSV + Excel)")
-    logger.info(f"Merged output: {OUTPUT_MERGED_EXCEL}")
-    logger.info(f"Separate output: {OUTPUT_SEPARATE_EXCEL}")
+    logger.info("=" * 50 + f"\nGenerated {total_merged} merged files (CSV + Excel)\nGenerated {total_separate} separate files (CSV + Excel)\nMerged output: {OUTPUT_MERGED_EXCEL}\nSeparate output: {OUTPUT_SEPARATE_EXCEL}")

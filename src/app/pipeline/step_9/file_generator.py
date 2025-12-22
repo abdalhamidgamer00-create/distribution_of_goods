@@ -100,16 +100,7 @@ def get_timestamp() -> str:
 
 
 def extract_base_name(filename: str, branch: str) -> str:
-    """
-    Extract base name from analytics filename.
-    
-    Args:
-        filename: Analytics filename
-        branch: Branch name to remove from filename
-        
-    Returns:
-        Base name without branch suffix
-    """
+    """Extract base name from analytics filename without branch suffix."""
     base = os.path.splitext(filename)[0]
     return base.replace(f'_{branch}_analytics', '')
 
