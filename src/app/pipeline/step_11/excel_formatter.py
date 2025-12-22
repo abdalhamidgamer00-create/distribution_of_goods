@@ -80,15 +80,12 @@ def _style_header_row(ws) -> None:
 
 def _find_balance_columns(df: pd.DataFrame) -> tuple:
     """Find indices of sender and receiver balance columns."""
-    sender_col = None
-    receiver_col = None
-    
+    sender_col, receiver_col = None, None
     for idx, col in enumerate(df.columns, 1):
         if col == 'sender_balance':
             sender_col = idx
         elif col == 'receiver_balance':
             receiver_col = idx
-    
     return sender_col, receiver_col
 
 

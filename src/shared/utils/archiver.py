@@ -30,14 +30,10 @@ def _prepare_archive_directory(output_dir: str, archive_base_dir: str) -> tuple:
     """Prepare archive directory and paths."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     archive_dir = os.path.join(archive_base_dir, f"archive_{timestamp}")
-    
     os.makedirs(archive_base_dir, exist_ok=True)
     os.makedirs(archive_dir, exist_ok=True)
-    
     output_name = os.path.basename(output_dir.rstrip('/'))
-    archive_output_dir = os.path.join(archive_dir, output_name)
-    
-    return archive_dir, archive_output_dir
+    return archive_dir, os.path.join(archive_dir, output_name)
 
 
 def _log_archive_result(archive_dir: str, file_count: int, dir_count: int) -> dict:
