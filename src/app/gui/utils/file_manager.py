@@ -132,26 +132,22 @@ def organize_files_by_branch(files: List[Dict]) -> Dict[str, List[Dict]]:
     return organized
 
 
+def _find_category(filename: str) -> str:
+    """Find category for a filename."""
+    filename = filename.lower()
+    for cat_key, cat_name in CATEGORY_NAMES.items():
+        if f"_{cat_key}" in filename or filename.endswith(f"_{cat_key}.csv") or filename.endswith(f"_{cat_key}.xlsx"):
+            return cat_key
+    return "other"
+
+
 def organize_files_by_category(files: List[Dict]) -> Dict[str, List[Dict]]:
     """تنظيم الملفات حسب الفئة."""
     organized = {}
-    
     for file_info in files:
-        filename = file_info["name"].lower()
-        category = None
-        
-        for cat_key, cat_name in CATEGORY_NAMES.items():
-            if f"_{cat_key}" in filename or filename.endswith(f"_{cat_key}.csv") or filename.endswith(f"_{cat_key}.xlsx"):
-                category = cat_key
-                break
-        
-        if not category:
-            category = "other"
-        
+        category = _find_category(file_info["name"])
         if category not in organized:
             organized[category] = []
-        
         organized[category].append(file_info)
-    
     return organized
 

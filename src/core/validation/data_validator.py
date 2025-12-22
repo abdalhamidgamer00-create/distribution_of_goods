@@ -29,52 +29,26 @@ def extract_dates_from_header(header_text: str) -> tuple:
     return None, None
 
 
-def calculate_days_between(start_date: datetime, end_date: datetime) -> int:
-    """
-    Calculate number of days between two dates
-    
-    Args:
-        start_date: Start date
-        end_date: End date
-        
-    Returns:
-        Number of days between dates (minimum 1 to avoid division by zero)
-    """
+def _validate_date_pair(start_date: datetime, end_date: datetime) -> bool:
+    """Validate that both dates exist and are in correct order."""
     if start_date is None or end_date is None:
+        return False
+    return end_date >= start_date
+
+
+def calculate_days_between(start_date: datetime, end_date: datetime) -> int:
+    """Calculate number of days between two dates (minimum 1)."""
+    if not _validate_date_pair(start_date, end_date):
         return 0
-    
-    if end_date < start_date:
-        return 0
-    
-    delta = end_date - start_date
-    days = delta.days
-    
-    # Return at least 1 day to avoid division by zero
-    return max(1, days)
+    return max(1, (end_date - start_date).days)
 
 
 def validate_date_range_months(start_date: datetime, end_date: datetime, min_months: int = 3) -> bool:
-    """
-    Validate that date range is at least min_months months
-    
-    Args:
-        start_date: Start date
-        end_date: End date
-        min_months: Minimum number of months (default: 3)
-        
-    Returns:
-        True if date range >= min_months, False otherwise
-    """
-    if start_date is None or end_date is None:
+    """Validate that date range is at least min_months months."""
+    if not _validate_date_pair(start_date, end_date):
         return False
-    
-    if end_date < start_date:
-        return False
-    
     delta = relativedelta(end_date, start_date)
-    total_months = delta.years * 12 + delta.months
-    
-    return total_months >= min_months
+    return (delta.years * 12 + delta.months) >= min_months
 
 
 def _build_date_message(start_date, end_date, is_valid: bool) -> str:
