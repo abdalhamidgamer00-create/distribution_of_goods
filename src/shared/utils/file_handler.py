@@ -14,39 +14,27 @@ def get_file_path(filename: str, directory: str) -> str:
     return os.path.join(directory, filename)
 
 
-def get_excel_files(directory: str) -> list:
-    """Get list of Excel files in directory"""
-    excel_extensions = ['.xlsx', '.xls']
-    files = []
-    
+def _collect_files_by_extension(directory: str, extensions: list) -> list:
+    """Collect files matching extensions from directory."""
     if not os.path.exists(directory):
-        return files
+        return []
     
+    files = []
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in excel_extensions:
-                files.append(filename)
-    
+        if os.path.isfile(file_path) and os.path.splitext(filename)[1].lower() in extensions:
+            files.append(filename)
     return sorted(files)
+
+
+def get_excel_files(directory: str) -> list:
+    """Get list of Excel files in directory"""
+    return _collect_files_by_extension(directory, ['.xlsx', '.xls'])
 
 
 def get_csv_files(directory: str) -> list:
     """Get list of CSV files in directory"""
-    files = []
-    
-    if not os.path.exists(directory):
-        return files
-    
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
-            ext = os.path.splitext(filename)[1].lower()
-            if ext == '.csv':
-                files.append(filename)
-    
-    return sorted(files)
+    return _collect_files_by_extension(directory, ['.csv'])
 
 
 def _find_latest_in_directory(directory: str, extension: str) -> str:

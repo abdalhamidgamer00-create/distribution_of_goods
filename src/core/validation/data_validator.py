@@ -171,19 +171,24 @@ def _check_all_headers(actual_headers: list, required_headers: list, optional_he
     return errors, warnings
 
 
+def _try_validate_headers(csv_path: str, required_headers: list, optional_headers: list) -> tuple:
+    """Try to validate headers with error handling."""
+    second_line = _read_header_line(csv_path)
+    if not second_line:
+        return False, ["Header row is empty"], "Header row is empty"
+    
+    actual_headers = [col.strip() for col in second_line.split(',')]
+    errors, warnings = _check_all_headers(actual_headers, required_headers, optional_headers)
+    return _build_validation_result(errors, warnings, len(required_headers))
+
+
 def validate_csv_headers(csv_path: str) -> tuple:
     """Validate CSV file column headers (row 2)."""
     required_headers = _get_required_headers()
     optional_headers = _get_optional_headers()
     
     try:
-        second_line = _read_header_line(csv_path)
-        if not second_line:
-            return False, ["Header row is empty"], "Header row is empty"
-        
-        actual_headers = [col.strip() for col in second_line.split(',')]
-        errors, warnings = _check_all_headers(actual_headers, required_headers, optional_headers)
-        return _build_validation_result(errors, warnings, len(required_headers))
+        return _try_validate_headers(csv_path, required_headers, optional_headers)
     except Exception as e:
         return False, [f"Error reading file: {e}"], f"Error reading file: {e}"
 
