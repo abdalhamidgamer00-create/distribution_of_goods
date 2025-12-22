@@ -23,25 +23,22 @@ def is_valid_step_choice(choice: str) -> bool:
     return choice in [s['id'] for s in AVAILABLE_STEPS]
 
 
+def _execute_choice(choice: str) -> None:
+    """Execute the appropriate action based on user choice."""
+    if is_all_steps_choice(choice):
+        execute_all_steps()
+    elif is_valid_step_choice(choice):
+        execute_step_with_dependencies(choice)
+    else:
+        logger.error("Invalid choice! Please try again.")
+
+
 def handle_user_choice(choice: str) -> bool:
-    """
-    Process user's menu choice and execute corresponding action.
-    
-    Returns:
-        True if should continue, False if should exit
-    """
+    """Process user's menu choice and execute corresponding action."""
     if is_exit_choice(choice):
         logger.info("Thank you for using the program!")
         return False
     
-    elif is_all_steps_choice(choice):
-        execute_all_steps()
-    
-    elif is_valid_step_choice(choice):
-        execute_step_with_dependencies(choice)
-    
-    else:
-        logger.error("Invalid choice! Please try again.")
-    
+    _execute_choice(choice)
     return True
 

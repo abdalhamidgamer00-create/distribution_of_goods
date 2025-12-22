@@ -84,6 +84,14 @@ def _run_step_sequence(all_steps: list) -> bool:
     return True
 
 
+def _log_success_banner(steps_count: int) -> None:
+    """Log success banner for completed steps."""
+    logger.info("")
+    logger.info("=" * 70)
+    logger.info("✓ SUCCESS: All %d steps completed successfully!", steps_count)
+    logger.info("=" * 70)
+
+
 def execute_step_with_dependencies(step_id: str) -> bool:
     """Execute all steps from 1 to step_id in sequence."""
     all_steps = _get_steps_up_to(step_id)
@@ -97,11 +105,6 @@ def execute_step_with_dependencies(step_id: str) -> bool:
     logger.info("=" * 70)
     
     success = _run_step_sequence(all_steps)
-    
     if success:
-        logger.info("")
-        logger.info("=" * 70)
-        logger.info("✓ SUCCESS: All %d steps completed successfully!", len(all_steps))
-        logger.info("=" * 70)
-    
+        _log_success_banner(len(all_steps))
     return success
