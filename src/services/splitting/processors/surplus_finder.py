@@ -53,22 +53,10 @@ def _process_surplus_iteration(other_branch: str, product_index: int, remaining_
     return remaining_needed, target_amount
 
 
-def _search_and_withdraw_surplus(
-    branch: str,
-    product_index: int,
-    branch_data: dict,
-    branches: list,
-    existing_withdrawals: dict,
-    target_amount: float,
-    needed: float
-) -> tuple:
-    """Search for surplus in other branches and process withdrawals."""
-    remaining_needed, withdrawals_for_row, withdrawals = needed, [], {}
-    
-    surplus_search_order = get_surplus_branches_order_for_product(
-        product_index, branch, branch_data, branches, existing_withdrawals
-    )
-    
+def _execute_surplus_search(surplus_search_order: list, product_index: int, remaining_needed: float,
+                             target_amount: float, branch_data: dict, existing_withdrawals: dict,
+                             withdrawals: dict, withdrawals_for_row: list) -> tuple:
+    """Execute the search loop and return final values."""
     for other_branch in surplus_search_order:
         if remaining_needed <= 0 or target_amount <= 0:
             break
@@ -76,6 +64,22 @@ def _search_and_withdraw_surplus(
             other_branch, product_index, remaining_needed, target_amount,
             branch_data, existing_withdrawals, withdrawals, withdrawals_for_row
         )
+    return remaining_needed, target_amount
+
+
+def _search_and_withdraw_surplus(branch: str, product_index: int, branch_data: dict, branches: list,
+                                 existing_withdrawals: dict, target_amount: float, needed: float) -> tuple:
+    """Search for surplus in other branches and process withdrawals."""
+    remaining_needed, withdrawals_for_row, withdrawals = needed, [], {}
+    
+    surplus_search_order = get_surplus_branches_order_for_product(
+        product_index, branch, branch_data, branches, existing_withdrawals
+    )
+    
+    remaining_needed, _ = _execute_surplus_search(
+        surplus_search_order, product_index, remaining_needed, target_amount,
+        branch_data, existing_withdrawals, withdrawals, withdrawals_for_row
+    )
     
     return withdrawals_for_row, withdrawals, remaining_needed
 

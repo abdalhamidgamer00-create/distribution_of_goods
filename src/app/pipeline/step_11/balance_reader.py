@@ -32,6 +32,21 @@ def _build_balance_dict(df) -> dict:
     return {str(row['code']): float(row['balance']) for _, row in df.iterrows()}
 
 
+def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
+    """Read balance file and return balance dictionary."""
+    try:
+        filepath = os.path.join(branch_dir, latest_file)
+        skiprows = _detect_header_skiprows(filepath)
+        df = pd.read_csv(filepath, skiprows=skiprows, encoding='utf-8-sig')
+        
+        balances = _build_balance_dict(df)
+        logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
+        return balances
+    except Exception as e:
+        logger.warning(f"Error reading balances for {branch}: {e}")
+        return {}
+
+
 def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
     """Get balance data for a branch from its analytics file."""
     branch_dir = os.path.join(analytics_dir, branch)
@@ -45,18 +60,7 @@ def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
         logger.debug(f"No analytics file found for {branch}")
         return {}
     
-    try:
-        filepath = os.path.join(branch_dir, latest_file)
-        skiprows = _detect_header_skiprows(filepath)
-        df = pd.read_csv(filepath, skiprows=skiprows, encoding='utf-8-sig')
-        
-        balances = _build_balance_dict(df)
-        logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
-        return balances
-        
-    except Exception as e:
-        logger.warning(f"Error reading balances for {branch}: {e}")
-        return {}
+    return _read_balance_file(branch_dir, latest_file, branch)
 
 
 def get_all_branches_balances(analytics_dir: str, branches: list) -> Dict[str, Dict[str, float]]:
