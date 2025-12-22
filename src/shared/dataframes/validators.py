@@ -25,9 +25,8 @@ def clean_numeric(value) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):
-        stripped = value.strip().replace(",", "")
         try:
-            return float(stripped)
+            return float(value.strip().replace(",", ""))
         except ValueError:
             pass
     return 0.0

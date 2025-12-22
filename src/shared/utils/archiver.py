@@ -68,13 +68,8 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
     """Archive ALL files and directories from output directory to a timestamped archive."""
     if not os.path.exists(output_dir):
         raise ValueError(f"Output directory not found: {output_dir}")
-    
     archive_dir, archive_output_dir = _prepare_archive_directory(output_dir, archive_base_dir)
-    
-    logger.info("Archiving complete contents of %s...", output_dir)
-    logger.info("  Source: %s", output_dir)
-    logger.info("  Destination: %s", archive_output_dir)
-    
+    logger.info("Archiving complete contents of %s...\n  Source: %s\n  Destination: %s", output_dir, output_dir, archive_output_dir)
     archived_file_count, archived_dir_count = _archive_and_copy(output_dir, archive_output_dir)
     return _log_archive_result(archive_dir, archived_file_count, archived_dir_count)
 
@@ -96,14 +91,11 @@ def create_zip_archive(archive_dir: str, zip_output_path: str = None) -> str:
     """Create a ZIP file from archive directory."""
     if not os.path.exists(archive_dir):
         raise ValueError(f"Archive directory not found: {archive_dir}")
-    
     if zip_output_path is None:
         zip_output_path = f"{archive_dir}.zip"
-    
     logger.info("Creating ZIP archive: %s...", zip_output_path)
     _write_zip_files(archive_dir, zip_output_path)
     logger.info("ZIP archive created successfully: %s", zip_output_path)
-    
     return zip_output_path
 
 
