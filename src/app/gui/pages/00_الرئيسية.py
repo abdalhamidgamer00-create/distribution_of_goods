@@ -4,10 +4,19 @@ import streamlit as st
 import sys
 import os
 
-# Fix import path for Streamlit Cloud
+
+# =============================================================================
+# PATH CONFIGURATION
+# =============================================================================
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+
+
+# =============================================================================
+# PAGE CONFIGURATION
+# =============================================================================
 
 st.set_page_config(
     page_title="الرئيسية",
@@ -15,59 +24,74 @@ st.set_page_config(
     layout="wide"
 )
 
-# التحقق من تسجيل الدخول
+
+# =============================================================================
+# AUTHENTICATION
+# =============================================================================
+
 from src.app.gui.utils.auth import check_password
 if not check_password():
     st.stop()
 
-# العنوان الرئيسي
+
+# =============================================================================
+# PAGE HEADER
+# =============================================================================
+
 st.title("💊 مشاريع صيدليات محروس")
 st.markdown("---")
 
-# عرض الأقسام الخمسة
 st.subheader("الأقسام المتاحة")
 
-# إنشاء 5 أعمدة للأقسام
-col1, col2, col3, col4, col5 = st.columns(5)
+
+# =============================================================================
+# DEPARTMENT NAVIGATION
+# =============================================================================
+
+purchases_column, sales_column, accounts_column, marketing_column, hr_column = st.columns(5)
 
 # قسم المشتريات
-with col1:
+with purchases_column:
     st.markdown("### 🛒 قسم المشتريات")
     st.markdown("إدارة المشتريات والطلبات")
     if st.button("الدخول إلى القسم", key="purchases", use_container_width=True):
         st.switch_page("pages/01_مشتريات.py")
 
 # قسم المبيعات
-with col2:
+with sales_column:
     st.markdown("### 💰 قسم المبيعات")
     st.markdown("إدارة المبيعات والتوزيع")
     if st.button("الدخول إلى القسم", key="sales", use_container_width=True):
         st.switch_page("pages/02_مبيعات.py")
 
 # قسم الحسابات
-with col3:
+with accounts_column:
     st.markdown("### 📊 قسم الحسابات")
     st.markdown("إدارة الحسابات والمالية")
     if st.button("الدخول إلى القسم", key="accounts", use_container_width=True):
         st.switch_page("pages/03_حسابات.py")
 
 # قسم التسويق
-with col4:
+with marketing_column:
     st.markdown("### 📈 قسم التسويق")
     st.markdown("إدارة التسويق والعروض")
     if st.button("الدخول إلى القسم", key="marketing", use_container_width=True):
         st.switch_page("pages/04_تسويق.py")
 
 # قسم اتش ار
-with col5:
+with hr_column:
     st.markdown("### 👥 قسم اتش ار")
     st.markdown("إدارة الموارد البشرية")
     if st.button("الدخول إلى القسم", key="hr", use_container_width=True):
         st.switch_page("pages/05_اتش_ار.py")
 
+
+# =============================================================================
+# FOOTER
+# =============================================================================
+
 st.markdown("---")
 
-# معلومات إضافية
 st.info("""
 **مرحباً بك في نظام مشاريع صيدليات محروس**
 
