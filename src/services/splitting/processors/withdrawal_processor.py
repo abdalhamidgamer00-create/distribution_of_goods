@@ -20,21 +20,21 @@ def _get_empty_column_data() -> tuple:
     return 0.0, '', 0.0, 0.0
 
 
-def _build_single_column_set(withdrawals_list: list, num: int, final_surplus_remaining_dict: dict) -> tuple:
-    """Build column data for a single withdrawal number."""
-    surplus_from_col, available_col, surplus_remaining_col, remaining_needed_col = [], [], [], []
-    
+def _collect_column_data(withdrawals_list: list, num: int, final_surplus_remaining_dict: dict) -> list:
+    """Collect column data for all rows."""
+    result = []
     for row_idx, withdrawals_for_row in enumerate(withdrawals_list):
         if num <= len(withdrawals_for_row):
-            data = _extract_withdrawal_data(withdrawals_for_row[num - 1], row_idx, final_surplus_remaining_dict)
+            result.append(_extract_withdrawal_data(withdrawals_for_row[num - 1], row_idx, final_surplus_remaining_dict))
         else:
-            data = _get_empty_column_data()
-        surplus_from_col.append(data[0])
-        available_col.append(data[1])
-        surplus_remaining_col.append(data[2])
-        remaining_needed_col.append(data[3])
-    
-    return surplus_from_col, available_col, surplus_remaining_col, remaining_needed_col
+            result.append(_get_empty_column_data())
+    return result
+
+
+def _build_single_column_set(withdrawals_list: list, num: int, final_surplus_remaining_dict: dict) -> tuple:
+    """Build column data for a single withdrawal number."""
+    data_list = _collect_column_data(withdrawals_list, num, final_surplus_remaining_dict)
+    return tuple(zip(*data_list))
 
 
 def _add_withdrawal_columns(branch_df, withdrawals_list: list, max_withdrawals: int, final_surplus_remaining_dict: dict):
