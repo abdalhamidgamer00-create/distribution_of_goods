@@ -48,18 +48,23 @@ def _execute_archive(archive_base_dir: str, output_dir: str) -> bool:
     return True
 
 
+def _archive_if_has_files(output_dir: str, archive_base_dir: str) -> bool:
+    """Archive if output directory has files."""
+    if not _has_files_in_directory(output_dir):
+        logger.info("No previous output to archive. Starting fresh...")
+        return True
+    
+    logger.info("Archiving previous output files...")
+    return _execute_archive(archive_base_dir, output_dir)
+
+
 def step_1_archive_output(use_latest_file: bool = None) -> bool:
     """Step 1: Archive previous output files before starting new process."""
     output_dir = os.path.join("data", "output")
     archive_base_dir = os.path.join("data", "archive")
     
-    if not _has_files_in_directory(output_dir):
-        logger.info("No previous output to archive. Starting fresh...")
-        return True
-    
     try:
-        logger.info("Archiving previous output files...")
-        return _execute_archive(archive_base_dir, output_dir)
+        return _archive_if_has_files(output_dir, archive_base_dir)
     except Exception as e:
         logger.exception("Error during archiving: %s", e)
         return False

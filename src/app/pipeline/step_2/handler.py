@@ -42,20 +42,20 @@ def _select_excel_file_source(excel_files: list, input_dir: str, use_latest_file
     return excel_file
 
 
-def _perform_conversion(excel_file: str, input_dir: str, converted_dir: str) -> bool:
-    """Perform the CSV conversion."""
-    csv_file = _generate_output_filename(excel_file)
-    input_path = get_file_path(excel_file, input_dir)
-    output_path = get_file_path(csv_file, converted_dir)
-    
-    logger.info("Converting %s to %s...", excel_file, csv_file)
-    success = convert_excel_to_csv(input_path, output_path)
-    
+def _log_conversion_result(success: bool, converted_dir: str) -> None:
+    """Log conversion result."""
     if success:
         logger.info("Conversion successful! File saved to: %s", converted_dir)
     else:
         logger.error("Conversion failed!")
-    
+
+
+def _perform_conversion(excel_file: str, input_dir: str, converted_dir: str) -> bool:
+    """Perform the CSV conversion."""
+    csv_file = _generate_output_filename(excel_file)
+    logger.info("Converting %s to %s...", excel_file, csv_file)
+    success = convert_excel_to_csv(get_file_path(excel_file, input_dir), get_file_path(csv_file, converted_dir))
+    _log_conversion_result(success, converted_dir)
     return success
 
 
