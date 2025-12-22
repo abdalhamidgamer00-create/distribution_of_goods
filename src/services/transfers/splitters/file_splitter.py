@@ -122,18 +122,23 @@ def _process_transfer_file(transfer_file_path: str, transfers_base_dir: str, has
         all_output_files[(source_target, base_filename, category)] = file_path
 
 
+def _find_unsplit_files(transfers_base_dir: str, categories: list) -> list:
+    """Find all unsplit transfer files."""
+    unsplit = []
+    for root, dirs, files in os.walk(transfers_base_dir):
+        for file in files:
+            if file.endswith('.csv') and not _is_already_split_file(file, categories):
+                unsplit.append(os.path.join(root, file))
+    return unsplit
+
+
 def split_all_transfer_files(transfers_base_dir: str, has_date_header: bool = False, first_line: str = "") -> dict:
     """Split all transfer files by product type."""
     all_output_files = {}
     categories = get_product_categories()
     
-    for root, dirs, files in os.walk(transfers_base_dir):
-        for file in files:
-            if file.endswith('.csv') and not _is_already_split_file(file, categories):
-                _process_transfer_file(os.path.join(root, file), transfers_base_dir, 
-                                       has_date_header, first_line, all_output_files)
-    
-    return all_output_files
+    for file_path in _find_unsplit_files(transfers_base_dir, categories):
+        _process_transfer_file(file_path, transfers_base_dir, has_date_header, first_line, all_output_files)
     
     return all_output_files
 

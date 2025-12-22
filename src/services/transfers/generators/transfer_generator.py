@@ -118,12 +118,8 @@ def _execute_transfer_process(analytics_path: str, source_branch: str, target_br
                                transfers_dir: str, base_name: str, has_date_header: bool, first_line: str) -> str:
     """Execute transfer process with error handling."""
     try:
-        return _process_transfer(analytics_path, source_branch, target_branch, 
-                                transfers_dir, base_name, has_date_header, first_line)
-    except ValueError as exc:
-        logger.error("%s", exc)
-        return None
-    except FileNotFoundError:
+        return _process_transfer(analytics_path, source_branch, target_branch, transfers_dir, base_name, has_date_header, first_line)
+    except (ValueError, FileNotFoundError):
         return None
     except Exception as e:
         logger.exception("Warning: Error processing %s -> %s: %s", source_branch, target_branch, e)
