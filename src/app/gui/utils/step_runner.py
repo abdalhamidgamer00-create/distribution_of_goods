@@ -130,18 +130,24 @@ def _run_without_ui(all_steps: list, step_id: str) -> tuple:
     return True, f"تم تنفيذ جميع الخطوات حتى الخطوة {step_id} بنجاح"
 
 
-def run_step_with_dependencies(step_id: str, use_streamlit: bool = True) -> tuple:
-    """تشغيل جميع الخطوات من 1 إلى step_id بالترتيب."""
+def _validate_step_id(step_id: str) -> tuple:
+    """Validate step_id and return (success, target_step_num/error_message)."""
     try:
-        target_step_num = int(step_id)
+        return True, int(step_id)
     except ValueError:
         return False, f"معرف خطوة غير صالح: {step_id}"
+
+
+def run_step_with_dependencies(step_id: str, use_streamlit: bool = True) -> tuple:
+    """تشغيل جميع الخطوات من 1 إلى step_id بالترتيب."""
+    valid, result = _validate_step_id(step_id)
+    if not valid:
+        return False, result
     
+    target_step_num = result
     all_steps = [s for s in AVAILABLE_STEPS if int(s['id']) <= target_step_num]
     
     if not all_steps:
         return False, f"لم يتم العثور على خطوات حتى الخطوة {step_id}"
     
-    if use_streamlit:
-        return _run_with_streamlit_ui(all_steps, step_id, target_step_num)
-    return _run_without_ui(all_steps, step_id)
+    return _run_with_streamlit_ui(all_steps, step_id, target_step_num) if use_streamlit else _run_without_ui(all_steps, step_id)
