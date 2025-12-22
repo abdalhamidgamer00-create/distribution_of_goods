@@ -182,11 +182,7 @@ def redistribute_wasted_surplus(branches: list, branch_data: dict, analytics_dat
     """Redistribute wasted surplus from balance limit rule to other eligible branches."""
     logger.info("Starting second redistribution round for wasted surplus...")
     start_time = perf_counter()
-    
-    max_withdrawals, redistributed_count = _execute_redistribution(
-        num_products, branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, balance_limit
-    )
-    
+    max_withdrawals, redistributed_count = _execute_redistribution(num_products, branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, balance_limit)
     elapsed_time = _log_redistribution_result(start_time, redistributed_count)
     return max_withdrawals, elapsed_time
 

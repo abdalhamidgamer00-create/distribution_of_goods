@@ -28,28 +28,16 @@ def _apply_proportional_limit(target_amount: float, proportional_allocation: flo
     """Apply proportional allocation limits to target amount."""
     if proportional_allocation is None or proportional_allocation <= 0:
         return target_amount
-    
     if balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD:
         return 0.0
-    
     allocated_ceil = math.ceil(proportional_allocation)
     if allocated_ceil + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
         return min(target_amount, _calculate_max_transfer(balance))
-    
     return min(target_amount, allocated_ceil)
 
 
-def calculate_target_amount(
-    needed: float,
-    balance: float,
-    proportional_allocation: float = None
-) -> float:
-    """
-    Calculate target transfer amount based on balance rules.
-    
-    Returns:
-        Target amount to transfer (as float)
-    """
+def calculate_target_amount(needed: float, balance: float, proportional_allocation: float = None) -> float:
+    """Calculate target transfer amount based on balance rules."""
     target_amount = _calculate_base_target(needed, balance)
     return _apply_proportional_limit(target_amount, proportional_allocation, balance)
 

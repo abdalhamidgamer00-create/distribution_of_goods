@@ -25,10 +25,7 @@ def _write_single_branch(branch: str, analytics_data: dict, output_base_dir: str
     branch_df = analytics_data[branch]
     branch_dir = os.path.join(output_base_dir, branch)
     ensure_directory_exists(branch_dir)
-    
-    output_file = f"{base_filename}_{branch}.csv"
-    output_path = os.path.join(branch_dir, output_file)
-    
+    output_path = os.path.join(branch_dir, f"{base_filename}_{branch}.csv")
     _write_csv_with_header(branch_df, output_path, has_date_header, first_line)
     logger.debug("Written branch file: %s", output_path)
     return output_path
@@ -49,11 +46,8 @@ def _write_single_analytics(branch: str, analytics_data: dict, analytics_dir: st
     """Write a single analytics file."""
     branch_dir = os.path.join(analytics_dir, branch)
     ensure_directory_exists(branch_dir)
-    
     analytics_df = analytics_data[branch][analytics_columns].copy()
-    analytics_file = f"{base_filename}_{branch}_analytics.csv"
-    analytics_path = os.path.join(branch_dir, analytics_file)
-    
+    analytics_path = os.path.join(branch_dir, f"{base_filename}_{branch}_analytics.csv")
     _write_csv_with_header(analytics_df, analytics_path, has_date_header, first_line)
     logger.debug("Written analytics file: %s", analytics_path)
 
