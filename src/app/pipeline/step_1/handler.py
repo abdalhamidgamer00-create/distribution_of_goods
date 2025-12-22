@@ -11,13 +11,10 @@ def _has_files_in_directory(directory: str) -> bool:
     """Check if directory exists and has any files."""
     if not os.path.exists(directory):
         return False
-    
     try:
         for root, dirs, files in os.walk(directory):
-            if files:
-                return True
-    except Exception:
-        pass
+            if files: return True
+    except Exception: pass
     return False
 
 
@@ -76,10 +73,8 @@ def _calculate_directory_size(directory: str) -> int:
         for dirpath, dirnames, filenames in os.walk(directory):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
-                if os.path.exists(filepath):
-                    total_size += os.path.getsize(filepath)
-    except Exception:
-        pass
+                if os.path.exists(filepath): total_size += os.path.getsize(filepath)
+    except Exception: pass
     return total_size
 
 
