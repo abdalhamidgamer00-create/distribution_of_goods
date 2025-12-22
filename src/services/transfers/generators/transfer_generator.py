@@ -139,19 +139,19 @@ def generate_transfer_for_pair(source_branch: str, target_branch: str, analytics
 
 
 
+def _collect_transfer_pairs(branches: list) -> list:
+    """Collect all valid source-target pairs."""
+    return [(s, t) for s in branches for t in branches if s != t]
+
+
 def _generate_for_all_pairs(branches: list, analytics_dir: str, transfers_dir: str,
                              has_date_header: bool, first_line: str) -> dict:
     """Generate transfers for all branch pairs."""
     transfer_files = {}
-    for source_branch in branches:
-        for target_branch in branches:
-            if source_branch != target_branch:
-                transfer_path = generate_transfer_for_pair(
-                    source_branch, target_branch, analytics_dir, transfers_dir,
-                    has_date_header, first_line
-                )
-                if transfer_path:
-                    transfer_files[(source_branch, target_branch)] = transfer_path
+    for source_branch, target_branch in _collect_transfer_pairs(branches):
+        transfer_path = generate_transfer_for_pair(source_branch, target_branch, analytics_dir, transfers_dir, has_date_header, first_line)
+        if transfer_path:
+            transfer_files[(source_branch, target_branch)] = transfer_path
     return transfer_files
 
 

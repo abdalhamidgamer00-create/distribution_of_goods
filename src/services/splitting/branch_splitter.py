@@ -76,19 +76,21 @@ def _process_single_product_for_branch(branch: str, product_idx: int, branch_dat
     return _update_analytics_data(branch, product_idx, withdrawals_list, analytics_data, max_withdrawals)
 
 
+def _process_product_needing_branches(product_idx: int, branches: list, branch_data: dict, analytics_data: dict, 
+                                        proportional_allocation: dict, all_withdrawals: dict, max_withdrawals: int) -> int:
+    """Process all needing branches for a single product."""
+    needing_branches = get_needing_branches_order_for_product(product_idx, branch_data, branches)
+    for branch in needing_branches:
+        max_withdrawals = _process_single_product_for_branch(branch, product_idx, branch_data, branches, analytics_data, all_withdrawals, proportional_allocation, max_withdrawals)
+    return max_withdrawals
+
+
 def _process_all_products(branches: list, branch_data: dict, analytics_data: dict,
                           proportional_allocation: dict, num_products: int) -> tuple:
     """Process all products and return withdrawals data."""
     all_withdrawals, max_withdrawals = {}, 0
-    
     for product_idx in range(num_products):
-        needing_branches = get_needing_branches_order_for_product(product_idx, branch_data, branches)
-        for branch in needing_branches:
-            max_withdrawals = _process_single_product_for_branch(
-                branch, product_idx, branch_data, branches, analytics_data,
-                all_withdrawals, proportional_allocation, max_withdrawals
-            )
-    
+        max_withdrawals = _process_product_needing_branches(product_idx, branches, branch_data, analytics_data, proportional_allocation, all_withdrawals, max_withdrawals)
     return all_withdrawals, max_withdrawals
 
 
