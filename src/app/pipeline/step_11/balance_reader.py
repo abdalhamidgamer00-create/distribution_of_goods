@@ -64,19 +64,5 @@ def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
 
 
 def get_all_branches_balances(analytics_dir: str, branches: list) -> Dict[str, Dict[str, float]]:
-    """
-    Get balance data for all branches.
-    
-    Args:
-        analytics_dir: Directory containing analytics files
-        branches: List of branch names
-        
-    Returns:
-        Dictionary mapping branch name to balance dictionary
-    """
-    all_balances = {}
-    
-    for branch in branches:
-        all_balances[branch] = get_branch_balances(analytics_dir, branch)
-    
-    return all_balances
+    """Get balance data for all branches."""
+    return {branch: get_branch_balances(analytics_dir, branch) for branch in branches}

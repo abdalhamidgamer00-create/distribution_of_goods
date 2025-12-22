@@ -63,20 +63,23 @@ def _add_balance_columns(df: pd.DataFrame, sender_balances: dict, receiver_balan
     return df
 
 
+def _read_and_enrich_transfer(filepath: str, filename: str, sender_balances: dict, analytics_dir: str) -> Optional[pd.DataFrame]:
+    """Read and enrich transfer file with balance columns."""
+    df = pd.read_csv(filepath)
+    if df.empty:
+        return None
+    
+    target_branch = _extract_target_branch(filename)
+    receiver_balances = get_branch_balances(analytics_dir, target_branch)
+    df['target_branch'] = target_branch
+    df['transfer_type'] = 'normal'
+    return _add_balance_columns(df, sender_balances, receiver_balances)
+
+
 def _process_single_transfer_file(filepath: str, filename: str, sender_balances: dict, analytics_dir: str) -> Optional[pd.DataFrame]:
     """Process a single transfer file and add required columns."""
     try:
-        df = pd.read_csv(filepath)
-        if df.empty:
-            return None
-        
-        target_branch = _extract_target_branch(filename)
-        receiver_balances = get_branch_balances(analytics_dir, target_branch)
-        
-        df['target_branch'] = target_branch
-        df['transfer_type'] = 'normal'
-        return _add_balance_columns(df, sender_balances, receiver_balances)
-        
+        return _read_and_enrich_transfer(filepath, filename, sender_balances, analytics_dir)
     except Exception as e:
         logger.warning(f"Error reading {filepath}: {e}")
         return None
