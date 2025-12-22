@@ -40,29 +40,33 @@ def _password_entered():
         st.session_state["password_correct"] = False
 
 
+LOGIN_STYLES = """
+<style>
+.stTextInput {direction: rtl;}
+</style>
+"""
+
+
+def _render_login_inputs() -> None:
+    """Render username and password inputs with login button."""
+    st.markdown("### 🔐 تسجيل الدخول")
+    st.text_input("اسم المستخدم", key="username")
+    st.text_input("كلمة المرور", type="password", key="password")
+    
+    if st.button("دخول", type="primary", use_container_width=True):
+        _password_entered()
+        if st.session_state.get("password_correct") == False:
+            st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
+        else:
+            st.rerun()
+
+
 def _show_login_form():
     """Display the login form."""
-    st.markdown(
-        """
-        <style>
-        .stTextInput {direction: rtl;}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    
+    st.markdown(LOGIN_STYLES, unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("### 🔐 تسجيل الدخول")
-        st.text_input("اسم المستخدم", key="username")
-        st.text_input("كلمة المرور", type="password", key="password")
-        
-        if st.button("دخول", type="primary", use_container_width=True):
-            _password_entered()
-            if st.session_state.get("password_correct") == False:
-                st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
-            else:
-                st.rerun()
+        _render_login_inputs()
 
 
 def check_password():

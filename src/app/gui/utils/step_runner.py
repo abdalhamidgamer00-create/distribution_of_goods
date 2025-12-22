@@ -80,6 +80,16 @@ def get_all_steps() -> list:
     return steps
 
 
+def _process_step_with_ui(step: dict, progress_bar, status_text, idx: int, total: int):
+    """Process a single step with UI feedback."""
+    step_name = STEP_NAMES.get(step['id'], step['name'])
+    status_text.text(f"جاري تنفيذ الخطوة {step['id']}: {step_name}")
+    
+    success, message = run_step(step['id'], use_streamlit=False)
+    progress_bar.progress((idx + 1) / total)
+    return success, message, step_name
+
+
 def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) -> tuple:
     """Run steps with Streamlit progress bar."""
     import streamlit as st
@@ -87,19 +97,12 @@ def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) 
     status_text = st.empty()
     
     for idx, step in enumerate(all_steps):
-        step_name = STEP_NAMES.get(step['id'], step['name'])
-        status_text.text(f"جاري تنفيذ الخطوة {step['id']}: {step_name}")
-        
-        success, message = run_step(step['id'], use_streamlit=False)
-        
+        success, message, step_name = _process_step_with_ui(step, progress_bar, status_text, idx, len(all_steps))
         if not success:
             progress_bar.empty()
             status_text.empty()
             st.error(f"❌ فشلت الخطوة {step['id']}: {step_name}")
-            st.error(message)
             return False, f"فشلت الخطوة {step['id']}: {message}"
-        
-        progress_bar.progress((idx + 1) / len(all_steps))
     
     progress_bar.empty()
     status_text.empty()
