@@ -202,6 +202,19 @@ def _process_product_type_file(df: pd.DataFrame, product_type: str, filepath: st
     return {'path': filepath, 'product_type': product_type, 'count': len(output_df)}
 
 
+def _create_merged_files(df: pd.DataFrame, branch: str, branch_output_dir: str) -> List[Dict]:
+    """Create merged files for each product type."""
+    files_info = []
+    for product_type in PRODUCT_TYPES:
+        filename = f"{branch}_combined_{product_type}.csv"
+        filepath = os.path.join(branch_output_dir, filename)
+        file_info = _process_product_type_file(df, product_type, filepath)
+        if file_info:
+            files_info.append(file_info)
+            logger.debug(f"Generated merged: {filename} ({file_info['count']} products)")
+    return files_info
+
+
 def generate_merged_files(df: pd.DataFrame, branch: str, csv_output_dir: str, timestamp: str = None) -> List[Dict]:
     """Generate merged files (all targets in one file per product type)."""
     if df is None or df.empty:
@@ -214,16 +227,7 @@ def generate_merged_files(df: pd.DataFrame, branch: str, csv_output_dir: str, ti
     if 'product_type' not in df.columns:
         df = _add_product_type_column(df)
     
-    files_info = []
-    for product_type in PRODUCT_TYPES:
-        filename = f"{branch}_combined_{product_type}.csv"
-        filepath = os.path.join(branch_output_dir, filename)
-        file_info = _process_product_type_file(df, product_type, filepath)
-        if file_info:
-            files_info.append(file_info)
-            logger.debug(f"Generated merged: {filename} ({file_info['count']} products)")
-    
-    return files_info
+    return _create_merged_files(df, branch, branch_output_dir)
 
 
 def _process_target_branch_files(df: pd.DataFrame, target: str, branch: str, target_output_dir: str, timestamp: str) -> List[Dict]:
