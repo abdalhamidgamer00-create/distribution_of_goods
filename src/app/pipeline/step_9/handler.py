@@ -44,6 +44,19 @@ def _process_all_branches(branches: list) -> dict:
     return all_branch_files
 
 
+def _execute_surplus_generation(branches: list) -> bool:
+    """Execute the surplus file generation process."""
+    all_branch_files = _process_all_branches(branches)
+    
+    if not all_branch_files:
+        logger.warning("No remaining surplus files were created")
+        return False
+    
+    _convert_all_to_excel(all_branch_files)
+    _log_summary(all_branch_files)
+    return True
+
+
 def step_9_generate_remaining_surplus(use_latest_file: bool = None) -> bool:
     """Step 9: Generate remaining surplus files for each branch."""
     branches = get_branches()
@@ -52,17 +65,7 @@ def step_9_generate_remaining_surplus(use_latest_file: bool = None) -> bool:
         return False
     
     try:
-        all_branch_files = _process_all_branches(branches)
-        
-        if not all_branch_files:
-            logger.warning("No remaining surplus files were created")
-            return False
-        
-        _convert_all_to_excel(all_branch_files)
-        _log_summary(all_branch_files)
-        
-        return True
-        
+        return _execute_surplus_generation(branches)
     except Exception as e:
         logger.exception("Error generating remaining surplus files: %s", e)
         return False
@@ -110,28 +113,29 @@ def _calculate_branch_surplus(df, branch: str):
     return add_product_type_column(result_df)
 
 
-def _generate_branch_files(result_df, branch: str, has_date_header: bool, first_line: str) -> dict:
-    """Generate CSV files for branch surplus."""
-    latest_file = get_latest_file(os.path.join(ANALYTICS_DIR, branch), '.csv')
-    base_name = extract_base_name(latest_file, branch)
-    timestamp = get_timestamp()
-    
+def _create_csv_and_log(result_df, branch: str, output_dir: str, base_name: str, 
+                         timestamp: str, has_date_header: bool, first_line: str) -> dict:
+    """Create CSV files and log results."""
     csv_files = generate_csv_files(
-        df=result_df,
-        branch=branch,
-        output_dir=CSV_OUTPUT_DIR,
-        base_name=base_name,
-        timestamp=timestamp,
-        has_date_header=has_date_header,
-        first_line=first_line
+        df=result_df, branch=branch, output_dir=output_dir, base_name=base_name,
+        timestamp=timestamp, has_date_header=has_date_header, first_line=first_line
     )
     
     if csv_files:
         logger.info("Generated remaining surplus files for %s: %d products in %d categories",
                    branch, len(result_df), len(csv_files))
         return {'files': csv_files, 'total_products': len(result_df)}
-    
     return None
+
+
+def _generate_branch_files(result_df, branch: str, has_date_header: bool, first_line: str) -> dict:
+    """Generate CSV files for branch surplus."""
+    latest_file = get_latest_file(os.path.join(ANALYTICS_DIR, branch), '.csv')
+    base_name = extract_base_name(latest_file, branch)
+    timestamp = get_timestamp()
+    
+    return _create_csv_and_log(result_df, branch, CSV_OUTPUT_DIR, base_name, 
+                               timestamp, has_date_header, first_line)
 
 
 def _process_branch(branch: str) -> dict:

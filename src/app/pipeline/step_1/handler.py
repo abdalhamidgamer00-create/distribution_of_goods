@@ -37,6 +37,17 @@ def _log_archive_summary(result: dict, archive_dir: str) -> None:
         logger.info("ZIP: %s (%.1f%% compression)", _format_size(zip_size), compression_ratio)
 
 
+def _execute_archive(archive_base_dir: str, output_dir: str) -> bool:
+    """Execute archive and clear output."""
+    result = archive_all_output(archive_base_dir=archive_base_dir, create_zip=True)
+    _log_archive_summary(result, result['archive_dir'])
+    
+    clear_success = clear_output_directory(output_dir)
+    status = "✓ Output directory cleared successfully" if clear_success else "⚠ Some files could not be deleted"
+    logger.info(status)
+    return True
+
+
 def step_1_archive_output(use_latest_file: bool = None) -> bool:
     """Step 1: Archive previous output files before starting new process."""
     output_dir = os.path.join("data", "output")
@@ -48,16 +59,7 @@ def step_1_archive_output(use_latest_file: bool = None) -> bool:
     
     try:
         logger.info("Archiving previous output files...")
-        
-        result = archive_all_output(archive_base_dir=archive_base_dir, create_zip=True)
-        _log_archive_summary(result, result['archive_dir'])
-        
-        clear_success = clear_output_directory(output_dir)
-        status = "✓ Output directory cleared successfully" if clear_success else "⚠ Some files could not be deleted"
-        logger.info(status)
-        
-        return True
-        
+        return _execute_archive(archive_base_dir, output_dir)
     except Exception as e:
         logger.exception("Error during archiving: %s", e)
         return False
