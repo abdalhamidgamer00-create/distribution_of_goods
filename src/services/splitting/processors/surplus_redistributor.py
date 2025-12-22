@@ -141,26 +141,29 @@ def _process_single_product(product_idx: int, branches: list, branch_data: dict,
     return max_withdrawals, redistributed_count
 
 
-def redistribute_wasted_surplus(
-    branches: list,
-    branch_data: dict,
-    analytics_data: dict,
-    all_withdrawals: dict,
-    max_withdrawals: int,
-    num_products: int,
-    balance_limit: float = 30.0
-) -> tuple:
-    """Redistribute wasted surplus from balance limit rule to other eligible branches."""
-    logger.info("Starting second redistribution round for wasted surplus...")
-    start_time = perf_counter()
+def _execute_redistribution(num_products: int, branches: list, branch_data: dict, analytics_data: dict,
+                             all_withdrawals: dict, max_withdrawals: int, balance_limit: float) -> tuple:
+    """Execute redistribution for all products."""
     redistributed_count = 0
-    
     for product_idx in range(num_products):
         max_withdrawals, count = _process_single_product(
             product_idx, branches, branch_data, analytics_data,
             all_withdrawals, max_withdrawals, balance_limit
         )
         redistributed_count += count
+    return max_withdrawals, redistributed_count
+
+
+def redistribute_wasted_surplus(branches: list, branch_data: dict, analytics_data: dict,
+                                all_withdrawals: dict, max_withdrawals: int, num_products: int,
+                                balance_limit: float = 30.0) -> tuple:
+    """Redistribute wasted surplus from balance limit rule to other eligible branches."""
+    logger.info("Starting second redistribution round for wasted surplus...")
+    start_time = perf_counter()
+    
+    max_withdrawals, redistributed_count = _execute_redistribution(
+        num_products, branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, balance_limit
+    )
     
     elapsed_time = perf_counter() - start_time
     logger.info(f"Second redistribution round completed in {elapsed_time:.2f}s ({redistributed_count} transfers)")
