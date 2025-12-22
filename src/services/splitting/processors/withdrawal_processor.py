@@ -6,12 +6,7 @@ def _extract_withdrawal_data(withdrawal: dict, row_idx: int, final_surplus_remai
     surplus_from_branch = withdrawal['surplus_from_branch']
     available_branch = withdrawal['available_branch']
     remaining_needed = withdrawal['remaining_needed']
-    
-    if available_branch:
-        surplus_remaining = final_surplus_remaining_dict[available_branch][row_idx]
-    else:
-        surplus_remaining = withdrawal['surplus_remaining']
-    
+    surplus_remaining = final_surplus_remaining_dict[available_branch][row_idx] if available_branch else withdrawal['surplus_remaining']
     return surplus_from_branch, available_branch, surplus_remaining, remaining_needed
 
 

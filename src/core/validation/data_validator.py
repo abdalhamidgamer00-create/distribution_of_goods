@@ -125,14 +125,12 @@ def _check_unknown_columns(actual_headers: list, required_headers: list, optiona
 def _build_validation_result(errors: list, warnings: list, required_count: int) -> tuple:
     """Build validation result tuple."""
     is_valid = len(errors) == 0
-    
     if is_valid:
         message = f"✅ Column headers validation successful: All {required_count} required columns present"
         if warnings:
             message += f"\n⚠️ {len(warnings)} warning(s): " + "; ".join(warnings)
     else:
         message = f"❌ Column headers validation failed: {len(errors)} error(s) found"
-    
     return is_valid, errors, message
 
 
