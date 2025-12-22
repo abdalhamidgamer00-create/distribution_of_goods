@@ -129,6 +129,15 @@ def _find_split_csv_files(transfers_base_dir: str) -> list:
     return split_files
 
 
+def _count_single_excel(file: str, categories: list, category_counts: dict) -> None:
+    """Count a single Excel file's category."""
+    if file.endswith('.xlsx'):
+        for cat in categories:
+            if file.endswith(f'_{cat}.xlsx'):
+                category_counts[cat] += 1
+                break
+
+
 def _count_excel_by_category(excel_output_dir: str) -> dict:
     """Count Excel files by category."""
     categories = get_product_categories()
@@ -139,11 +148,7 @@ def _count_excel_by_category(excel_output_dir: str) -> dict:
     
     for root, dirs, files in os.walk(excel_output_dir):
         for file in files:
-            if file.endswith('.xlsx'):
-                for cat in categories:
-                    if file.endswith(f'_{cat}.xlsx'):
-                        category_counts[cat] += 1
-                        break
+            _count_single_excel(file, categories, category_counts)
     
     return category_counts
 

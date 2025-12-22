@@ -85,6 +85,18 @@ def _validate_csv_file(output_dir: str, csv_files: list, use_latest_file: bool) 
     return _handle_post_validation(overall_valid, csv_path, csv_file)
 
 
+def _try_validate(output_dir: str, csv_files: list, use_latest_file: bool) -> bool:
+    """Try to validate files with error handling."""
+    try:
+        return _validate_csv_file(output_dir, csv_files, use_latest_file)
+    except ValueError:
+        logger.error("Invalid input! Please enter a number.")
+        return False
+    except Exception as e:
+        logger.exception("Error during validation: %s", e)
+        return False
+
+
 def step_3_validate_data(use_latest_file: bool = None):
     """Step 3: Validate CSV data and date range."""
     output_dir = os.path.join("data", "output", "converted", "csv")
@@ -94,13 +106,6 @@ def step_3_validate_data(use_latest_file: bool = None):
         logger.error("No CSV files found in %s", output_dir)
         return False
     
-    try:
-        return _validate_csv_file(output_dir, csv_files, use_latest_file)
-    except ValueError:
-        logger.error("Invalid input! Please enter a number.")
-        return False
-    except Exception as e:
-        logger.exception("Error during validation: %s", e)
-        return False
+    return _try_validate(output_dir, csv_files, use_latest_file)
 
 
