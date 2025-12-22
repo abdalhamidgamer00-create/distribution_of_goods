@@ -19,22 +19,25 @@ def _load_analytics_file(analytics_path: str) -> pd.DataFrame:
     return df
 
 
+def _process_transfer_column(analytics_df: pd.DataFrame, source_branch: str, col_num: int) -> pd.Series:
+    """Process a single transfer column pair and return amounts."""
+    available_col = f'available_branch_{col_num}'
+    surplus_col = f'surplus_from_branch_{col_num}'
+    
+    if available_col not in analytics_df.columns or surplus_col not in analytics_df.columns:
+        return pd.Series(0.0, index=analytics_df.index)
+    
+    available_series = analytics_df[available_col].fillna("").astype(str).str.strip()
+    mask = available_series.eq(source_branch)
+    surplus_series = clean_numeric_series(analytics_df[surplus_col])
+    return surplus_series.where(mask, 0.0)
+
+
 def _calculate_transfer_amounts(analytics_df: pd.DataFrame, source_branch: str) -> pd.Series:
     """Calculate transfer amounts from source branch columns."""
     transfer_amounts = pd.Series(0.0, index=analytics_df.index)
-    
     for col_num in range(1, 10):
-        available_col = f'available_branch_{col_num}'
-        surplus_col = f'surplus_from_branch_{col_num}'
-        
-        if available_col not in analytics_df.columns or surplus_col not in analytics_df.columns:
-            continue
-        
-        available_series = analytics_df[available_col].fillna("").astype(str).str.strip()
-        mask = available_series.eq(source_branch)
-        surplus_series = clean_numeric_series(analytics_df[surplus_col])
-        transfer_amounts += surplus_series.where(mask, 0.0)
-    
+        transfer_amounts += _process_transfer_column(analytics_df, source_branch, col_num)
     return transfer_amounts
 
 

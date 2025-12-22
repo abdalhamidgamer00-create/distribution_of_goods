@@ -76,13 +76,8 @@ def _execute_split(csv_path: str, csv_file: str, branches_dir: str, analytics_di
     return True
 
 
-def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
-    """Step 6: Split CSV file by branches."""
-    renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    csv_files, branches_dir, analytics_dir = _setup_and_validate(renamed_dir)
-    if csv_files is None:
-        return False
-    
+def _try_execute_split(renamed_dir: str, csv_files: list, branches_dir: str, analytics_dir: str, use_latest_file: bool) -> bool:
+    """Try to execute split with error handling."""
     try:
         csv_file = select_csv_file(renamed_dir, csv_files, use_latest_file)
         csv_path = get_file_path(csv_file, renamed_dir)
@@ -93,5 +88,15 @@ def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during splitting: %s", e)
         return False
+
+
+def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
+    """Step 6: Split CSV file by branches."""
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    csv_files, branches_dir, analytics_dir = _setup_and_validate(renamed_dir)
+    if csv_files is None:
+        return False
+    
+    return _try_execute_split(renamed_dir, csv_files, branches_dir, analytics_dir, use_latest_file)
 
 
