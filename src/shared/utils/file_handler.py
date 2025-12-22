@@ -37,19 +37,20 @@ def get_csv_files(directory: str) -> list:
     return _collect_files_by_extension(directory, ['.csv'])
 
 
+def _is_matching_file(file_path: str, filename: str, extension: str) -> bool:
+    """Check if file matches criteria."""
+    return os.path.isfile(file_path) and (extension is None or filename.lower().endswith(extension.lower()))
+
+
 def _find_latest_in_directory(directory: str, extension: str) -> str:
     """Find the latest file by modification time in directory."""
-    latest_file = None
-    latest_time = 0
-    
+    latest_file, latest_time = None, 0
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
-            if extension is None or filename.lower().endswith(extension.lower()):
-                mtime = os.path.getmtime(file_path)
-                if mtime > latest_time:
-                    latest_time = mtime
-                    latest_file = filename
+        if _is_matching_file(file_path, filename, extension):
+            mtime = os.path.getmtime(file_path)
+            if mtime > latest_time:
+                latest_time, latest_file = mtime, filename
     return latest_file
 
 

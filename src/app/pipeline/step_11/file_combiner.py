@@ -25,15 +25,12 @@ def get_timestamp() -> str:
 def _collect_all_data(branch: str, transfers_dir: str, surplus_dir: str, analytics_dir: str) -> list:
     """Collect transfer and surplus data for a branch."""
     all_data = []
-    
     transfers_df = _read_transfer_files(branch, transfers_dir, analytics_dir)
     if transfers_df is not None and not transfers_df.empty:
         all_data.append(transfers_df)
-    
     surplus_df = _read_surplus_as_admin_transfer(branch, surplus_dir, analytics_dir)
     if surplus_df is not None and not surplus_df.empty:
         all_data.append(surplus_df)
-    
     return all_data
 
 

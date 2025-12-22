@@ -154,15 +154,11 @@ def _delete_and_verify(output_dir: str, file_count: int, dir_count: int) -> bool
     """Delete contents and verify result."""
     logger.info("  Found %s files in %s directories to delete", file_count, dir_count)
     _delete_directory_contents(output_dir)
-    
     remaining_files, remaining_dirs = _count_directory_contents(output_dir)
     if remaining_files == 0 and remaining_dirs == 0:
-        logger.info("  ✓ Output directory cleared successfully!")
-        logger.info("  ✓ Deleted %s files and %s directories", file_count, dir_count)
+        logger.info("  ✓ Output directory cleared successfully!\n  ✓ Deleted %s files and %s directories", file_count, dir_count)
         return True
-    
-    logger.warning("  ⚠ Some files/directories could not be deleted")
-    logger.warning("  Remaining: %s files, %s directories", remaining_files, remaining_dirs)
+    logger.warning("  ⚠ Some files/directories could not be deleted\n  Remaining: %s files, %s directories", remaining_files, remaining_dirs)
     return False
 
 

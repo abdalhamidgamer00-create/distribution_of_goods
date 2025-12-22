@@ -38,7 +38,6 @@ def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
         filepath = os.path.join(branch_dir, latest_file)
         skiprows = _detect_header_skiprows(filepath)
         df = pd.read_csv(filepath, skiprows=skiprows, encoding='utf-8-sig')
-        
         balances = _build_balance_dict(df)
         logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
         return balances

@@ -94,7 +94,6 @@ def get_source_folders(base_dir, branch_filter=None):
     """Get all source branch folders with timestamps."""
     if not os.path.exists(base_dir):
         return []
-    
     folders = []
     for folder_name in os.listdir(base_dir):
         folder_path = os.path.join(base_dir, folder_name)
