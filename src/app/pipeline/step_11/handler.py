@@ -31,40 +31,24 @@ OUTPUT_SEPARATE_CSV = os.path.join("data", "output", "combined_transfers", "sepa
 OUTPUT_SEPARATE_EXCEL = os.path.join("data", "output", "combined_transfers", "separate", "excel")
 
 
+def _convert_and_count(files: list, excel_output_dir: str) -> int:
+    """Convert files to Excel and return count."""
+    if files:
+        convert_to_excel_with_formatting(csv_files=files, excel_output_dir=excel_output_dir)
+        return len(files)
+    return 0
+
+
 def _generate_merged_output(combined_data, branch: str, timestamp: str) -> int:
     """Generate merged files (all targets in one file) and convert to Excel."""
-    merged_files = generate_merged_files(
-        df=combined_data,
-        branch=branch,
-        csv_output_dir=OUTPUT_MERGED_CSV,
-        timestamp=timestamp,
-    )
-    
-    if merged_files:
-        convert_to_excel_with_formatting(
-            csv_files=merged_files,
-            excel_output_dir=OUTPUT_MERGED_EXCEL,
-        )
-        return len(merged_files)
-    return 0
+    merged_files = generate_merged_files(df=combined_data, branch=branch, csv_output_dir=OUTPUT_MERGED_CSV, timestamp=timestamp)
+    return _convert_and_count(merged_files, OUTPUT_MERGED_EXCEL)
 
 
 def _generate_separate_output(combined_data, branch: str, timestamp: str) -> int:
     """Generate separate files (per target branch) and convert to Excel."""
-    separate_files = generate_separate_files(
-        df=combined_data,
-        branch=branch,
-        csv_output_dir=OUTPUT_SEPARATE_CSV,
-        timestamp=timestamp,
-    )
-    
-    if separate_files:
-        convert_to_excel_with_formatting(
-            csv_files=separate_files,
-            excel_output_dir=OUTPUT_SEPARATE_EXCEL,
-        )
-        return len(separate_files)
-    return 0
+    separate_files = generate_separate_files(df=combined_data, branch=branch, csv_output_dir=OUTPUT_SEPARATE_CSV, timestamp=timestamp)
+    return _convert_and_count(separate_files, OUTPUT_SEPARATE_EXCEL)
 
 
 def _get_combined_data(branch: str):

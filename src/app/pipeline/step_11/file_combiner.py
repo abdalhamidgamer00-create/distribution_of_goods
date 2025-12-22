@@ -238,20 +238,28 @@ def _save_and_record_file(output_df: pd.DataFrame, filepath: str, product_type: 
     return {'path': filepath, 'product_type': product_type, 'target': target, 'count': len(output_df)}
 
 
+def _process_separate_product_file(target_df: pd.DataFrame, product_type: str, branch: str, target: str, 
+                                 target_output_dir: str, timestamp: str) -> dict:
+    """Process a single product type file."""
+    type_df = target_df[target_df['product_type'] == product_type]
+    if type_df.empty:
+        return None
+    
+    output_df = _sort_by_product_name(_prepare_output_columns(type_df))
+    filename = f"transfer_from_{branch}_to_{target}_{product_type}_{timestamp}.csv"
+    filepath = os.path.join(target_output_dir, filename)
+    return _save_and_record_file(output_df, filepath, product_type, target)
+
+
 def _process_target_branch_files(df: pd.DataFrame, target: str, branch: str, target_output_dir: str, timestamp: str) -> List[Dict]:
     """Process all product type files for a target branch."""
     target_df = df[df['target_branch'] == target]
     files_info = []
     
     for product_type in PRODUCT_TYPES:
-        type_df = target_df[target_df['product_type'] == product_type]
-        if type_df.empty:
-            continue
-        
-        output_df = _sort_by_product_name(_prepare_output_columns(type_df))
-        filename = f"transfer_from_{branch}_to_{target}_{product_type}_{timestamp}.csv"
-        filepath = os.path.join(target_output_dir, filename)
-        files_info.append(_save_and_record_file(output_df, filepath, product_type, target))
+        result = _process_separate_product_file(target_df, product_type, branch, target, target_output_dir, timestamp)
+        if result:
+            files_info.append(result)
     
     return files_info
 
