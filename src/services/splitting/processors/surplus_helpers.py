@@ -36,6 +36,12 @@ def _record_withdrawal(other_branch: str, product_index: int, amount: int, avail
     withdrawals[(other_branch, product_index)] = withdrawals.get((other_branch, product_index), 0.0) + amount
 
 
+def _update_amounts(remaining_needed: float, target_amount: float, amount_taken: float) -> tuple:
+    """Update remaining and target amounts after withdrawal."""
+    return (math.ceil(max(0, remaining_needed - amount_taken)), 
+            math.ceil(max(0, target_amount - amount_taken)))
+
+
 def process_single_withdrawal(
     other_branch: str,
     product_index: int,
@@ -51,8 +57,7 @@ def process_single_withdrawal(
     if amount_to_take > 0:
         _record_withdrawal(other_branch, product_index, amount_to_take, available_surplus, 
                           remaining_needed, withdrawals, withdrawals_for_row)
-        remaining_needed = math.ceil(max(0, remaining_needed - amount_to_take))
-        target_amount = math.ceil(max(0, target_amount - amount_to_take))
+        return _update_amounts(remaining_needed, target_amount, amount_to_take)
     
     return remaining_needed, target_amount
 

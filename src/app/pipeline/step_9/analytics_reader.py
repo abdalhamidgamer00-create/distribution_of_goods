@@ -58,26 +58,26 @@ def get_latest_analytics_path(analytics_dir: str, branch: str) -> str:
     return os.path.join(branch_dir, latest_file)
 
 
+def _extract_withdrawal_amount(row, available_col: str, surplus_col: str, source_branch: str) -> float:
+    """Extract withdrawal amount from a single column pair."""
+    if pd.notna(row.get(available_col)) and str(row[available_col]).strip() == source_branch:
+        if pd.notna(row.get(surplus_col)):
+            try:
+                return float(row[surplus_col])
+            except (ValueError, TypeError):
+                pass
+    return 0.0
+
+
 def _process_withdrawal_row(row, source_branch: str, withdrawal_pairs: list) -> dict:
     """Process a single row and extract withdrawals from source branch."""
-    withdrawals = {}
     product_code = row.get('code')
-    
     if pd.isna(product_code):
-        return withdrawals
+        return {}
     
     product_code = str(product_code)
-    
-    for available_col, surplus_col in withdrawal_pairs:
-        if pd.notna(row.get(available_col)) and str(row[available_col]).strip() == source_branch:
-            if pd.notna(row.get(surplus_col)):
-                try:
-                    amount = float(row[surplus_col])
-                    withdrawals[product_code] = withdrawals.get(product_code, 0.0) + amount
-                except (ValueError, TypeError):
-                    pass
-    
-    return withdrawals
+    total = sum(_extract_withdrawal_amount(row, a, s, source_branch) for a, s in withdrawal_pairs)
+    return {product_code: total} if total > 0 else {}
 
 
 def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:

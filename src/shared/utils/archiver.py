@@ -53,6 +53,17 @@ def _log_archive_result(archive_dir: str, file_count: int, dir_count: int) -> di
     }
 
 
+def _archive_and_copy(output_dir: str, archive_output_dir: str) -> tuple:
+    """Copy directory and return counts."""
+    file_count, dir_count = _count_directory_contents(output_dir)
+    logger.info("  Found %s files in %s directories", file_count, dir_count)
+    
+    if os.path.exists(output_dir):
+        _copy_directory_tree(output_dir, archive_output_dir)
+    
+    return _count_directory_contents(archive_output_dir)
+
+
 def archive_output_directory(output_dir: str, archive_base_dir: str = "data/archive") -> dict:
     """Archive ALL files and directories from output directory to a timestamped archive."""
     if not os.path.exists(output_dir):
@@ -64,14 +75,7 @@ def archive_output_directory(output_dir: str, archive_base_dir: str = "data/arch
     logger.info("  Source: %s", output_dir)
     logger.info("  Destination: %s", archive_output_dir)
     
-    file_count, dir_count = _count_directory_contents(output_dir)
-    logger.info("  Found %s files in %s directories", file_count, dir_count)
-    
-    if os.path.exists(output_dir):
-        _copy_directory_tree(output_dir, archive_output_dir)
-    
-    archived_file_count, archived_dir_count = _count_directory_contents(archive_output_dir)
-    
+    archived_file_count, archived_dir_count = _archive_and_copy(output_dir, archive_output_dir)
     return _log_archive_result(archive_dir, archived_file_count, archived_dir_count)
 
 
