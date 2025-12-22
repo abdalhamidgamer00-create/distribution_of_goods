@@ -15,27 +15,22 @@ def log_step_progress(step: dict, current: int, total: int) -> None:
     logger.info("-" * 50)
 
 
+def _execute_and_track(step: dict, use_latest_file: bool) -> bool:
+    """Execute a step and track its result."""
+    success = execute_single_step(step, use_latest_file)
+    step['_last_result'] = success
+    return success
+
+
 def execute_all_steps_batch(use_latest_file: bool) -> tuple[int, int]:
-    """
-    Execute all steps and return success/failure counts.
-    
-    Args:
-        use_latest_file: Whether to use latest file for all steps
-        
-    Returns:
-        Tuple of (successful_count, total_count)
-    """
+    """Execute all steps and return success/failure counts."""
     total_steps = len(AVAILABLE_STEPS)
     successful_count = 0
     
     for idx, step in enumerate(AVAILABLE_STEPS, 1):
         log_step_progress(step, idx, total_steps)
-        
-        if execute_single_step(step, use_latest_file):
+        if _execute_and_track(step, use_latest_file):
             successful_count += 1
-            step['_last_result'] = True
-        else:
-            step['_last_result'] = False
     
     return successful_count, total_steps
 
