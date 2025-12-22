@@ -21,10 +21,8 @@ logger = get_logger(__name__)
 def _process_single_csv(file_info: dict, excel_output_dir: str) -> str:
     """Process a single CSV file and return Excel path or None."""
     csv_path = file_info.get('path')
-    
     if not csv_path or not os.path.exists(csv_path):
         return None
-    
     try:
         return _convert_single_file(csv_path, excel_output_dir)
     except Exception as e:

@@ -21,16 +21,12 @@ def _load_analytics_file(analytics_path: str) -> pd.DataFrame:
 
 def _process_transfer_column(analytics_df: pd.DataFrame, source_branch: str, col_num: int) -> pd.Series:
     """Process a single transfer column pair and return amounts."""
-    available_col = f'available_branch_{col_num}'
-    surplus_col = f'surplus_from_branch_{col_num}'
-    
+    available_col, surplus_col = f'available_branch_{col_num}', f'surplus_from_branch_{col_num}'
     if available_col not in analytics_df.columns or surplus_col not in analytics_df.columns:
         return pd.Series(0.0, index=analytics_df.index)
-    
     available_series = analytics_df[available_col].fillna("").astype(str).str.strip()
     mask = available_series.eq(source_branch)
-    surplus_series = clean_numeric_series(analytics_df[surplus_col])
-    return surplus_series.where(mask, 0.0)
+    return clean_numeric_series(analytics_df[surplus_col]).where(mask, 0.0)
 
 
 def _calculate_transfer_amounts(analytics_df: pd.DataFrame, source_branch: str) -> pd.Series:
