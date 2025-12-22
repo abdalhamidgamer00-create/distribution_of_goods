@@ -165,10 +165,8 @@ def _write_output_files(branches: list, processed_data: dict, output_base_dir: s
     """Write branch and analytics files."""
     write_start = perf_counter()
     output_files = write_branch_files(branches, processed_data, output_base_dir, base_filename, has_date_header, first_line)
-    
     if analytics_dir is None:
         analytics_dir = os.path.normpath(os.path.join(output_base_dir, "..", "analytics"))
-    
     write_analytics_files(branches, processed_data, analytics_dir, base_filename, max_withdrawals, has_date_header, first_line)
     timing_stats["write_time"] = perf_counter() - write_start
     return output_files
@@ -200,9 +198,7 @@ def _execute_split(csv_path: str, output_base_dir: str, base_filename: str,
 def split_csv_by_branches(csv_path: str, output_base_dir: str, base_filename: str, analytics_dir: str = None) -> tuple:
     """Split CSV file by branches into separate files."""
     _validate_csv_input(csv_path)
-    branches = get_branches()
-    timing_stats = {}
-    
+    branches, timing_stats = get_branches(), {}
     try:
         return _execute_split(csv_path, output_base_dir, base_filename, analytics_dir, branches, timing_stats)
     except (FileNotFoundError, ValueError):

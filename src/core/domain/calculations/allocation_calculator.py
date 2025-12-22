@@ -46,10 +46,8 @@ def _calculate_proportions(matrices: dict, product_index: int, total_scores: pd.
     needed_row = matrices['needed'].loc[product_index]
     needing_mask = needed_row > 0
     total_scores_sum = total_scores[needing_mask].sum()
-    
     if total_scores_sum <= 0:
         return needed_row.clip(lower=0) / total_needed_value
-    
     proportions = pd.Series([0.0] * len(branches), index=branches)
     proportions[needing_mask] = total_scores[needing_mask] / total_scores_sum
     return proportions
@@ -87,14 +85,10 @@ def _redistribute_allocations(allocated_dict: dict, needed_dict: dict,
     """Redistribute from branches with >1 to branches with 0."""
     branches_with_more = [b for b, amt in allocated_dict.items() if amt > 1 and needed_dict.get(b, 0) > 0]
     branches_with_zero = [b for b, amt in allocated_dict.items() if amt == 0 and needed_dict.get(b, 0) > 0]
-    
     if not branches_with_zero:
         return allocated_dict
-    
     sorted_zeros = _get_sorted_zero_branches(branches_with_zero, branch_data, product_index)
     return _perform_redistribution(allocated_dict, branches_with_more, sorted_zeros)
-    
-    return allocated_dict
 
 
 def _process_single_product_allocation(idx: int, matrices: dict, total_surplus: pd.Series, 
@@ -102,14 +96,9 @@ def _process_single_product_allocation(idx: int, matrices: dict, total_surplus: 
     """Process allocation for a single product."""
     if total_needed.loc[idx] <= 0:
         return None
-    
     total_scores = _calculate_weighted_scores(matrices, idx)
-    allocated_dict = _allocate_by_proportions(
-        matrices, idx, total_scores, total_surplus.loc[idx], total_needed.loc[idx], branches
-    )
-    
-    needed_dict = matrices['needed'].loc[idx].to_dict()
-    return _redistribute_allocations(allocated_dict, needed_dict, branch_data, idx)
+    allocated_dict = _allocate_by_proportions(matrices, idx, total_scores, total_surplus.loc[idx], total_needed.loc[idx], branches)
+    return _redistribute_allocations(allocated_dict, matrices['needed'].loc[idx].to_dict(), branch_data, idx)
 
 
 def _setup_allocation_data(branch_data: dict, branches: list) -> tuple:
