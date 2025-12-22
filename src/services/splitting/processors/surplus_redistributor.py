@@ -41,11 +41,9 @@ def _calculate_branch_eligibility(branch: str, analytics_data: dict, product_idx
     balance, needed, avg_sales = _get_branch_product_data(analytics_data, branch, product_idx)
     transferred_so_far = _calculate_transferred_amount(analytics_data, branch, product_idx)
     current_balance = balance + transferred_so_far
-    
     remaining_capacity = _check_branch_needs_transfer(needed, current_balance, balance_limit, transferred_so_far)
     if remaining_capacity is None:
         return None
-    
     return (branch, avg_sales, current_balance, remaining_capacity)
 
 

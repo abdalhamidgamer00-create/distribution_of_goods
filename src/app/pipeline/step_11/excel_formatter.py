@@ -109,13 +109,7 @@ def _apply_color_scale_to_column(ws, col_idx: int, last_row: int, color_rule) ->
 
 def _adjust_column_widths(ws, df: pd.DataFrame) -> None:
     """Adjust column widths based on content type."""
-    width_map = {
-        'code': 12,
-        'product_name': 40,
-        'quantity': 15, 'sender_balance': 15, 'receiver_balance': 15,
-        'target_branch': 15, 'transfer_type': 15
-    }
-    
+    width_map = {'code': 12, 'product_name': 40, 'quantity': 15, 'sender_balance': 15, 'receiver_balance': 15, 'target_branch': 15, 'transfer_type': 15}
     for idx, col in enumerate(df.columns, 1):
         col_letter = get_column_letter(idx)
         ws.column_dimensions[col_letter].width = width_map.get(col, 12)
