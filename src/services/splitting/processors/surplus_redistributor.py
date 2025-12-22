@@ -17,6 +17,17 @@ def _calculate_transferred_amount(analytics_data: dict, branch: str, product_idx
     return sum(w.get('surplus_from_branch', 0.0) for w in withdrawals_list[product_idx])
 
 
+def _check_branch_needs_transfer(needed: float, current_balance: float, balance_limit: float, 
+                                  transferred_so_far: float) -> tuple:
+    """Check if branch needs transfer and calculate remaining capacity."""
+    if needed <= 0 or current_balance >= balance_limit:
+        return None
+    remaining_needed = needed - transferred_so_far
+    if remaining_needed <= 0:
+        return None
+    return min(remaining_needed, balance_limit - current_balance)
+
+
 def _calculate_branch_eligibility(branch: str, analytics_data: dict, product_idx: int, 
                                    balance_limit: float) -> tuple:
     """Calculate if a branch is eligible and its details."""
@@ -27,14 +38,10 @@ def _calculate_branch_eligibility(branch: str, analytics_data: dict, product_idx
     transferred_so_far = _calculate_transferred_amount(analytics_data, branch, product_idx)
     current_balance = balance + transferred_so_far
     
-    if needed <= 0 or current_balance >= balance_limit:
+    remaining_capacity = _check_branch_needs_transfer(needed, current_balance, balance_limit, transferred_so_far)
+    if remaining_capacity is None:
         return None
     
-    remaining_needed = needed - transferred_so_far
-    if remaining_needed <= 0:
-        return None
-    
-    remaining_capacity = min(remaining_needed, balance_limit - current_balance)
     avg_sales = branch_df.iloc[product_idx]['avg_sales']
     return (branch, avg_sales, current_balance, remaining_capacity)
 

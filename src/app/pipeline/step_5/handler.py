@@ -45,16 +45,8 @@ def _execute_rename(csv_path: str, csv_file: str, renamed_dir: str) -> bool:
     return True
 
 
-def step_5_rename_columns(use_latest_file: bool = None) -> bool:
-    """Step 5: Rename CSV columns from Arabic to English."""
-    output_dir = os.path.join("data", "output", "converted", "csv")
-    renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    ensure_directory_exists(renamed_dir)
-    
-    csv_files = _get_input_files(output_dir)
-    if csv_files is None:
-        return False
-    
+def _process_rename(output_dir: str, csv_files: list, renamed_dir: str, use_latest_file: bool) -> bool:
+    """Process the rename operation with error handling."""
     try:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
         csv_path = get_file_path(csv_file, output_dir)
@@ -65,5 +57,18 @@ def step_5_rename_columns(use_latest_file: bool = None) -> bool:
     except Exception as e:
         logger.exception("Error during column renaming: %s", e)
         return False
+
+
+def step_5_rename_columns(use_latest_file: bool = None) -> bool:
+    """Step 5: Rename CSV columns from Arabic to English."""
+    output_dir = os.path.join("data", "output", "converted", "csv")
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    ensure_directory_exists(renamed_dir)
+    
+    csv_files = _get_input_files(output_dir)
+    if csv_files is None:
+        return False
+    
+    return _process_rename(output_dir, csv_files, renamed_dir, use_latest_file)
 
 

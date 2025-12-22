@@ -58,46 +58,42 @@ def _select_file_interactive(directory: str, files: list, extensions: list, file
     return _handle_option_choice(option, directory, files, extensions, file_type)
 
 
+def _get_latest_csv(output_dir: str) -> str:
+    """Get latest CSV file or raise error."""
+    csv_file = get_latest_file(output_dir, '.csv')
+    if not csv_file:
+        raise ValueError("No CSV files found!")
+    logger.info("Using latest file: %s", csv_file)
+    return csv_file
+
+
 def select_csv_file(output_dir: str, csv_files: list, use_latest_file: bool = None) -> str:
-    """
-    Select CSV file based on user choice or use_latest_file flag.
-    
-    Returns:
-        Selected CSV file name
-    """
+    """Select CSV file based on user choice or use_latest_file flag."""
     if use_latest_file is True:
-        csv_file = get_latest_file(output_dir, '.csv')
-        if not csv_file:
-            raise ValueError("No CSV files found!")
-        logger.info("Using latest file: %s", csv_file)
-        return csv_file
-    
+        return _get_latest_csv(output_dir)
     elif use_latest_file is False:
         _show_files_list(csv_files, "CSV")
         return _select_from_list(csv_files)
-    
     else:
         return _select_file_interactive(output_dir, csv_files, ['.csv'], "CSV")
 
 
+def _get_latest_excel(input_dir: str) -> str:
+    """Get latest Excel file or raise error."""
+    excel_file = _get_latest_file_with_extensions(input_dir, ['.xlsx', '.xls'])
+    if not excel_file:
+        raise ValueError("No Excel files found!")
+    logger.info("Using latest file: %s", excel_file)
+    return excel_file
+
+
 def select_excel_file(input_dir: str, excel_files: list, use_latest_file: bool = None) -> str:
-    """
-    Select Excel file based on user choice or use_latest_file flag.
-    
-    Returns:
-        Selected Excel file name
-    """
+    """Select Excel file based on user choice or use_latest_file flag."""
     if use_latest_file is True:
-        excel_file = _get_latest_file_with_extensions(input_dir, ['.xlsx', '.xls'])
-        if not excel_file:
-            raise ValueError("No Excel files found!")
-        logger.info("Using latest file: %s", excel_file)
-        return excel_file
-    
+        return _get_latest_excel(input_dir)
     elif use_latest_file is False:
         _show_files_list(excel_files, "Excel")
         return _select_from_list(excel_files)
-    
     else:
         return _select_file_interactive(input_dir, excel_files, ['.xlsx', '.xls'], "Excel")
 

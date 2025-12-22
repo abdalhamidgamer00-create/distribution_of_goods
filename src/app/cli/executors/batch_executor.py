@@ -49,6 +49,20 @@ def display_execution_summary(successful: int, total: int) -> None:
     logger.info(SEPARATOR)
 
 
+def _run_steps_with_mode(use_latest: bool) -> bool:
+    """Run all steps with the given file selection mode."""
+    if use_latest:
+        logger.info("Using latest file for all steps...")
+    
+    try:
+        successful, total = execute_all_steps_batch(use_latest)
+        display_execution_summary(successful, total)
+        return successful == total
+    except Exception as e:
+        logger.exception("Error during batch execution: %s", e)
+        return False
+
+
 def execute_all_steps() -> bool:
     """Execute all steps in order with user file selection."""
     logger.info("Executing all steps...")
@@ -58,15 +72,5 @@ def execute_all_steps() -> bool:
     if use_latest is None:
         return False
     
-    if use_latest:
-        logger.info("Using latest file for all steps...")
-    
-    try:
-        successful, total = execute_all_steps_batch(use_latest)
-        display_execution_summary(successful, total)
-        return successful == total
-        
-    except Exception as e:
-        logger.exception("Error during batch execution: %s", e)
-        return False
+    return _run_steps_with_mode(use_latest)
 
