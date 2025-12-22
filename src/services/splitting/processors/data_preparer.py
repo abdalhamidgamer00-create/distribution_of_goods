@@ -116,14 +116,9 @@ def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_d
     first_line = _read_first_line(csv_path)
     start_date, end_date, header_contained_dates = _resolve_date_range(first_line, start_date, end_date)
     num_days = _validate_date_range(start_date, end_date, require_dates)
-    
     df = _read_csv_with_header(csv_path, header_contained_dates)
-    
-    branches = get_branches()
-    base_columns = get_base_columns()
+    branches, base_columns = get_branches(), get_base_columns()
     _validate_required_columns(df, branches, base_columns)
-    
-    branch_data = _build_branch_data_dict(df, branches, base_columns, num_days)
-    return branch_data, header_contained_dates, first_line
+    return _build_branch_data_dict(df, branches, base_columns, num_days), header_contained_dates, first_line
 
 

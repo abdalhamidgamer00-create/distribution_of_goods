@@ -121,19 +121,20 @@ def _try_redistribute_from_branch(other_branch: str, branch: str, product_idx: i
     return _execute_transfer(branch, other_branch, product_idx, transfer_amount, available_surplus, remaining_capacity, analytics_data, all_withdrawals, max_withdrawals)
 
 
+def _should_skip_branch(other_branch: str, branch: str, remaining_capacity: float) -> bool:
+    """Check if branch should be skipped."""
+    return other_branch == branch or remaining_capacity <= 0
+
+
 def _process_all_other_branches(branch: str, product_idx: int, remaining_capacity: float, branches: list,
                                  branch_data: dict, analytics_data: dict, all_withdrawals: dict,
                                  max_withdrawals: int) -> tuple:
     """Process redistribution from all other branches."""
     redistributed_count = 0
     for other_branch in branches:
-        if other_branch == branch or remaining_capacity <= 0:
-            continue
-        max_withdrawals, count, remaining_capacity = _try_redistribute_from_branch(
-            other_branch, branch, product_idx, remaining_capacity,
-            branch_data, analytics_data, all_withdrawals, max_withdrawals
-        )
-        redistributed_count += count
+        if not _should_skip_branch(other_branch, branch, remaining_capacity):
+            max_withdrawals, count, remaining_capacity = _try_redistribute_from_branch(other_branch, branch, product_idx, remaining_capacity, branch_data, analytics_data, all_withdrawals, max_withdrawals)
+            redistributed_count += count
     return max_withdrawals, redistributed_count
 
 
@@ -149,15 +150,9 @@ def _process_single_product(product_idx: int, branches: list, branch_data: dict,
                              all_withdrawals: dict, max_withdrawals: int, balance_limit: float) -> tuple:
     """Process redistribution for a single product."""
     redistributed_count = 0
-    eligible_branches = _find_eligible_branches(branches, analytics_data, product_idx, balance_limit)
-    
-    for branch, _, _, remaining_capacity in eligible_branches:
-        max_withdrawals, count = _redistribute_to_branch(
-            branch, product_idx, remaining_capacity, branches,
-            branch_data, analytics_data, all_withdrawals, max_withdrawals
-        )
+    for branch, _, _, remaining_capacity in _find_eligible_branches(branches, analytics_data, product_idx, balance_limit):
+        max_withdrawals, count = _redistribute_to_branch(branch, product_idx, remaining_capacity, branches, branch_data, analytics_data, all_withdrawals, max_withdrawals)
         redistributed_count += count
-    
     return max_withdrawals, redistributed_count
 
 

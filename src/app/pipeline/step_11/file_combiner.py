@@ -160,14 +160,11 @@ def _read_surplus_as_admin_transfer(branch: str, surplus_dir: str, analytics_dir
     """Read remaining surplus and format as transfer to admin."""
     if branch == 'admin':
         return None
-    
     branch_surplus_dir = os.path.join(surplus_dir, branch)
     if not os.path.exists(branch_surplus_dir):
         logger.debug(f"No surplus directory for {branch}")
         return None
-    
-    sender_balances = get_branch_balances(analytics_dir, branch)
-    admin_balances = get_branch_balances(analytics_dir, 'admin')
+    sender_balances, admin_balances = get_branch_balances(analytics_dir, branch), get_branch_balances(analytics_dir, 'admin')
     all_surplus = _collect_surplus_files(branch_surplus_dir, sender_balances, admin_balances)
     return pd.concat(all_surplus, ignore_index=True) if all_surplus else None
 

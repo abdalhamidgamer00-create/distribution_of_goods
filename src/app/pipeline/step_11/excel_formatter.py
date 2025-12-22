@@ -152,12 +152,10 @@ def _apply_conditional_formatting(excel_path: str, df: pd.DataFrame) -> None:
     wb = load_workbook(excel_path)
     ws = wb.active
     last_row = len(df) + 1
-    
     _style_header_row(ws)
     _apply_balance_formatting(ws, df, last_row)
     _adjust_column_widths(ws, df)
     _add_borders(ws, last_row, len(df.columns))
-    
     ws.freeze_panes = 'A2'
     wb.save(excel_path)
     wb.close()

@@ -86,9 +86,7 @@ def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
     """Step 11: Generate combined transfer files with remaining surplus."""
     if not _validate_input_directories():
         return False
-    
     _create_output_directories()
-    
     try:
         total_merged, total_separate = _process_all_branches(get_timestamp())
         _log_summary(total_merged, total_separate)

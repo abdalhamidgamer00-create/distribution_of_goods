@@ -21,20 +21,19 @@ def _has_files_in_directory(directory: str) -> bool:
     return False
 
 
-def _log_archive_summary(result: dict, archive_dir: str) -> None:
-    """Log archive creation summary."""
-    archive_size = _calculate_directory_size(archive_dir)
-    
-    logger.info("Archive created: %s files, %s dirs | Size: %s", 
-               result.get("file_count", 0), 
-               result.get("dir_count", 0),
-               _format_size(archive_size))
-    
-    zip_file = result.get('zip_file')
+def _log_zip_info(zip_file: str, archive_size: int) -> None:
+    """Log ZIP file information."""
     if zip_file and os.path.exists(zip_file):
         zip_size = os.path.getsize(zip_file)
         compression_ratio = (1 - zip_size / archive_size) * 100 if archive_size > 0 else 0
         logger.info("ZIP: %s (%.1f%% compression)", _format_size(zip_size), compression_ratio)
+
+
+def _log_archive_summary(result: dict, archive_dir: str) -> None:
+    """Log archive creation summary."""
+    archive_size = _calculate_directory_size(archive_dir)
+    logger.info("Archive created: %s files, %s dirs | Size: %s", result.get("file_count", 0), result.get("dir_count", 0), _format_size(archive_size))
+    _log_zip_info(result.get('zip_file'), archive_size)
 
 
 def _execute_archive(archive_base_dir: str, output_dir: str) -> bool:

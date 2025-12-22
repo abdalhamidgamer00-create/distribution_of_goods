@@ -7,18 +7,20 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _display_step_item(step: dict) -> None:
+    """Display a single step item."""
+    logger.info("  %s. %s", step["id"], step["name"])
+    logger.info("     %s", step["description"])
+
+
 def display_menu() -> None:
     """Display the main menu with all available steps."""
     logger.info("\n" + SEPARATOR)
     logger.info("Project Menu - Distribution of Goods")
-    logger.info(SEPARATOR)
-    logger.info("\nAvailable steps:")
+    logger.info(SEPARATOR + "\n" + "Available steps:")
     
     for step in AVAILABLE_STEPS:
-        logger.info("  %s. %s", step["id"], step["name"])
-        logger.info("     %s", step["description"])
+        _display_step_item(step)
     
-    logger.info("\n  %s. Execute all steps", ALL_STEPS_CHOICE_OFFSET)
-    logger.info("  %s. Exit", EXIT_CHOICE)
-    logger.info(SEPARATOR)
+    logger.info("\n  %s. Execute all steps\n  %s. Exit\n" + SEPARATOR, ALL_STEPS_CHOICE_OFFSET, EXIT_CHOICE)
 

@@ -71,16 +71,10 @@ def _execute_split_and_log(transfer_files: list, transfers_base_dir: str, has_da
 def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) -> bool:
     """Perform splitting and conversion to Excel."""
     has_date_header, first_line = _extract_date_header(transfer_files[0])
-    
-    logger.info("Splitting transfer files by product type...")
-    logger.info("-" * 50)
-    logger.info("Found %s transfer files to split", len(transfer_files))
-    
+    logger.info("Splitting transfer files by product type...\n" + "-" * 50 + "\nFound %s transfer files to split", len(transfer_files))
     if not _execute_split_and_log(transfer_files, transfers_base_dir, has_date_header, first_line):
         return False
-    
-    logger.info("-" * 50)
-    logger.info("Starting Excel conversion...")
+    logger.info("-" * 50 + "\nStarting Excel conversion...")
     return _convert_to_excel(transfers_base_dir)
 
 

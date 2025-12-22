@@ -41,15 +41,9 @@ def _process_surplus_iteration(other_branch: str, product_index: int, remaining_
                                 target_amount: float, branch_data: dict, existing_withdrawals: dict,
                                 withdrawals: dict, withdrawals_for_row: list) -> tuple:
     """Process one iteration of surplus search."""
-    available_surplus = calculate_available_surplus(
-        branch_data, other_branch, product_index, existing_withdrawals
-    )
-    
+    available_surplus = calculate_available_surplus(branch_data, other_branch, product_index, existing_withdrawals)
     if available_surplus > 0:
-        return process_single_withdrawal(
-            other_branch, product_index, remaining_needed, target_amount,
-            available_surplus, withdrawals, withdrawals_for_row
-        )
+        return process_single_withdrawal(other_branch, product_index, remaining_needed, target_amount, available_surplus, withdrawals, withdrawals_for_row)
     return remaining_needed, target_amount
 
 
@@ -135,15 +129,12 @@ def _handle_target_and_search(branch: str, product_idx: int, branch_data: dict, 
 def find_surplus_sources_for_single_product(branch: str, product_idx: int, branch_data: dict, branches: list,
                                             existing_withdrawals: dict = None, proportional_allocation: dict = None) -> tuple:
     """Find surplus sources for a single product for a specific branch."""
-    existing_withdrawals = existing_withdrawals or {}
-    proportional_allocation = proportional_allocation or {}
-    
+    existing_withdrawals, proportional_allocation = existing_withdrawals or {}, proportional_allocation or {}
     needed, balance = _get_product_data(branch_data, branch, product_idx)
     
     should_return, result_list, result_dict = _check_early_returns(needed, balance)
     if should_return:
         return result_list, result_dict
     
-    return _handle_target_and_search(branch, product_idx, branch_data, branches, 
-                                      existing_withdrawals, proportional_allocation, needed, balance)
+    return _handle_target_and_search(branch, product_idx, branch_data, branches, existing_withdrawals, proportional_allocation, needed, balance)
 

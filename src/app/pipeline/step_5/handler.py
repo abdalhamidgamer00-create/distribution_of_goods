@@ -33,15 +33,9 @@ def _execute_rename(csv_path: str, csv_file: str, renamed_dir: str) -> bool:
     """Execute the rename operation."""
     output_file = _generate_renamed_filename(csv_file)
     output_path = get_file_path(output_file, renamed_dir)
-    
-    logger.info("Renaming columns in %s...", csv_file)
-    logger.info("-" * 50)
-    
+    logger.info("Renaming columns in %s...\n" + "-" * 50, csv_file)
     rename_csv_columns(csv_path, output_path)
-    
-    logger.info("Columns renamed successfully!")
-    logger.info("Output file: %s", output_file)
-    logger.info("Saved to: %s", renamed_dir)
+    logger.info("Columns renamed successfully!\nOutput file: %s\nSaved to: %s", output_file, renamed_dir)
     return True
 
 

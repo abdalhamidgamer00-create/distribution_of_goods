@@ -26,12 +26,9 @@ def read_analytics_file(analytics_path: str) -> tuple:
     try:
         with open(analytics_path, 'r', encoding='utf-8-sig') as f:
             first_line = f.readline().strip()
-        
         start_date, end_date = extract_dates_from_header(first_line)
         has_date_header = bool(start_date and end_date)
-        df = _load_analytics_dataframe(analytics_path, has_date_header)
-        
-        return df, has_date_header, first_line
+        return _load_analytics_dataframe(analytics_path, has_date_header), has_date_header, first_line
     except Exception as e:
         logger.error("Error reading analytics file %s: %s", analytics_path, e)
         return None, False, ''
@@ -137,18 +134,11 @@ def _build_shortage_row(code: str, totals: dict, branches: list) -> dict:
 
 def _build_shortage_dataframe(product_totals: dict, branches: list) -> pd.DataFrame:
     """Build DataFrame from products with shortage (needed > surplus)."""
-    shortage_data = [
-        _build_shortage_row(code, totals, branches)
-        for code, totals in product_totals.items()
-        if totals['total_needed'] > totals['total_surplus']
-    ]
-    
+    shortage_data = [_build_shortage_row(code, totals, branches) for code, totals in product_totals.items() if totals['total_needed'] > totals['total_surplus']]
     columns = _get_shortage_columns()
     if not shortage_data:
         return pd.DataFrame(columns=columns)
-    
-    result_df = pd.DataFrame(shortage_data).sort_values('shortage_quantity', ascending=False)
-    return result_df[columns]
+    return pd.DataFrame(shortage_data).sort_values('shortage_quantity', ascending=False)[columns]
 
 
 def calculate_shortage_products(analytics_dir: str) -> tuple:
