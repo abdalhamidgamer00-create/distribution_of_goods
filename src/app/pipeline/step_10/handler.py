@@ -88,17 +88,11 @@ def _convert_all_to_excel(generated_files: dict) -> None:
 
 def _log_summary(generated_files: dict, categories: list, total_shortage: int) -> None:
     """Log generation summary."""
-    logger.info("=" * 50)
-    logger.info("Generated shortage files:")
+    logger.info("=" * 50 + "\nGenerated shortage files:")
     for category in categories:
         if category in generated_files:
             logger.info("  - %s: %d products", category, generated_files[category]['count'])
-    logger.info("  - all (combined): %d products", generated_files['all']['count'])
-    logger.info("")
-    logger.info("Total shortage quantity: %d units", total_shortage)
-    logger.info("")
-    logger.info("CSV files saved to: %s", CSV_OUTPUT_DIR)
-    logger.info("Excel files saved to: %s", EXCEL_OUTPUT_DIR)
+    logger.info("  - all (combined): %d products\n\nTotal shortage quantity: %d units\n\nCSV files saved to: %s\nExcel files saved to: %s", generated_files['all']['count'], total_shortage, CSV_OUTPUT_DIR, EXCEL_OUTPUT_DIR)
 
 
 def _prepare_shortage_data() -> tuple:
@@ -125,11 +119,9 @@ def _generate_all_files(shortage_df, has_date_header: bool, first_line: str) -> 
     """Generate category files and combined file."""
     os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
     os.makedirs(EXCEL_OUTPUT_DIR, exist_ok=True)
-    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     base_name = "shortage_products"
     categories = get_product_categories()
-    
     generated_files = _generate_category_files(shortage_df, categories, timestamp, base_name, has_date_header, first_line)
     generated_files['all'] = _create_combined_file(shortage_df, timestamp, base_name, has_date_header, first_line)
     return generated_files, categories
