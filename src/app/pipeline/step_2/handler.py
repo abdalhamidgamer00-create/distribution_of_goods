@@ -59,26 +59,28 @@ def _perform_conversion(excel_file: str, input_dir: str, converted_dir: str) -> 
     return success
 
 
+def _validate_and_select(input_dir: str, use_latest_file: bool) -> str:
+    """Validate Excel files exist and select one."""
+    excel_files = get_excel_files(input_dir)
+    if not excel_files:
+        logger.error("No Excel files found in %s", input_dir)
+        return None
+    
+    excel_file = _select_excel_file_source(excel_files, input_dir, use_latest_file)
+    if not excel_file:
+        logger.error("No Excel file selected!")
+    return excel_file
+
+
 def step_2_convert_excel_to_csv(use_latest_file: bool = None):
     """Step 2: Convert Excel to CSV."""
     input_dir = os.path.join("data", "input")
     converted_dir = os.path.join("data", "output", "converted", "csv")
-    
     ensure_directory_exists(converted_dir)
     
-    excel_files = get_excel_files(input_dir)
-    if not excel_files:
-        logger.error("No Excel files found in %s", input_dir)
-        return False
-    
     try:
-        excel_file = _select_excel_file_source(excel_files, input_dir, use_latest_file)
-        if not excel_file:
-            logger.error("No Excel file selected!")
-            return False
-        
-        return _perform_conversion(excel_file, input_dir, converted_dir)
-        
+        excel_file = _validate_and_select(input_dir, use_latest_file)
+        return _perform_conversion(excel_file, input_dir, converted_dir) if excel_file else False
     except ValueError as e:
         logger.error("Error: %s", e)
         return False
