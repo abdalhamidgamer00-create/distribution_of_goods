@@ -42,8 +42,7 @@ def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
         logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
         return balances
     except Exception as e:
-        logger.warning(f"Error reading balances for {branch}: {e}")
-        return {}
+        logger.warning(f"Error reading balances for {branch}: {e}"); return {}
 
 
 def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:

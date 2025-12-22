@@ -70,24 +70,18 @@ def _process_categories(df: pd.DataFrame, file_folder: str, base_folder_name: st
     for category in get_product_categories():
         category_df = df[df['product_type'] == category].copy()
         if len(category_df) > 0:
-            output_files[category] = _save_category_file(
-                category_df, file_folder, base_folder_name, category,
-                timestamp, has_date_header, first_line
-            )
+            output_files[category] = _save_category_file(category_df, file_folder, base_folder_name, category, timestamp, has_date_header, first_line)
     return output_files
 
 
 def _prepare_and_split(transfer_file_path: str, output_dir: str, has_date_header: bool, first_line: str) -> dict:
     """Prepare transfer file and split by product type."""
     df = _prepare_transfer_dataframe(transfer_file_path)
-    
     base_name = os.path.splitext(os.path.basename(transfer_file_path))[0]
     base_folder_name = _get_folder_name(transfer_file_path, base_name)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
     file_folder = os.path.join(output_dir, base_name)
     os.makedirs(file_folder, exist_ok=True)
-    
     return _process_categories(df, file_folder, base_folder_name, timestamp, has_date_header, first_line)
 
 
@@ -113,10 +107,8 @@ def _process_transfer_file(transfer_file_path: str, transfers_base_dir: str, has
     """Process a single transfer file and add to results."""
     relative_path = os.path.relpath(transfer_file_path, transfers_base_dir)
     output_dir = os.path.dirname(os.path.join(transfers_base_dir, relative_path))
-    
     split_files = split_transfer_file_by_type(transfer_file_path, output_dir, has_date_header, first_line)
     base_filename = os.path.splitext(os.path.basename(transfer_file_path))[0]
-    
     for category, file_path in split_files.items():
         source_target = os.path.basename(os.path.dirname(transfer_file_path))
         all_output_files[(source_target, base_filename, category)] = file_path
