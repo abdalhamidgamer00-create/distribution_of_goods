@@ -127,22 +127,27 @@ def _calculate_allocations(branch_data: dict, branches: list, timing_stats: dict
     return proportional_allocation
 
 
+def _run_second_round_redistribution(branches: list, branch_data: dict, analytics_data: dict, 
+                                       all_withdrawals: dict, max_withdrawals: int, 
+                                       num_products: int, timing_stats: dict) -> int:
+    """Run second round surplus redistribution."""
+    from src.services.splitting.processors.surplus_redistributor import redistribute_wasted_surplus
+    max_withdrawals, timing_stats["second_round_time"] = redistribute_wasted_surplus(
+        branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, num_products, 30.0
+    )
+    return max_withdrawals
+
+
 def _process_surplus_distribution(branches: list, branch_data: dict, proportional_allocation: dict, 
                                   num_products: int, timing_stats: dict) -> tuple:
     """Process surplus distribution and redistribution."""
     surplus_start = perf_counter()
     analytics_data = _initialize_analytics_data(branches, branch_data)
-    all_withdrawals, max_withdrawals = _process_all_products(
-        branches, branch_data, analytics_data, proportional_allocation, num_products
-    )
+    all_withdrawals, max_withdrawals = _process_all_products(branches, branch_data, analytics_data, proportional_allocation, num_products)
     _fill_empty_product_records(branches, analytics_data, num_products)
     timing_stats["surplus_time"] = perf_counter() - surplus_start
     
-    from src.services.splitting.processors.surplus_redistributor import redistribute_wasted_surplus
-    max_withdrawals, timing_stats["second_round_time"] = redistribute_wasted_surplus(
-        branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, num_products, 30.0
-    )
-    
+    max_withdrawals = _run_second_round_redistribution(branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, num_products, timing_stats)
     return analytics_data, all_withdrawals, max_withdrawals
 
 

@@ -136,6 +136,14 @@ def _build_validation_result(errors: list, warnings: list, required_count: int) 
     return is_valid, errors, message
 
 
+def _check_optional_present(actual_headers: list, optional_headers: list) -> str:
+    """Check for present optional columns and return warning if any."""
+    present_optional = [col for col in optional_headers if col in actual_headers]
+    if present_optional:
+        return f"Optional columns detected (will be recalculated): {len(present_optional)} columns"
+    return None
+
+
 def _check_all_headers(actual_headers: list, required_headers: list, optional_headers: list) -> tuple:
     """Check all headers and return errors and warnings."""
     errors, warnings = [], []
@@ -148,9 +156,9 @@ def _check_all_headers(actual_headers: list, required_headers: list, optional_he
     if unknown_columns:
         warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
     
-    present_optional = [col for col in optional_headers if col in actual_headers]
-    if present_optional:
-        warnings.append(f"Optional columns detected (will be recalculated): {len(present_optional)} columns")
+    optional_warning = _check_optional_present(actual_headers, optional_headers)
+    if optional_warning:
+        warnings.append(optional_warning)
     
     return errors, warnings
 

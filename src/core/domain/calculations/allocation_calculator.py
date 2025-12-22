@@ -112,22 +112,31 @@ def _process_single_product_allocation(idx: int, matrices: dict, total_surplus: 
     return _redistribute_allocations(allocated_dict, needed_dict, branch_data, idx)
 
 
+def _setup_allocation_data(branch_data: dict, branches: list) -> tuple:
+    """Setup matrices and calculate totals for allocation."""
+    matrices = _build_branch_matrices(branch_data, branches)
+    total_needed = matrices['needed'].clip(lower=0).sum(axis=1)
+    total_surplus = matrices['surplus'].clip(lower=0).sum(axis=1)
+    needs_mask = (total_needed > 0) & (total_surplus > 0) & (total_surplus < total_needed)
+    return matrices, total_needed, total_surplus, needs_mask
+
+
+def _collect_allocations(indices, matrices: dict, total_surplus, total_needed, branches: list, branch_data: dict) -> dict:
+    """Collect allocations for all products needing allocation."""
+    allocations = {}
+    for idx in indices:
+        result = _process_single_product_allocation(idx, matrices, total_surplus, total_needed, branches, branch_data)
+        if result:
+            allocations[idx] = result
+    return allocations
+
+
 def calculate_proportional_allocations_vectorized(branch_data: dict, branches: list) -> dict:
     """Vectorized proportional allocation across all products."""
     if not branch_data:
         return {}
     
-    matrices = _build_branch_matrices(branch_data, branches)
-    total_needed = matrices['needed'].clip(lower=0).sum(axis=1)
-    total_surplus = matrices['surplus'].clip(lower=0).sum(axis=1)
-    needs_mask = (total_needed > 0) & (total_surplus > 0) & (total_surplus < total_needed)
-    
-    allocations = {}
-    for idx in total_needed[needs_mask].index:
-        result = _process_single_product_allocation(idx, matrices, total_surplus, total_needed, branches, branch_data)
-        if result:
-            allocations[idx] = result
-    
-    return allocations
+    matrices, total_needed, total_surplus, needs_mask = _setup_allocation_data(branch_data, branches)
+    return _collect_allocations(total_needed[needs_mask].index, matrices, total_surplus, total_needed, branches, branch_data)
 
 
