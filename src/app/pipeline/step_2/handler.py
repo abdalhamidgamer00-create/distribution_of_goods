@@ -72,6 +72,12 @@ def _validate_and_select(input_dir: str, use_latest_file: bool) -> str:
     return excel_file
 
 
+def _try_convert_excel(input_dir: str, converted_dir: str, use_latest_file: bool) -> bool:
+    """Try to convert Excel with error handling."""
+    excel_file = _validate_and_select(input_dir, use_latest_file)
+    return _perform_conversion(excel_file, input_dir, converted_dir) if excel_file else False
+
+
 def step_2_convert_excel_to_csv(use_latest_file: bool = None):
     """Step 2: Convert Excel to CSV."""
     input_dir = os.path.join("data", "input")
@@ -79,12 +85,8 @@ def step_2_convert_excel_to_csv(use_latest_file: bool = None):
     ensure_directory_exists(converted_dir)
     
     try:
-        excel_file = _validate_and_select(input_dir, use_latest_file)
-        return _perform_conversion(excel_file, input_dir, converted_dir) if excel_file else False
-    except ValueError as e:
-        logger.error("Error: %s", e)
-        return False
-    except Exception as e:
+        return _try_convert_excel(input_dir, converted_dir, use_latest_file)
+    except (ValueError, Exception) as e:
         logger.exception("Error during conversion: %s", e)
         return False
 
