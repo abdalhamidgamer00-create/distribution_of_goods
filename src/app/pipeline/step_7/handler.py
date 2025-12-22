@@ -55,24 +55,30 @@ def _extract_date_header_info(analytics_dir: str, analytics_files: dict) -> tupl
     return False, ""
 
 
-def _log_transfer_summary(transfer_files: dict, transfers_base_dir: str) -> None:
-    """Log summary of generated transfer files."""
-    logger.info("Generated %s transfer files:", len(transfer_files))
-    
+def _group_files_by_source(transfer_files: dict) -> dict:
+    """Group transfer files by source branch."""
     files_by_source = {}
     for (source, target), file_path in transfer_files.items():
         if source not in files_by_source:
             files_by_source[source] = []
         files_by_source[source].append((target, file_path))
-    
+    return files_by_source
+
+
+def _log_source_files(source: str, files_list: list) -> None:
+    """Log files for a single source branch."""
+    logger.info("\n  From %s (%d files):", source, len(files_list))
+    for target, file_path in sorted(files_list):
+        file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+        logger.info("    → %s: %s (%s)", target, os.path.basename(file_path), _format_file_size(file_size))
+
+
+def _log_transfer_summary(transfer_files: dict, transfers_base_dir: str) -> None:
+    """Log summary of generated transfer files."""
+    logger.info("Generated %s transfer files:", len(transfer_files))
+    files_by_source = _group_files_by_source(transfer_files)
     for source in sorted(files_by_source.keys()):
-        files_list = files_by_source[source]
-        logger.info("\n  From %s (%d files):", source, len(files_list))
-        for target, file_path in sorted(files_list):
-            file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
-            size_str = _format_file_size(file_size)
-            logger.info("    → %s: %s (%s)", target, os.path.basename(file_path), size_str)
-    
+        _log_source_files(source, files_by_source[source])
     logger.info("\nTransfer files saved to: %s", transfers_base_dir)
 
 
