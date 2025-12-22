@@ -60,10 +60,8 @@ def _execute_surplus_generation(branches: list) -> bool:
 def step_9_generate_remaining_surplus(use_latest_file: bool = None) -> bool:
     """Step 9: Generate remaining surplus files for each branch."""
     branches = get_branches()
-    
     if not _validate_analytics_directories(branches):
         return False
-    
     try:
         return _execute_surplus_generation(branches)
     except Exception as e:

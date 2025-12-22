@@ -92,8 +92,7 @@ def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
         _log_summary(total_merged, total_separate)
         return total_merged > 0 or total_separate > 0
     except Exception as e:
-        logger.exception(f"Error generating combined transfer files: {e}")
-        return False
+        logger.exception(f"Error generating combined transfer files: {e}"); return False
 
 
 
