@@ -4,31 +4,27 @@ import pandas as pd
 import math
 
 
+def _calculate_monthly(avg_sales: pd.Series) -> pd.Series:
+    """Calculate monthly quantity using ceiling."""
+    return (avg_sales * 30).apply(lambda x: math.ceil(x))
+
+
+def _calculate_surplus(balance: pd.Series, monthly: pd.Series) -> pd.Series:
+    """Calculate surplus quantity using floor."""
+    return (balance - monthly).apply(lambda x: max(0, math.floor(x)))
+
+
+def _calculate_needed(monthly: pd.Series, balance: pd.Series) -> pd.Series:
+    """Calculate needed quantity using ceiling."""
+    return (monthly - balance).apply(lambda x: max(0, math.ceil(x)))
+
+
 def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate monthly_quantity, surplus_quantity, and needed_quantity
-    Using ceiling to ensure whole numbers for drug quantities
-    
-    Args:
-        branch_df: Branch dataframe with sales, avg_sales, and balance columns
-        
-    Returns:
-        DataFrame with calculated quantities added (all as integers)
-    """
+    """Calculate monthly, surplus, and needed quantities."""
     branch_df = branch_df.copy()
-    # استخدام ceil لتقريب monthly_quantity للأعلى
-    branch_df['monthly_quantity'] = (branch_df['avg_sales'] * 30).apply(lambda x: math.ceil(x))
-    
-    # استخدام floor لتقريب surplus_quantity للأسفل
-    branch_df['surplus_quantity'] = (branch_df['balance'] - branch_df['monthly_quantity']).apply(
-        lambda x: max(0, math.floor(x))
-    )
-    
-    # استخدام ceil لتقريب needed_quantity للأعلى
-    branch_df['needed_quantity'] = (branch_df['monthly_quantity'] - branch_df['balance']).apply(
-        lambda x: max(0, math.ceil(x))
-    )
-    
+    branch_df['monthly_quantity'] = _calculate_monthly(branch_df['avg_sales'])
+    branch_df['surplus_quantity'] = _calculate_surplus(branch_df['balance'], branch_df['monthly_quantity'])
+    branch_df['needed_quantity'] = _calculate_needed(branch_df['monthly_quantity'], branch_df['balance'])
     return branch_df
 
 

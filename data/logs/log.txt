@@ -23643,3 +23643,315 @@ Transfer files saved to: data/output/transfers/csv
 2025-12-21 23:37:43,944 | INFO     | src.app.cli.executors.batch_executor |   Failed: 0
 2025-12-21 23:37:43,944 | INFO     | src.app.cli.executors.batch_executor |   Success rate: 100.0%
 2025-12-21 23:37:43,944 | INFO     | src.app.cli.executors.batch_executor | ==================================================
+2025-12-22 05:32:17,665 | INFO     | src.app.cli.ui.display | 
+==================================================
+2025-12-22 05:32:17,666 | INFO     | src.app.cli.ui.display | Project Menu - Distribution of Goods
+2025-12-22 05:32:17,666 | INFO     | src.app.cli.ui.display | ==================================================
+2025-12-22 05:32:17,666 | INFO     | src.app.cli.ui.display | 
+Available steps:
+2025-12-22 05:32:17,666 | INFO     | src.app.cli.ui.display |   1. Archive Previous Output
+2025-12-22 05:32:17,666 | INFO     | src.app.cli.ui.display |      Archive previous output files before starting new process (skips if no files exist)
+2025-12-22 05:32:17,667 | INFO     | src.app.cli.ui.display |   2. Convert Excel to CSV
+2025-12-22 05:32:17,667 | INFO     | src.app.cli.ui.display |      Convert selected Excel file from input folder to CSV
+2025-12-22 05:32:17,667 | INFO     | src.app.cli.ui.display |   3. Validate Data
+2025-12-22 05:32:17,667 | INFO     | src.app.cli.ui.display |      Validate CSV data, check date range (>= 3 months) and Column Headers Validation
+2025-12-22 05:32:17,667 | INFO     | src.app.cli.ui.display |   4. Sales Analysis
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |      Generate comprehensive sales analysis report with statistics and improvement suggestions
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |   5. Rename Columns
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |      Rename CSV columns from Arabic to English
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |   6. Split by Branches
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |      Split CSV file into 6 separate files, one for each branch
+2025-12-22 05:32:17,668 | INFO     | src.app.cli.ui.display |   7. Generate Transfer Files
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |      Generate transfer CSV files for each branch to all other branches
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |   8. Split Transfer Files by Product Type & Convert to Excel
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |      Split transfer files into 6 categories and convert them to Excel format
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |   9. Generate Remaining Surplus Files
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |      Generate files for products with remaining surplus after distribution (CSV and Excel)
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |   10. Generate Shortage Files
+2025-12-22 05:32:17,669 | INFO     | src.app.cli.ui.display |      Generate files for products where total needed exceeds total surplus (unfulfilled demand)
+2025-12-22 05:32:17,670 | INFO     | src.app.cli.ui.display |   11. Generate Combined Transfer Files
+2025-12-22 05:32:17,670 | INFO     | src.app.cli.ui.display |      Combine transfers with remaining surplus (to admin) in merged/separate formats with balance coloring
+2025-12-22 05:32:17,670 | INFO     | src.app.cli.ui.display | 
+  12. Execute all steps
+2025-12-22 05:32:17,670 | INFO     | src.app.cli.ui.display |   0. Exit
+2025-12-22 05:32:17,670 | INFO     | src.app.cli.ui.display | ==================================================
+2025-12-22 05:32:18,107 | INFO     | src.app.cli.core.controller | Thank you for using the program!
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display | 
+==================================================
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display | Project Menu - Distribution of Goods
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display | ==================================================
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display | 
+Available steps:
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   1. Archive Previous Output
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Archive previous output files before starting new process (skips if no files exist)
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   2. Convert Excel to CSV
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Convert selected Excel file from input folder to CSV
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   3. Validate Data
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Validate CSV data, check date range (>= 3 months) and Column Headers Validation
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   4. Sales Analysis
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Generate comprehensive sales analysis report with statistics and improvement suggestions
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   5. Rename Columns
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Rename CSV columns from Arabic to English
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   6. Split by Branches
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Split CSV file into 6 separate files, one for each branch
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |   7. Generate Transfer Files
+2025-12-22 05:32:19,724 | INFO     | src.app.cli.ui.display |      Generate transfer CSV files for each branch to all other branches
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |   8. Split Transfer Files by Product Type & Convert to Excel
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |      Split transfer files into 6 categories and convert them to Excel format
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |   9. Generate Remaining Surplus Files
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |      Generate files for products with remaining surplus after distribution (CSV and Excel)
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |   10. Generate Shortage Files
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |      Generate files for products where total needed exceeds total surplus (unfulfilled demand)
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |   11. Generate Combined Transfer Files
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |      Combine transfers with remaining surplus (to admin) in merged/separate formats with balance coloring
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display | 
+  12. Execute all steps
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display |   0. Exit
+2025-12-22 05:32:19,725 | INFO     | src.app.cli.ui.display | ==================================================
+2025-12-22 05:32:21,041 | INFO     | src.app.cli.executors.batch_executor | Executing all steps...
+2025-12-22 05:32:21,042 | INFO     | src.app.cli.executors.batch_executor | ==================================================
+2025-12-22 05:32:21,042 | INFO     | src.app.cli.handlers.input_handler | Select file option for all steps:
+2025-12-22 05:32:21,042 | INFO     | src.app.cli.handlers.input_handler |   1. Select specific file (will ask for each step)
+2025-12-22 05:32:21,042 | INFO     | src.app.cli.handlers.input_handler |   2. Use latest file (applies to all steps)
+2025-12-22 05:32:21,618 | INFO     | src.app.cli.executors.batch_executor | Using latest file for all steps...
+2025-12-22 05:32:21,618 | INFO     | src.app.cli.executors.batch_executor | [1/11] 1 - Archive Previous Output
+2025-12-22 05:32:21,618 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:21,620 | INFO     | src.app.pipeline.step_1.handler | Archiving previous output files...
+2025-12-22 05:32:21,620 | INFO     | src.shared.utils.archiver | Archiving complete contents of data/output...
+2025-12-22 05:32:21,620 | INFO     | src.shared.utils.archiver |   Source: data/output
+2025-12-22 05:32:21,621 | INFO     | src.shared.utils.archiver |   Destination: data/archive/archive_20251222_053221/output
+2025-12-22 05:32:21,632 | INFO     | src.shared.utils.archiver |   Found 833 files in 196 directories
+2025-12-22 05:32:21,681 | INFO     | src.shared.utils.archiver | Archive created successfully!
+2025-12-22 05:32:21,681 | INFO     | src.shared.utils.archiver |   - Archive location: data/archive/archive_20251222_053221
+2025-12-22 05:32:21,681 | INFO     | src.shared.utils.archiver |   - Archived 833 files in 196 directories
+2025-12-22 05:32:21,681 | INFO     | src.shared.utils.archiver | Creating ZIP archive: data/archive/archive_20251222_053221.zip...
+2025-12-22 05:32:21,994 | INFO     | src.shared.utils.archiver | ZIP archive created successfully: data/archive/archive_20251222_053221.zip
+2025-12-22 05:32:21,998 | INFO     | src.app.pipeline.step_1.handler | Archive created: 833 files, 196 dirs | Size: 13.54 MB
+2025-12-22 05:32:21,998 | INFO     | src.app.pipeline.step_1.handler | ZIP: 5.56 MB (58.9% compression)
+2025-12-22 05:32:21,998 | INFO     | src.shared.utils.archiver | Clearing output directory: data/output...
+2025-12-22 05:32:21,999 | INFO     | src.shared.utils.archiver |   Found 833 files in 196 directories to delete
+2025-12-22 05:32:22,013 | INFO     | src.shared.utils.archiver |   ✓ Output directory cleared successfully!
+2025-12-22 05:32:22,013 | INFO     | src.shared.utils.archiver |   ✓ Deleted 833 files and 196 directories
+2025-12-22 05:32:22,013 | INFO     | src.app.pipeline.step_1.handler | ✓ Output directory cleared successfully
+2025-12-22 05:32:22,013 | INFO     | src.app.cli.executors.step_executor | ✓ Step 1 completed successfully
+2025-12-22 05:32:22,013 | INFO     | src.app.cli.executors.batch_executor | [2/11] 2 - Convert Excel to CSV
+2025-12-22 05:32:22,013 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:22,114 | INFO     | src.app.pipeline.utils.file_selector | Using latest file: problemm20251220.xlsx
+2025-12-22 05:32:22,115 | INFO     | src.app.pipeline.step_2.handler | Converting problemm20251220.xlsx to problemm20251220_20251222_053222.csv...
+2025-12-22 05:32:22,560 | INFO     | src.app.pipeline.step_2.handler | Conversion successful! File saved to: data/output/converted/csv
+2025-12-22 05:32:22,560 | INFO     | src.app.cli.executors.step_executor | ✓ Step 2 completed successfully
+2025-12-22 05:32:22,560 | INFO     | src.app.cli.executors.batch_executor | [3/11] 3 - Validate Data
+2025-12-22 05:32:22,560 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:22,560 | INFO     | src.app.pipeline.utils.file_selector | Using latest file: problemm20251220_20251222_053222.csv
+2025-12-22 05:32:22,560 | INFO     | src.app.pipeline.step_3.handler | Validating problemm20251220_20251222_053222.csv...
+2025-12-22 05:32:22,560 | INFO     | src.app.pipeline.step_3.handler | --------------------------------------------------
+2025-12-22 05:32:22,560 | INFO     | src.app.pipeline.step_3.handler | [1] Date Range Validation: Date range valid: 20/09/2025 00:00 to 20/12/2025 06:22 (>= 3 months)
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler |     Start: 20/09/2025 00:00, End: 20/12/2025 06:22
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler |     ✓ Date range is >= 3 months
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler | [2] Column Headers Validation: ✅ Column headers validation successful: All 17 required columns present
+⚠️ 1 warning(s): Optional columns detected (will be recalculated): 8 columns
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler |     ✓ All column headers match expected order
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler | ==================================================
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler | ✓ Overall validation: SUCCESSFUL
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler | ==================================================
+2025-12-22 05:32:22,561 | INFO     | src.app.pipeline.step_3.handler | Removing first row (header with date range) from problemm20251220_20251222_053222.csv...
+2025-12-22 05:32:22,605 | INFO     | src.app.pipeline.step_3.handler | ✓ First row removed successfully
+2025-12-22 05:32:22,605 | INFO     | src.app.cli.executors.step_executor | ✓ Step 3 completed successfully
+2025-12-22 05:32:22,605 | INFO     | src.app.cli.executors.batch_executor | [4/11] 4 - Sales Analysis
+2025-12-22 05:32:22,605 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:22,605 | INFO     | src.app.pipeline.utils.file_selector | Using latest file: problemm20251220_20251222_053222.csv
+2025-12-22 05:32:22,605 | INFO     | src.app.pipeline.step_4.handler | Analyzing problemm20251220_20251222_053222.csv...
+2025-12-22 05:32:22,605 | INFO     | src.app.pipeline.step_4.handler | --------------------------------------------------
+2025-12-22 05:32:22,614 | INFO     | src.app.pipeline.step_4.handler | 
+============================================================
+SALES DATA ANALYSIS REPORT
+============================================================
+
+Generated: 2025-12-22 05:32:22
+File: problemm20251220_20251222_053222.csv
+
+------------------------------------------------------------
+STATISTICS
+------------------------------------------------------------
+Total Rows (Data): 4,685
+Total Columns: 25
+Total Cells: 117,125
+Filled Cells: 117,125
+Empty Cells: 0
+Empty Cells Percentage: 0.0%
+
+------------------------------------------------------------
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+1. Ensure consistent data format across all columns.
+2. Regular data audits to maintain data quality.
+
+============================================================
+2025-12-22 05:32:22,614 | INFO     | src.app.cli.executors.step_executor | ✓ Step 4 completed successfully
+2025-12-22 05:32:22,614 | INFO     | src.app.cli.executors.batch_executor | [5/11] 5 - Rename Columns
+2025-12-22 05:32:22,614 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:22,615 | INFO     | src.app.pipeline.utils.file_selector | Using latest file: problemm20251220_20251222_053222.csv
+2025-12-22 05:32:22,615 | INFO     | src.app.pipeline.step_5.handler | Renaming columns in problemm20251220_20251222_053222.csv...
+2025-12-22 05:32:22,615 | INFO     | src.app.pipeline.step_5.handler | --------------------------------------------------
+2025-12-22 05:32:22,659 | INFO     | src.app.pipeline.step_5.handler | Columns renamed successfully!
+2025-12-22 05:32:22,659 | INFO     | src.app.pipeline.step_5.handler | Output file: problemm20251220_renamed_20251222_053222.csv
+2025-12-22 05:32:22,659 | INFO     | src.app.pipeline.step_5.handler | Saved to: data/output/converted/renamed
+2025-12-22 05:32:22,659 | INFO     | src.app.cli.executors.step_executor | ✓ Step 5 completed successfully
+2025-12-22 05:32:22,659 | INFO     | src.app.cli.executors.batch_executor | [6/11] 6 - Split by Branches
+2025-12-22 05:32:22,659 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:22,659 | INFO     | src.app.pipeline.utils.file_selector | Using latest file: problemm20251220_renamed_20251222_053222.csv
+2025-12-22 05:32:22,660 | INFO     | src.app.pipeline.step_6.handler | Splitting problemm20251220_renamed_20251222_053222.csv by branches...
+2025-12-22 05:32:22,660 | INFO     | src.app.pipeline.step_6.handler | --------------------------------------------------
+2025-12-22 05:32:22,660 | WARNING  | src.services.splitting.processors.data_preparer | ⚠️ No date information found. Using default: 90 days
+2025-12-22 05:32:22,673 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for asherin: sales / 90 days
+2025-12-22 05:32:22,679 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for wardani: sales / 90 days
+2025-12-22 05:32:22,684 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for akba: sales / 90 days
+2025-12-22 05:32:22,689 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for shahid: sales / 90 days
+2025-12-22 05:32:22,694 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for nujum: sales / 90 days
+2025-12-22 05:32:22,699 | INFO     | src.services.splitting.processors.data_preparer | ✅ Calculated avg_sales for admin: sales / 90 days
+2025-12-22 05:32:22,699 | INFO     | src.services.splitting.processors.data_preparer | Prepared data for 6 branches, 4685 products
+2025-12-22 05:32:25,830 | INFO     | src.services.splitting.processors.surplus_redistributor | Starting second redistribution round for wasted surplus...
+2025-12-22 05:32:27,165 | INFO     | src.services.splitting.processors.surplus_redistributor | Second redistribution round completed in 1.33s (198 transfers)
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler | File split successfully into 6 branch files:
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - asherin: problemm20251220_20251222_053222_asherin.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - wardani: problemm20251220_20251222_053222_wardani.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - akba: problemm20251220_20251222_053222_akba.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - shahid: problemm20251220_20251222_053222_shahid.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - nujum: problemm20251220_20251222_053222_nujum.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler |   - admin: problemm20251220_20251222_053222_admin.csv
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler | Branch files saved to: data/output/branches/files
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler | Analytics files saved to: data/output/branches/analytics
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler | Step 6 timing (seconds): prep=0.04 allocation=1.09 surplus=2.05 writes=0.36 total=5.48
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_6.handler | Step 6 workload: products=4685 branches=6
+2025-12-22 05:32:28,138 | INFO     | src.app.cli.executors.step_executor | ✓ Step 6 completed successfully
+2025-12-22 05:32:28,138 | INFO     | src.app.cli.executors.batch_executor | [7/11] 7 - Generate Transfer Files
+2025-12-22 05:32:28,138 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_7.handler | Generating transfer files...
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_7.handler | --------------------------------------------------
+2025-12-22 05:32:28,138 | INFO     | src.app.pipeline.step_7.handler | Using latest analytics files for each target branch...
+2025-12-22 05:32:28,528 | INFO     | src.app.pipeline.step_7.handler | Generated 27 transfer files:
+2025-12-22 05:32:28,528 | INFO     | src.app.pipeline.step_7.handler | 
+  From admin (5 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → akba: problemm20251220_20251222_053222_from_admin_to_akba.csv (9.2 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → asherin: problemm20251220_20251222_053222_from_admin_to_asherin.csv (8.5 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → nujum: problemm20251220_20251222_053222_from_admin_to_nujum.csv (14.4 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → shahid: problemm20251220_20251222_053222_from_admin_to_shahid.csv (11.0 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → wardani: problemm20251220_20251222_053222_from_admin_to_wardani.csv (7.5 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+  From akba (5 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → admin: problemm20251220_20251222_053222_from_akba_to_admin.csv (84.0 B)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → asherin: problemm20251220_20251222_053222_from_akba_to_asherin.csv (2.7 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → nujum: problemm20251220_20251222_053222_from_akba_to_nujum.csv (6.5 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → shahid: problemm20251220_20251222_053222_from_akba_to_shahid.csv (3.6 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → wardani: problemm20251220_20251222_053222_from_akba_to_wardani.csv (2.6 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+  From asherin (4 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → akba: problemm20251220_20251222_053222_from_asherin_to_akba.csv (3.7 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → nujum: problemm20251220_20251222_053222_from_asherin_to_nujum.csv (4.8 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → shahid: problemm20251220_20251222_053222_from_asherin_to_shahid.csv (3.8 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → wardani: problemm20251220_20251222_053222_from_asherin_to_wardani.csv (2.2 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+  From nujum (4 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → akba: problemm20251220_20251222_053222_from_nujum_to_akba.csv (6.2 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → asherin: problemm20251220_20251222_053222_from_nujum_to_asherin.csv (4.6 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → shahid: problemm20251220_20251222_053222_from_nujum_to_shahid.csv (5.4 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → wardani: problemm20251220_20251222_053222_from_nujum_to_wardani.csv (3.6 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+  From shahid (5 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → admin: problemm20251220_20251222_053222_from_shahid_to_admin.csv (87.0 B)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → akba: problemm20251220_20251222_053222_from_shahid_to_akba.csv (5.2 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → asherin: problemm20251220_20251222_053222_from_shahid_to_asherin.csv (4.4 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → nujum: problemm20251220_20251222_053222_from_shahid_to_nujum.csv (6.9 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → wardani: problemm20251220_20251222_053222_from_shahid_to_wardani.csv (3.5 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+  From wardani (4 files):
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → akba: problemm20251220_20251222_053222_from_wardani_to_akba.csv (2.8 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → asherin: problemm20251220_20251222_053222_from_wardani_to_asherin.csv (2.1 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → nujum: problemm20251220_20251222_053222_from_wardani_to_nujum.csv (3.0 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler |     → shahid: problemm20251220_20251222_053222_from_wardani_to_shahid.csv (2.9 KB)
+2025-12-22 05:32:28,529 | INFO     | src.app.pipeline.step_7.handler | 
+Transfer files saved to: data/output/transfers/csv
+2025-12-22 05:32:28,529 | INFO     | src.app.cli.executors.step_executor | ✓ Step 7 completed successfully
+2025-12-22 05:32:28,529 | INFO     | src.app.cli.executors.batch_executor | [8/11] 8 - Split Transfer Files by Product Type & Convert to Excel
+2025-12-22 05:32:28,529 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:28,530 | INFO     | src.app.pipeline.step_8.handler | Splitting transfer files by product type...
+2025-12-22 05:32:28,530 | INFO     | src.app.pipeline.step_8.handler | --------------------------------------------------
+2025-12-22 05:32:28,530 | INFO     | src.app.pipeline.step_8.handler | Found 27 transfer files to split
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | Generated 145 split files:
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - tablets_and_capsules: 27 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - injections: 24 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - syrups: 25 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - creams: 25 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - sachets: 19 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler |   - other: 25 files
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | Split files saved to: data/output/transfers/csv
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | --------------------------------------------------
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | Starting Excel conversion...
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | Converting split CSV files to Excel format...
+2025-12-22 05:32:28,701 | INFO     | src.app.pipeline.step_8.handler | Found 145 split CSV files to convert
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler | Generated 145 Excel files:
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - tablets_and_capsules: 27 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - injections: 24 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - syrups: 25 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - creams: 25 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - sachets: 19 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler |   - other: 25 files
+2025-12-22 05:32:29,356 | INFO     | src.app.pipeline.step_8.handler | Excel files saved to: data/output/transfers/excel
+2025-12-22 05:32:29,356 | INFO     | src.app.cli.executors.step_executor | ✓ Step 8 completed successfully
+2025-12-22 05:32:29,356 | INFO     | src.app.cli.executors.batch_executor | [9/11] 9 - Generate Remaining Surplus Files
+2025-12-22 05:32:29,356 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:30,020 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for asherin: 1051 products in 6 categories
+2025-12-22 05:32:30,681 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for wardani: 692 products in 6 categories
+2025-12-22 05:32:31,343 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for akba: 1275 products in 6 categories
+2025-12-22 05:32:31,998 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for shahid: 1521 products in 6 categories
+2025-12-22 05:32:32,658 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for nujum: 1389 products in 6 categories
+2025-12-22 05:32:33,324 | INFO     | src.app.pipeline.step_9.handler | Generated remaining surplus files for admin: 2227 products in 6 categories
+2025-12-22 05:32:33,325 | INFO     | src.app.pipeline.step_9.handler | Converting remaining surplus files to Excel format...
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_9.handler | ==================================================
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_9.handler | Generated 36 remaining surplus CSV files
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_9.handler | Generated 36 remaining surplus Excel files
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_9.handler | CSV files saved to: data/output/remaining_surplus/csv (organized by branch)
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_9.handler | Excel files saved to: data/output/remaining_surplus/excel (organized by branch)
+2025-12-22 05:32:33,649 | INFO     | src.app.cli.executors.step_executor | ✓ Step 9 completed successfully
+2025-12-22 05:32:33,649 | INFO     | src.app.cli.executors.batch_executor | [10/11] 10 - Generate Shortage Files
+2025-12-22 05:32:33,649 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_10.handler | Calculating shortage products...
+2025-12-22 05:32:33,649 | INFO     | src.app.pipeline.step_10.handler | --------------------------------------------------
+2025-12-22 05:32:34,229 | INFO     | src.app.pipeline.step_10.handler | Found 1396 products with shortage
+2025-12-22 05:32:34,238 | INFO     | src.app.pipeline.step_10.handler | Converting to Excel format...
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | ==================================================
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | Generated shortage files:
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - tablets_and_capsules: 681 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - injections: 89 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - syrups: 109 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - creams: 108 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - sachets: 35 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - other: 374 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler |   - all (combined): 1396 products
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | 
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | Total shortage quantity: 7223 units
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | 
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | CSV files saved to: data/output/shortage/csv
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_10.handler | Excel files saved to: data/output/shortage/excel
+2025-12-22 05:32:34,481 | INFO     | src.app.cli.executors.step_executor | ✓ Step 10 completed successfully
+2025-12-22 05:32:34,481 | INFO     | src.app.cli.executors.batch_executor | [11/11] 11 - Generate Combined Transfer Files
+2025-12-22 05:32:34,481 | INFO     | src.app.cli.executors.batch_executor | --------------------------------------------------
+2025-12-22 05:32:34,481 | INFO     | src.app.pipeline.step_11.handler | Processing branch: asherin
+2025-12-22 05:32:36,240 | INFO     | src.app.pipeline.step_11.handler | Processing branch: wardani
+2025-12-22 05:32:37,733 | INFO     | src.app.pipeline.step_11.handler | Processing branch: akba
+2025-12-22 05:32:39,683 | INFO     | src.app.pipeline.step_11.handler | Processing branch: shahid
+2025-12-22 05:32:41,952 | INFO     | src.app.pipeline.step_11.handler | Processing branch: nujum
+2025-12-22 05:32:43,979 | INFO     | src.app.pipeline.step_11.handler | Processing branch: admin
+2025-12-22 05:32:45,599 | INFO     | src.app.pipeline.step_11.handler | ==================================================
+2025-12-22 05:32:45,600 | INFO     | src.app.pipeline.step_11.handler | Generated 36 merged files (CSV + Excel)
+2025-12-22 05:32:45,600 | INFO     | src.app.pipeline.step_11.handler | Generated 172 separate files (CSV + Excel)
+2025-12-22 05:32:45,600 | INFO     | src.app.pipeline.step_11.handler | Merged output: data/output/combined_transfers/merged/excel
+2025-12-22 05:32:45,600 | INFO     | src.app.pipeline.step_11.handler | Separate output: data/output/combined_transfers/separate/excel
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.step_executor | ✓ Step 11 completed successfully
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor | ==================================================
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor | Execution Summary:
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor |   Total steps: 11
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor |   Successful: 11
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor |   Failed: 0
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor |   Success rate: 100.0%
+2025-12-22 05:32:45,600 | INFO     | src.app.cli.executors.batch_executor | ==================================================

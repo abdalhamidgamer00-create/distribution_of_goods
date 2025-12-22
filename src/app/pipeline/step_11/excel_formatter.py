@@ -18,33 +18,23 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _process_single_csv(file_info: dict, excel_output_dir: str) -> str:
+    """Process a single CSV file and return Excel path or None."""
+    csv_path = file_info.get('path')
+    
+    if not csv_path or not os.path.exists(csv_path):
+        return None
+    
+    try:
+        return _convert_single_file(csv_path, excel_output_dir)
+    except Exception as e:
+        logger.warning(f"Error converting {csv_path}: {e}")
+        return None
+
+
 def convert_to_excel_with_formatting(csv_files: List[Dict], excel_output_dir: str) -> List[str]:
-    """
-    Convert CSV files to Excel with conditional formatting.
-    
-    Args:
-        csv_files: List of dicts with 'path' key for CSV file paths
-        excel_output_dir: Output directory for Excel files
-        
-    Returns:
-        List of generated Excel file paths
-    """
-    excel_files = []
-    
-    for file_info in csv_files:
-        csv_path = file_info.get('path')
-        
-        if not csv_path or not os.path.exists(csv_path):
-            continue
-        
-        try:
-            excel_path = _convert_single_file(csv_path, excel_output_dir)
-            if excel_path:
-                excel_files.append(excel_path)
-        except Exception as e:
-            logger.warning(f"Error converting {csv_path}: {e}")
-    
-    return excel_files
+    """Convert CSV files to Excel with conditional formatting."""
+    return [path for path in (_process_single_csv(f, excel_output_dir) for f in csv_files) if path]
 
 
 def _determine_output_path(csv_path: str, excel_output_dir: str) -> str:
@@ -148,14 +138,8 @@ def _add_borders(ws, last_row: int, num_cols: int) -> None:
             cell.border = thin_border
 
 
-def _apply_conditional_formatting(excel_path: str, df: pd.DataFrame) -> None:
-    """Apply conditional formatting to balance columns."""
-    wb = load_workbook(excel_path)
-    ws = wb.active
-    last_row = len(df) + 1
-    
-    _style_header_row(ws)
-    
+def _apply_balance_formatting(ws, df: pd.DataFrame, last_row: int) -> None:
+    """Apply color scale formatting to balance columns."""
     sender_col, receiver_col = _find_balance_columns(df)
     color_rule = _create_color_rule()
     
@@ -163,7 +147,16 @@ def _apply_conditional_formatting(excel_path: str, df: pd.DataFrame) -> None:
         _apply_color_scale_to_column(ws, sender_col, last_row, color_rule)
     if receiver_col:
         _apply_color_scale_to_column(ws, receiver_col, last_row, color_rule)
+
+
+def _apply_conditional_formatting(excel_path: str, df: pd.DataFrame) -> None:
+    """Apply conditional formatting to balance columns."""
+    wb = load_workbook(excel_path)
+    ws = wb.active
+    last_row = len(df) + 1
     
+    _style_header_row(ws)
+    _apply_balance_formatting(ws, df, last_row)
     _adjust_column_widths(ws, df)
     _add_borders(ws, last_row, len(df.columns))
     

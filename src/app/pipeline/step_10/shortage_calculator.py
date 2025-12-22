@@ -81,33 +81,38 @@ def _update_product_totals(product_totals: dict, df, branch: str, branches: list
         product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
 
 
+def _process_single_branch_totals(analytics_dir: str, branch: str, branches: list, 
+                                   product_totals: dict, header_info: dict) -> None:
+    """Process a single branch and update product totals."""
+    branch_dir = os.path.join(analytics_dir, branch)
+    latest_file = get_latest_file(branch_dir, '.csv')
+    
+    if not latest_file:
+        logger.warning("No analytics file found for branch: %s", branch)
+        return
+    
+    analytics_path = os.path.join(branch_dir, latest_file)
+    df, branch_has_date_header, branch_first_line = read_analytics_file(analytics_path)
+    
+    if df is None or not _has_required_columns(df, analytics_path):
+        return
+    
+    if not header_info['has_date_header'] and branch_has_date_header:
+        header_info['has_date_header'] = True
+        header_info['first_line'] = branch_first_line
+    
+    _update_product_totals(product_totals, df, branch, branches)
+
+
 def _aggregate_branch_totals(analytics_dir: str, branches: list) -> tuple:
     """Aggregate totals across all branches."""
     product_totals = {}
-    has_date_header = False
-    first_line = ''
+    header_info = {'has_date_header': False, 'first_line': ''}
     
     for branch in branches:
-        branch_dir = os.path.join(analytics_dir, branch)
-        latest_file = get_latest_file(branch_dir, '.csv')
-        
-        if not latest_file:
-            logger.warning("No analytics file found for branch: %s", branch)
-            continue
-        
-        analytics_path = os.path.join(branch_dir, latest_file)
-        df, branch_has_date_header, branch_first_line = read_analytics_file(analytics_path)
-        
-        if df is None or not _has_required_columns(df, analytics_path):
-            continue
-        
-        if not has_date_header and branch_has_date_header:
-            has_date_header = True
-            first_line = branch_first_line
-        
-        _update_product_totals(product_totals, df, branch, branches)
+        _process_single_branch_totals(analytics_dir, branch, branches, product_totals, header_info)
     
-    return product_totals, has_date_header, first_line
+    return product_totals, header_info['has_date_header'], header_info['first_line']
 
 
 def _get_shortage_columns() -> list:
