@@ -184,6 +184,16 @@ def _execute_excel_conversion(transfers_base_dir: str, excel_output_dir: str,
     return True
 
 
+def _try_convert_excel(split_files: list, transfers_base_dir: str, excel_output_dir: str) -> bool:
+    """Try to convert files to Excel with error handling."""
+    try:
+        has_date_header, first_line = _extract_date_header(split_files[0])
+        return _execute_excel_conversion(transfers_base_dir, excel_output_dir, split_files, has_date_header, first_line)
+    except Exception as e:
+        logger.exception("Error during Excel conversion: %s", e)
+        return False
+
+
 def _convert_to_excel(transfers_base_dir: str) -> bool:
     """Convert split transfer CSV files to Excel format."""
     from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
@@ -195,11 +205,6 @@ def _convert_to_excel(transfers_base_dir: str) -> bool:
         logger.error("No split CSV files found in %s", transfers_base_dir)
         return False
     
-    try:
-        has_date_header, first_line = _extract_date_header(split_files[0])
-        return _execute_excel_conversion(transfers_base_dir, excel_output_dir, split_files, has_date_header, first_line)
-    except Exception as e:
-        logger.exception("Error during Excel conversion: %s", e)
-        return False
+    return _try_convert_excel(split_files, transfers_base_dir, excel_output_dir)
 
 

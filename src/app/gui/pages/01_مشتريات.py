@@ -197,6 +197,18 @@ def _execute_steps_with_progress(steps: list, progress_bar, status_text) -> bool
     return True
 
 
+def _run_all_steps_ui() -> None:
+    """Run all steps with progress UI."""
+    steps = get_all_steps()
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    if _execute_steps_with_progress(steps, progress_bar, status_text):
+        status_text.text("اكتمل تنفيذ جميع الخطوات!")
+        st.success("✅ تم تنفيذ جميع الخطوات بنجاح!")
+        st.session_state['all_steps_success'] = True
+
+
 def show_run_all_steps():
     """Display run all steps button and progress"""
     st.markdown("---")
@@ -206,14 +218,7 @@ def show_run_all_steps():
         if 'selected_file' not in st.session_state:
             st.error("❌ يرجى اختيار ملف أولاً من قسم إدارة الملفات أعلاه")
         else:
-            steps = get_all_steps()
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            if _execute_steps_with_progress(steps, progress_bar, status_text):
-                status_text.text("اكتمل تنفيذ جميع الخطوات!")
-                st.success("✅ تم تنفيذ جميع الخطوات بنجاح!")
-                st.session_state['all_steps_success'] = True
+            _run_all_steps_ui()
 
 
 NAV_BUTTONS = [
