@@ -264,13 +264,17 @@ def generate_separate_files(df: pd.DataFrame, branch: str, csv_output_dir: str, 
     if 'product_type' not in df.columns:
         df = _add_product_type_column(df)
     
+    return _create_separate_files(df, branch, csv_output_dir, timestamp)
+
+
+def _create_separate_files(df: pd.DataFrame, branch: str, csv_output_dir: str, timestamp: str) -> List[Dict]:
+    """Create separate files for each target branch."""
     files_info = []
     source_dir = os.path.join(csv_output_dir, f"transfers_from_{branch}_{timestamp}")
     
     for target in df['target_branch'].unique():
         target_output_dir = os.path.join(source_dir, f"to_{target}")
         os.makedirs(target_output_dir, exist_ok=True)
-        
         target_files = _process_target_branch_files(df, target, branch, target_output_dir, timestamp)
         files_info.extend(target_files)
     

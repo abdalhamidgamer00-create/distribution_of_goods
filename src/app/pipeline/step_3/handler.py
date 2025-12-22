@@ -73,6 +73,18 @@ def _handle_post_validation(overall_valid: bool, csv_path: str, csv_file: str) -
     return overall_valid
 
 
+def _validate_csv_file(output_dir: str, csv_files: list, use_latest_file: bool) -> bool:
+    """Validate a selected CSV file."""
+    csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
+    csv_path = get_file_path(csv_file, output_dir)
+    
+    logger.info("Validating %s...", csv_file)
+    logger.info("-" * 50)
+    
+    overall_valid = _perform_validation(csv_path)
+    return _handle_post_validation(overall_valid, csv_path, csv_file)
+
+
 def step_3_validate_data(use_latest_file: bool = None):
     """Step 3: Validate CSV data and date range."""
     output_dir = os.path.join("data", "output", "converted", "csv")
@@ -83,15 +95,7 @@ def step_3_validate_data(use_latest_file: bool = None):
         return False
     
     try:
-        csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
-        csv_path = get_file_path(csv_file, output_dir)
-        
-        logger.info("Validating %s...", csv_file)
-        logger.info("-" * 50)
-        
-        overall_valid = _perform_validation(csv_path)
-        return _handle_post_validation(overall_valid, csv_path, csv_file)
-        
+        return _validate_csv_file(output_dir, csv_files, use_latest_file)
     except ValueError:
         logger.error("Invalid input! Please enter a number.")
         return False
