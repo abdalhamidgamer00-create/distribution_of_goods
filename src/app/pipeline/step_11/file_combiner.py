@@ -187,14 +187,10 @@ def _sort_by_product_name(df: pd.DataFrame) -> pd.DataFrame:
 def _process_product_type_file(df: pd.DataFrame, product_type: str, filepath: str) -> Optional[dict]:
     """Process and save a product type file, return file info."""
     type_df = df[df['product_type'] == product_type]
-    
     if type_df.empty:
         return None
-    
-    output_df = _prepare_output_columns(type_df)
-    output_df = _sort_by_product_name(output_df)
+    output_df = _sort_by_product_name(_prepare_output_columns(type_df))
     output_df.to_csv(filepath, index=False, encoding='utf-8-sig')
-    
     return {'path': filepath, 'product_type': product_type, 'count': len(output_df)}
 
 

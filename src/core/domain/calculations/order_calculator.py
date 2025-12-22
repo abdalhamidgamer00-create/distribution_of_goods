@@ -41,11 +41,9 @@ def _calculate_single_branch_surplus(other_branch: str, product_index: int, bran
     original_surplus = branch_data[other_branch].iloc[product_index]['surplus_quantity']
     already_withdrawn = existing_withdrawals.get((other_branch, product_index), 0.0)
     available_surplus = round(max(0, original_surplus - already_withdrawn), 2)
-    
     if available_surplus > 0:
-        balance = branch_data[other_branch].iloc[product_index]['balance']
-        avg_sales = branch_data[other_branch].iloc[product_index]['avg_sales']
-        return (other_branch, available_surplus, balance, avg_sales)
+        row = branch_data[other_branch].iloc[product_index]
+        return (other_branch, available_surplus, row['balance'], row['avg_sales'])
     return None
 
 
