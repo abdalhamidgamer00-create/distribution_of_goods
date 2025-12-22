@@ -89,14 +89,11 @@ def _validate_required_columns(df: pd.DataFrame, branches: list, base_columns: l
 def _create_branch_dataframe(df: pd.DataFrame, branch: str, base_columns: list, num_days: int) -> pd.DataFrame:
     """Create a processed DataFrame for a single branch."""
     branch_cols = [f'{branch}_sales', f'{branch}_balance']
-    selected_columns = base_columns + branch_cols
-    branch_df = df[selected_columns].copy()
-    
+    branch_df = df[base_columns + branch_cols].copy()
     branch_df.columns = base_columns + ['sales', 'balance']
     branch_df['sales'] = pd.to_numeric(branch_df['sales'], errors='coerce').fillna(0.0)
     branch_df['balance'] = pd.to_numeric(branch_df['balance'], errors='coerce').fillna(0.0)
     branch_df['avg_sales'] = branch_df['sales'] / num_days
-    
     return calculate_basic_quantities(branch_df)
 
 

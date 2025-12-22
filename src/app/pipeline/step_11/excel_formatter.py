@@ -147,7 +147,5 @@ def _apply_conditional_formatting(excel_path: str, df: pd.DataFrame) -> None:
     _apply_balance_formatting(ws, df, last_row)
     _adjust_column_widths(ws, df)
     _add_borders(ws, last_row, len(df.columns))
-    ws.freeze_panes = 'A2'
-    wb.save(excel_path)
-    wb.close()
+    ws.freeze_panes = 'A2'; wb.save(excel_path); wb.close()
 
