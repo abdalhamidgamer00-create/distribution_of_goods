@@ -100,15 +100,11 @@ def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
 def _validate_input_directories() -> bool:
     """Validate that required input directories exist."""
     if not os.path.exists(TRANSFERS_DIR):
-        logger.error(f"Transfers directory not found: {TRANSFERS_DIR}")
-        logger.error("Please run Step 7 (Generate Transfer Files) first")
+        logger.error(f"Transfers directory not found: {TRANSFERS_DIR}\nPlease run Step 7 (Generate Transfer Files) first")
         return False
-    
     if not os.path.exists(REMAINING_SURPLUS_DIR):
-        logger.error(f"Remaining surplus directory not found: {REMAINING_SURPLUS_DIR}")
-        logger.error("Please run Step 9 (Generate Remaining Surplus) first")
+        logger.error(f"Remaining surplus directory not found: {REMAINING_SURPLUS_DIR}\nPlease run Step 9 (Generate Remaining Surplus) first")
         return False
-    
     return True
 
 

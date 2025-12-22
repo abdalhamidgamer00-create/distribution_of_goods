@@ -168,16 +168,12 @@ def _read_surplus_as_admin_transfer(branch: str, surplus_dir: str, analytics_dir
 
 def _extract_target_branch(filename: str) -> str:
     """Extract target branch name from transfer filename."""
-    # Remove .csv extension first
-    name = filename.replace('.csv', '')
-    
+    name = filename.replace('.csv', '')  # Remove .csv extension first
     # Pattern: ..._from_X_to_Y or ..._to_Y
     if '_to_' in name:
         parts = name.split('_to_')
         if len(parts) > 1:
-            # Get the last part after _to_ and extract first word (branch name)
-            target = parts[-1].split('_')[0]
-            return target
+            return parts[-1].split('_')[0]  # Get first word after _to_
     return 'unknown'
 
 
@@ -219,14 +215,11 @@ def generate_merged_files(df: pd.DataFrame, branch: str, csv_output_dir: str, ti
     """Generate merged files (all targets in one file per product type)."""
     if df is None or df.empty:
         return []
-    
     timestamp = timestamp or get_timestamp()
     branch_output_dir = os.path.join(csv_output_dir, f"combined_transfers_from_{branch}_{timestamp}")
     os.makedirs(branch_output_dir, exist_ok=True)
-    
     if 'product_type' not in df.columns:
         df = _add_product_type_column(df)
-    
     return _create_merged_files(df, branch, branch_output_dir)
 
 

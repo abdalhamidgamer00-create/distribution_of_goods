@@ -96,10 +96,8 @@ def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
     """Step 8: Split transfer files by product type."""
     transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
     transfer_files = _validate_transfers_dir(transfers_base_dir)
-    
     if not transfer_files:
         return False
-    
     try:
         return _perform_split_and_convert(transfer_files, transfers_base_dir)
     except Exception as e:
@@ -112,14 +110,10 @@ def _find_split_csv_files(transfers_base_dir: str) -> list:
     """Find all split CSV files (files ending with category name)."""
     categories = get_product_categories()
     split_files = []
-    
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
-            if file.endswith('.csv'):
-                is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories)
-                if is_split_file:
-                    split_files.append(os.path.join(root, file))
-    
+            if file.endswith('.csv') and any(file.endswith(f'_{cat}.csv') for cat in categories):
+                split_files.append(os.path.join(root, file))
     return split_files
 
 
