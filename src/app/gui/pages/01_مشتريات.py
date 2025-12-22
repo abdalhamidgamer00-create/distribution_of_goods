@@ -82,19 +82,24 @@ def _display_latest_file_info(input_dir: str, latest_file: str) -> None:
         st.success(f"✅ تم اختيار: {latest_file}")
 
 
+def _get_sorted_excel_files(input_dir: str) -> list:
+    """Get Excel files sorted by modification time."""
+    if not os.path.exists(input_dir):
+        return None
+    excel_files = [f for f in os.listdir(input_dir) if f.endswith(('.xlsx', '.xls'))]
+    excel_files.sort(key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), reverse=True)
+    return excel_files
+
+
 def _show_latest_file_section() -> None:
     """Display latest file selection section."""
     st.markdown("### 📂 استخدام أحدث ملف")
     input_dir = os.path.join("data", "input")
     
-    if not os.path.exists(input_dir):
+    excel_files = _get_sorted_excel_files(input_dir)
+    if excel_files is None:
         st.error("❌ مجلد البيانات غير موجود")
-        return
-    
-    excel_files = [f for f in os.listdir(input_dir) if f.endswith(('.xlsx', '.xls'))]
-    excel_files.sort(key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), reverse=True)
-    
-    if excel_files:
+    elif excel_files:
         _display_latest_file_info(input_dir, excel_files[0])
     else:
         st.warning("⚠️ لا توجد ملفات Excel في المجلد")

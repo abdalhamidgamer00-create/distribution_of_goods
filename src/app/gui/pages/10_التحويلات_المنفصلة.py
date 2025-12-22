@@ -105,6 +105,12 @@ def get_source_folders(base_dir, branch_filter=None):
     return folders
 
 
+def _build_target_folder_info(folder_path: str, folder_name: str) -> dict:
+    """Build target folder info dict."""
+    target = folder_name.replace('to_', '')
+    return {'name': folder_name, 'path': folder_path, 'target': target}
+
+
 def get_target_folders(source_folder_path):
     """Get all target branch folders within a source folder."""
     if not os.path.exists(source_folder_path):
@@ -114,12 +120,7 @@ def get_target_folders(source_folder_path):
     for folder_name in os.listdir(source_folder_path):
         folder_path = os.path.join(source_folder_path, folder_name)
         if os.path.isdir(folder_path) and folder_name.startswith('to_'):
-            target = folder_name.replace('to_', '')
-            folders.append({
-                'name': folder_name,
-                'path': folder_path,
-                'target': target
-            })
+            folders.append(_build_target_folder_info(folder_path, folder_name))
     return folders
 
 
