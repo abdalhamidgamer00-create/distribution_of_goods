@@ -139,15 +139,11 @@ def _execute_shortage_generation(shortage_df, has_date_header: bool, first_line:
 
 def _run_shortage_generation() -> bool:
     """Run the shortage generation process."""
-    logger.info("Calculating shortage products...")
-    logger.info("-" * 50)
-    
+    logger.info("Calculating shortage products...\n" + "-" * 50)
     shortage_df, has_date_header, first_line = _prepare_shortage_data()
-    
     if shortage_df is None:
         logger.info("No shortage products found. All needs are covered by surplus!")
         return True
-    
     return _execute_shortage_generation(shortage_df, has_date_header, first_line)
 
 
