@@ -65,12 +65,7 @@ def _append_withdrawal(withdrawals_list: list, product_idx: int, transfer_amount
                         other_branch: str, available_surplus: float) -> int:
     """Append withdrawal entry and return max withdrawals count."""
     if product_idx < len(withdrawals_list):
-        withdrawals_list[product_idx].append({
-            'surplus_from_branch': transfer_amount,
-            'available_branch': other_branch,
-            'surplus_remaining': available_surplus - transfer_amount,
-            'remaining_needed': 0.0
-        })
+        withdrawals_list[product_idx].append({'surplus_from_branch': transfer_amount, 'available_branch': other_branch, 'surplus_remaining': available_surplus - transfer_amount, 'remaining_needed': 0.0})
         return len(withdrawals_list[product_idx])
     return 0
 

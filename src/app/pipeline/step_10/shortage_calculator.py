@@ -117,12 +117,7 @@ def _get_shortage_columns() -> list:
 def _build_shortage_row(code: str, totals: dict, branches: list) -> dict:
     """Build a single shortage row."""
     shortage_quantity = int(totals['total_needed'] - totals['total_surplus'])
-    row_data = {
-        'code': code,
-        'product_name': totals['product_name'],
-        'shortage_quantity': shortage_quantity,
-        'total_sales': int(totals['total_sales'])
-    }
+    row_data = {'code': code, 'product_name': totals['product_name'], 'shortage_quantity': shortage_quantity, 'total_sales': int(totals['total_sales'])}
     for branch in branches:
         row_data[f'balance_{branch}'] = totals['branch_balances'].get(branch, 0)
     return row_data
