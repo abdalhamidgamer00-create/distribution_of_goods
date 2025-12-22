@@ -57,21 +57,23 @@ def _initialize_product_totals(product_name: str, branches: list) -> dict:
     }
 
 
+def _update_single_row(product_totals: dict, row, branch: str, branches: list) -> None:
+    """Update totals from a single row."""
+    code = str(row['code'])
+    if code not in product_totals:
+        product_totals[code] = _initialize_product_totals(row['product_name'], branches)
+    
+    product_totals[code]['total_surplus'] += float(row['surplus_quantity'] or 0)
+    product_totals[code]['total_needed'] += float(row['needed_quantity'] or 0)
+    product_totals[code]['total_sales'] += float(row['sales'] or 0)
+    product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
+
+
 def _update_product_totals(product_totals: dict, df, branch: str, branches: list) -> None:
     """Update product totals from a single branch DataFrame."""
     for _, row in df.iterrows():
-        code = row['code']
-        if pd.isna(code):
-            continue
-        
-        code = str(code)
-        if code not in product_totals:
-            product_totals[code] = _initialize_product_totals(row['product_name'], branches)
-        
-        product_totals[code]['total_surplus'] += float(row['surplus_quantity'] or 0)
-        product_totals[code]['total_needed'] += float(row['needed_quantity'] or 0)
-        product_totals[code]['total_sales'] += float(row['sales'] or 0)
-        product_totals[code]['branch_balances'][branch] = int(row['balance'] or 0)
+        if not pd.isna(row['code']):
+            _update_single_row(product_totals, row, branch, branches)
 
 
 def _load_and_validate_branch_analytics(analytics_dir: str, branch: str) -> tuple:
