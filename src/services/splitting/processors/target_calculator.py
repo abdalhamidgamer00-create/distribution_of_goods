@@ -3,10 +3,37 @@
 import math
 
 
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 # Maximum allowed balance for a branch (no transfers if balance >= this value)
 # This is the threshold above which a branch is considered "full" and won't receive transfers
 MAXIMUM_BRANCH_BALANCE_THRESHOLD = 30
 
+
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def calculate_target_amount(needed: float, balance: float, proportional_allocation: float = None) -> float:
+    """Calculate target transfer amount based on balance rules."""
+    target_amount = _calculate_base_target(needed, balance)
+    return _apply_proportional_limit(target_amount, proportional_allocation, balance)
+
+
+def should_skip_transfer(balance: float) -> bool:
+    """Check if transfer should be skipped based on balance.
+    
+    Returns:
+        True if transfer should be skipped (balance >= 30), False otherwise
+    """
+    return balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD
+
+
+# =============================================================================
+# TARGET CALCULATION HELPERS
+# =============================================================================
 
 def _calculate_base_target(needed: float, balance: float) -> float:
     """Calculate base target amount based on needed and balance."""
@@ -24,6 +51,10 @@ def _calculate_max_transfer(balance: float) -> float:
     return MAXIMUM_BRANCH_BALANCE_THRESHOLD - balance
 
 
+# =============================================================================
+# PROPORTIONAL ALLOCATION HELPERS
+# =============================================================================
+
 def _apply_proportional_limit(target_amount: float, proportional_allocation: float, balance: float) -> float:
     """Apply proportional allocation limits to target amount."""
     if proportional_allocation is None or proportional_allocation <= 0:
@@ -34,23 +65,3 @@ def _apply_proportional_limit(target_amount: float, proportional_allocation: flo
     if allocated_ceil + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
         return min(target_amount, _calculate_max_transfer(balance))
     return min(target_amount, allocated_ceil)
-
-
-def calculate_target_amount(needed: float, balance: float, proportional_allocation: float = None) -> float:
-    """Calculate target transfer amount based on balance rules."""
-    target_amount = _calculate_base_target(needed, balance)
-    return _apply_proportional_limit(target_amount, proportional_allocation, balance)
-
-
-def should_skip_transfer(balance: float) -> bool:
-    """
-    Check if transfer should be skipped based on balance.
-    
-    Args:
-        balance: Current balance of the branch
-        
-    Returns:
-        True if transfer should be skipped (balance >= 30), False otherwise
-    """
-    return balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD
-

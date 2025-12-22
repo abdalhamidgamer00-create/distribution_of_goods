@@ -1,12 +1,41 @@
+"""Authentication utilities for Streamlit GUI"""
+
 import streamlit as st
 import hmac
 
-# Default passwords (used if secrets.toml is not found)
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 DEFAULT_PASSWORDS = {
     "admin": "admin123",
     "user": "user123"
 }
 
+LOGIN_STYLES = """
+<style>
+.stTextInput {direction: rtl;}
+</style>
+"""
+
+
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def check_password():
+    """Returns `True` if the user had a correct password."""
+    if st.session_state.get("password_correct", False):
+        return True
+    
+    _show_login_form()
+    return False
+
+
+# =============================================================================
+# PASSWORD RETRIEVAL HELPERS
+# =============================================================================
 
 def _get_passwords() -> dict:
     """Get passwords from secrets or defaults."""
@@ -16,6 +45,10 @@ def _get_passwords() -> dict:
         st.warning("⚠️ استخدام كلمات المرور الافتراضية. يرجى إنشاء ملف .streamlit/secrets.toml للأمان.")
         return DEFAULT_PASSWORDS
 
+
+# =============================================================================
+# CREDENTIAL VERIFICATION HELPERS
+# =============================================================================
 
 def _verify_credentials(passwords: dict) -> bool:
     """Verify username and password."""
@@ -40,12 +73,9 @@ def _password_entered():
         st.session_state["password_correct"] = False
 
 
-LOGIN_STYLES = """
-<style>
-.stTextInput {direction: rtl;}
-</style>
-"""
-
+# =============================================================================
+# LOGIN FORM HELPERS
+# =============================================================================
 
 def _render_login_inputs() -> None:
     """Render username and password inputs with login button."""
@@ -54,22 +84,15 @@ def _render_login_inputs() -> None:
     st.text_input("كلمة المرور", type="password", key="password")
     if st.button("دخول", type="primary", use_container_width=True):
         _password_entered()
-        if st.session_state.get("password_correct") == False: st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
-        else: st.rerun()
+        if st.session_state.get("password_correct") == False:
+            st.error("😕 اسم المستخدم أو كلمة المرور غير صحيحة")
+        else:
+            st.rerun()
 
 
 def _show_login_form():
     """Display the login form."""
     st.markdown(LOGIN_STYLES, unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
+    column_left, column_center, column_right = st.columns([1, 2, 1])
+    with column_center:
         _render_login_inputs()
-
-
-def check_password():
-    """Returns `True` if the user had a correct password."""
-    if st.session_state.get("password_correct", False):
-        return True
-    
-    _show_login_form()
-    return False
