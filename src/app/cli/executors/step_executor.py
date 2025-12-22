@@ -31,10 +31,8 @@ def execute_single_step(step: dict, use_latest_file: bool = False) -> bool:
     if not validate_step_function(step):
         logger.error("✗ Step %s has no valid function!", step["id"])
         return False
-    
     try:
-        success = step['function'](use_latest_file=use_latest_file)
-        return _handle_step_result(step, success)
+        return _handle_step_result(step, step['function'](use_latest_file=use_latest_file))
     except Exception as e:
         logger.exception("✗ Step %s crashed: %s", step["id"], e)
         return False
@@ -43,14 +41,10 @@ def execute_single_step(step: dict, use_latest_file: bool = False) -> bool:
 def execute_step(step_id: str) -> bool:
     """Execute a single step by ID."""
     step = find_step_by_id(step_id)
-    
     if step is None:
         logger.error("Error: Invalid step number!")
         return False
-    
-    logger.info("Executing: %s", step["name"])
-    logger.info("-" * 50)
-    
+    logger.info("Executing: %s\n" + "-" * 50, step["name"])
     return execute_single_step(step, use_latest_file=False)
 
 

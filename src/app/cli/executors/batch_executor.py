@@ -39,28 +39,19 @@ def display_execution_summary(successful: int, total: int) -> None:
     """Display final execution statistics."""
     failed = total - successful
     success_rate = (successful / total * 100) if total > 0 else 0
-    
-    logger.info(SEPARATOR)
-    logger.info("Execution Summary:")
-    logger.info("  Total steps: %d", total)
-    logger.info("  Successful: %d", successful)
-    logger.info("  Failed: %d", failed)
-    logger.info("  Success rate: %.1f%%", success_rate)
-    logger.info(SEPARATOR)
+    logger.info(SEPARATOR + "\nExecution Summary:\n  Total steps: %d\n  Successful: %d\n  Failed: %d\n  Success rate: %.1f%%\n" + SEPARATOR, total, successful, failed, success_rate)
 
 
 def _run_steps_with_mode(use_latest: bool) -> bool:
     """Run all steps with the given file selection mode."""
     if use_latest:
         logger.info("Using latest file for all steps...")
-    
     try:
         successful, total = execute_all_steps_batch(use_latest)
         display_execution_summary(successful, total)
         return successful == total
     except Exception as e:
-        logger.exception("Error during batch execution: %s", e)
-        return False
+        logger.exception("Error during batch execution: %s", e); return False
 
 
 def execute_all_steps() -> bool:
