@@ -37,24 +37,23 @@ def _collect_all_data(branch: str, transfers_dir: str, surplus_dir: str, analyti
     return all_data
 
 
+def _filter_self_transfers(combined: pd.DataFrame, branch: str) -> pd.DataFrame:
+    """Filter out self-transfers from combined data."""
+    if 'target_branch' in combined.columns:
+        return combined[combined['target_branch'] != branch]
+    return combined
+
+
 def combine_transfers_and_surplus(
-    branch: str,
-    transfers_dir: str,
-    surplus_dir: str,
-    analytics_dir: str,
+    branch: str, transfers_dir: str, surplus_dir: str, analytics_dir: str,
 ) -> Optional[pd.DataFrame]:
     """Combine transfers and remaining surplus for a branch."""
     all_data = _collect_all_data(branch, transfers_dir, surplus_dir, analytics_dir)
-    
     if not all_data:
         return None
     
     combined = pd.concat(all_data, ignore_index=True)
-    
-    if 'target_branch' in combined.columns:
-        combined = combined[combined['target_branch'] != branch]
-    
-    return combined
+    return _filter_self_transfers(combined, branch)
 
 
 def _add_balance_columns(df: pd.DataFrame, sender_balances: dict, receiver_balances: dict) -> pd.DataFrame:

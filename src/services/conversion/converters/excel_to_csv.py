@@ -7,20 +7,16 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+def _do_excel_conversion(input_path: str, output_path: str) -> None:
+    """Perform the actual Excel to CSV conversion."""
+    df = pd.read_excel(input_path)
+    df.to_csv(output_path, index=False, encoding='utf-8-sig')
+
+
 def convert_excel_to_csv(input_path: str, output_path: str) -> bool:
-    """
-    Convert Excel file to CSV
-    
-    Args:
-        input_path: Input Excel file path
-        output_path: Output CSV file path
-        
-    Returns:
-        True if conversion succeeded, False if failed
-    """
+    """Convert Excel file to CSV."""
     try:
-        df = pd.read_excel(input_path)
-        df.to_csv(output_path, index=False, encoding='utf-8-sig')
+        _do_excel_conversion(input_path, output_path)
         return True
     except Exception as e:
         logger.exception("Conversion error: %s", e)

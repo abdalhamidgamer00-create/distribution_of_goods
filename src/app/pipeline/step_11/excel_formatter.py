@@ -37,24 +37,22 @@ def convert_to_excel_with_formatting(csv_files: List[Dict], excel_output_dir: st
     return [path for path in (_process_single_csv(f, excel_output_dir) for f in csv_files) if path]
 
 
+def _get_output_subdir(excel_output_dir: str, folder_name: str, grandparent_name: str) -> str:
+    """Get output subdirectory based on folder structure."""
+    if folder_name.startswith('to_'):
+        return os.path.join(excel_output_dir, grandparent_name, folder_name)
+    return os.path.join(excel_output_dir, folder_name)
+
+
 def _determine_output_path(csv_path: str, excel_output_dir: str) -> str:
     """Determine the output path for Excel file based on CSV structure."""
     csv_dir = os.path.dirname(csv_path)
     parent_dir = os.path.dirname(csv_dir)
     
-    folder_name = os.path.basename(csv_dir)
-    grandparent_name = os.path.basename(parent_dir)
-    
-    if folder_name.startswith('to_'):
-        # Separate: 2-level structure
-        output_subdir = os.path.join(excel_output_dir, grandparent_name, folder_name)
-    else:
-        # Merged: 1-level structure
-        output_subdir = os.path.join(excel_output_dir, folder_name)
-    
+    output_subdir = _get_output_subdir(excel_output_dir, os.path.basename(csv_dir), os.path.basename(parent_dir))
     os.makedirs(output_subdir, exist_ok=True)
-    excel_filename = os.path.basename(csv_path).replace('.csv', '.xlsx')
-    return os.path.join(output_subdir, excel_filename)
+    
+    return os.path.join(output_subdir, os.path.basename(csv_path).replace('.csv', '.xlsx'))
 
 
 def _convert_single_file(csv_path: str, excel_output_dir: str) -> str:

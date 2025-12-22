@@ -38,24 +38,15 @@ def read_analytics_file(analytics_path: str) -> tuple:
         return None, False, ''
 
 
+def _build_analytics_path(branch_dir: str, latest_file: str) -> str:
+    """Build full path to analytics file."""
+    return os.path.join(branch_dir, latest_file) if latest_file else None
+
+
 def get_latest_analytics_path(analytics_dir: str, branch: str) -> str:
-    """
-    Get the path to the latest analytics file for a branch.
-    
-    Args:
-        analytics_dir: Base analytics directory
-        branch: Branch name
-        
-    Returns:
-        Full path to the latest analytics file, or None if not found
-    """
+    """Get the path to the latest analytics file for a branch."""
     branch_dir = os.path.join(analytics_dir, branch)
-    latest_file = get_latest_file(branch_dir, '.csv')
-    
-    if not latest_file:
-        return None
-    
-    return os.path.join(branch_dir, latest_file)
+    return _build_analytics_path(branch_dir, get_latest_file(branch_dir, '.csv'))
 
 
 def _extract_withdrawal_amount(row, available_col: str, surplus_col: str, source_branch: str) -> float:

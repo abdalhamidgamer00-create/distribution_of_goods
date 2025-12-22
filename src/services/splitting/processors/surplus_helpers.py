@@ -42,23 +42,25 @@ def _update_amounts(remaining_needed: float, target_amount: float, amount_taken:
             math.ceil(max(0, target_amount - amount_taken)))
 
 
+def _execute_withdrawal(other_branch: str, product_index: int, amount_to_take: int, 
+                        available_surplus: float, remaining_needed: float, target_amount: float,
+                        withdrawals: dict, withdrawals_for_row: list) -> tuple:
+    """Execute withdrawal and return updated amounts."""
+    _record_withdrawal(other_branch, product_index, amount_to_take, available_surplus, 
+                      remaining_needed, withdrawals, withdrawals_for_row)
+    return _update_amounts(remaining_needed, target_amount, amount_to_take)
+
+
 def process_single_withdrawal(
-    other_branch: str,
-    product_index: int,
-    remaining_needed: float,
-    target_amount: float,
-    available_surplus: float,
-    withdrawals: dict,
-    withdrawals_for_row: list
+    other_branch: str, product_index: int, remaining_needed: float, target_amount: float,
+    available_surplus: float, withdrawals: dict, withdrawals_for_row: list
 ) -> tuple:
     """Process a single withdrawal from a surplus branch."""
     amount_to_take = _calculate_withdrawal_amounts(remaining_needed, target_amount, available_surplus)
     
     if amount_to_take > 0:
-        _record_withdrawal(other_branch, product_index, amount_to_take, available_surplus, 
-                          remaining_needed, withdrawals, withdrawals_for_row)
-        return _update_amounts(remaining_needed, target_amount, amount_to_take)
-    
+        return _execute_withdrawal(other_branch, product_index, amount_to_take, available_surplus,
+                                  remaining_needed, target_amount, withdrawals, withdrawals_for_row)
     return remaining_needed, target_amount
 
 
