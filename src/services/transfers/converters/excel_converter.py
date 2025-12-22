@@ -27,20 +27,26 @@ def _build_excel_output_path(csv_file_path: str, excel_output_dir: str) -> str:
     return os.path.join(excel_subfolder, excel_filename)
 
 
+def _write_excel_file(df, excel_path: str) -> str:
+    """Write DataFrame to Excel file."""
+    with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sheet1')
+    return excel_path
+
+
 def convert_split_csv_to_excel(csv_file_path: str, excel_output_dir: str, has_date_header: bool = False, first_line: str = "") -> str:
     """Convert a split CSV file to Excel format."""
     try:
         df = pd.read_csv(csv_file_path, encoding='utf-8-sig')
-        excel_path = _build_excel_output_path(csv_file_path, excel_output_dir)
-        
-        with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
-        
-        return excel_path
-    
+        return _write_excel_file(df, _build_excel_output_path(csv_file_path, excel_output_dir))
     except Exception as e:
         logger.exception("Error converting %s to Excel: %s", csv_file_path, e)
         return None
+
+
+def _is_category_file(filename: str, categories: list) -> bool:
+    """Check if file is a split category file."""
+    return filename.endswith('.csv') and any(filename.endswith(f'_{cat}.csv') for cat in categories)
 
 
 def _process_split_files(transfers_base_dir: str, excel_output_dir: str, has_date_header: bool, 
@@ -49,13 +55,10 @@ def _process_split_files(transfers_base_dir: str, excel_output_dir: str, has_dat
     count = 0
     for root, dirs, files in os.walk(transfers_base_dir):
         for file in files:
-            if file.endswith('.csv'):
-                is_split_file = any(file.endswith(f'_{cat}.csv') for cat in categories)
-                if is_split_file:
-                    csv_file_path = os.path.join(root, file)
-                    excel_path = convert_split_csv_to_excel(csv_file_path, excel_output_dir, has_date_header, first_line)
-                    if excel_path:
-                        count += 1
+            if _is_category_file(file, categories):
+                excel_path = convert_split_csv_to_excel(os.path.join(root, file), excel_output_dir, has_date_header, first_line)
+                if excel_path:
+                    count += 1
     return count
 
 

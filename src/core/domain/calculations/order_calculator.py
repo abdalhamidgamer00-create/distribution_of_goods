@@ -16,18 +16,21 @@ def _calculate_priority_score(needed: float, balance: float, avg_sales: float) -
     )
 
 
-def get_needing_branches_order_for_product(product_index: int, branch_data: dict, branches: list) -> list:
-    """Get order of branches that need products, sorted by weighted priority score."""
+def _collect_needing_branches(product_index: int, branch_data: dict, branches: list) -> list:
+    """Collect branches that need products with their scores."""
     needing_branches = []
-    
     for branch in branches:
         needed = branch_data[branch].iloc[product_index]['needed_quantity']
         if needed > 0:
             avg_sales = branch_data[branch].iloc[product_index]['avg_sales']
             balance = branch_data[branch].iloc[product_index]['balance']
-            score = _calculate_priority_score(needed, balance, avg_sales)
-            needing_branches.append((branch, score))
-    
+            needing_branches.append((branch, _calculate_priority_score(needed, balance, avg_sales)))
+    return needing_branches
+
+
+def get_needing_branches_order_for_product(product_index: int, branch_data: dict, branches: list) -> list:
+    """Get order of branches that need products, sorted by weighted priority score."""
+    needing_branches = _collect_needing_branches(product_index, branch_data, branches)
     needing_branches.sort(key=lambda x: -x[1])
     return [b[0] for b in needing_branches]
 
