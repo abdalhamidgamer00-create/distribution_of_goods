@@ -16,15 +16,7 @@ logger = get_logger(__name__)
 
 
 def add_product_type_column(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Add product_type column based on product_name.
-    
-    Args:
-        df: DataFrame with 'product_name' column
-        
-    Returns:
-        DataFrame with added 'product_type' column
-    """
+    """Add product_type column based on product_name."""
     df = df.copy()
     df['product_type'] = df['product_name'].apply(classify_product_type)
     return df
