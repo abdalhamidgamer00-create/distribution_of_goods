@@ -67,25 +67,24 @@ def _generate_separate_output(combined_data, branch: str, timestamp: str) -> int
     return 0
 
 
+def _get_combined_data(branch: str):
+    """Get combined data for a branch."""
+    return combine_transfers_and_surplus(
+        branch=branch, transfers_dir=TRANSFERS_DIR,
+        surplus_dir=REMAINING_SURPLUS_DIR, analytics_dir=ANALYTICS_DIR,
+    )
+
+
 def _process_single_branch(branch: str, timestamp: str) -> tuple:
     """Process a single branch and return (merged_count, separate_count)."""
     logger.info(f"Processing branch: {branch}")
-    
-    combined_data = combine_transfers_and_surplus(
-        branch=branch,
-        transfers_dir=TRANSFERS_DIR,
-        surplus_dir=REMAINING_SURPLUS_DIR,
-        analytics_dir=ANALYTICS_DIR,
-    )
+    combined_data = _get_combined_data(branch)
     
     if combined_data is None or combined_data.empty:
         logger.warning(f"No data to combine for branch: {branch}")
         return 0, 0
     
-    merged_count = _generate_merged_output(combined_data, branch, timestamp)
-    separate_count = _generate_separate_output(combined_data, branch, timestamp)
-    
-    return merged_count, separate_count
+    return _generate_merged_output(combined_data, branch, timestamp), _generate_separate_output(combined_data, branch, timestamp)
 
 
 def _process_all_branches(timestamp: str) -> tuple:

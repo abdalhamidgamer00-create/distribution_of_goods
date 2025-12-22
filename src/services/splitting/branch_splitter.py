@@ -161,22 +161,25 @@ def _write_output_files(branches: list, processed_data: dict, output_base_dir: s
     return output_files
 
 
+def _run_processing_pipeline(branches: list, branch_data: dict, proportional_allocation: dict, 
+                              num_products: int, timing_stats: dict) -> tuple:
+    """Run the processing pipeline and return processed data."""
+    analytics_data, all_withdrawals, max_withdrawals = _process_surplus_distribution(
+        branches, branch_data, proportional_allocation, num_products, timing_stats
+    )
+    final_surplus_remaining_dict = calculate_surplus_remaining(branches, branch_data, all_withdrawals)
+    processed_data = process_withdrawals(branches, analytics_data, max_withdrawals, final_surplus_remaining_dict)
+    return processed_data, max_withdrawals
+
+
 def _execute_split(csv_path: str, output_base_dir: str, base_filename: str, 
                    analytics_dir: str, branches: list, timing_stats: dict) -> tuple:
     """Execute the splitting process."""
     branch_data, has_date_header, first_line, num_products = _prepare_branch_data_with_timing(csv_path, timing_stats)
     proportional_allocation = _calculate_allocations(branch_data, branches, timing_stats)
-    analytics_data, all_withdrawals, max_withdrawals = _process_surplus_distribution(
-        branches, branch_data, proportional_allocation, num_products, timing_stats
-    )
     
-    final_surplus_remaining_dict = calculate_surplus_remaining(branches, branch_data, all_withdrawals)
-    processed_data = process_withdrawals(branches, analytics_data, max_withdrawals, final_surplus_remaining_dict)
-    
-    output_files = _write_output_files(
-        branches, processed_data, output_base_dir, base_filename, analytics_dir,
-        max_withdrawals, has_date_header, first_line, timing_stats
-    )
+    processed_data, max_withdrawals = _run_processing_pipeline(branches, branch_data, proportional_allocation, num_products, timing_stats)
+    output_files = _write_output_files(branches, processed_data, output_base_dir, base_filename, analytics_dir, max_withdrawals, has_date_header, first_line, timing_stats)
     
     return output_files, timing_stats
 
