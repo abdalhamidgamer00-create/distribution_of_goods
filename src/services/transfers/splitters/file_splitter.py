@@ -33,15 +33,16 @@ def _get_folder_name(transfer_file_path: str, base_name: str) -> str:
     return base_folder_name
 
 
-def _save_category_file(
-    category_df: pd.DataFrame,
-    file_folder: str,
-    base_folder_name: str,
-    category: str,
-    timestamp: str,
-    has_date_header: bool,
-    first_line: str
-) -> str:
+def _write_csv_to_file(df: pd.DataFrame, filepath: str, has_date_header: bool, first_line: str) -> None:
+    """Write DataFrame to CSV with optional date header."""
+    with open(filepath, 'w', encoding='utf-8-sig', newline='') as f:
+        if has_date_header:
+            f.write(first_line + '\n')
+        df.to_csv(f, index=False, lineterminator='\n')
+
+
+def _save_category_file(category_df: pd.DataFrame, file_folder: str, base_folder_name: str,
+                        category: str, timestamp: str, has_date_header: bool, first_line: str) -> str:
     """Save a category DataFrame to CSV file."""
     category_df = category_df.drop('product_type', axis=1)
     category_df = category_df.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
@@ -49,11 +50,7 @@ def _save_category_file(
     category_file = f"{base_folder_name}_{timestamp}_{category}.csv"
     category_path = os.path.join(file_folder, category_file)
     
-    with open(category_path, 'w', encoding='utf-8-sig', newline='') as f:
-        if has_date_header:
-            f.write(first_line + '\n')
-        category_df.to_csv(f, index=False, lineterminator='\n')
-    
+    _write_csv_to_file(category_df, category_path, has_date_header, first_line)
     return category_path
 
 
@@ -80,25 +77,25 @@ def _process_categories(df: pd.DataFrame, file_folder: str, base_folder_name: st
     return output_files
 
 
-def split_transfer_file_by_type(
-    transfer_file_path: str,
-    output_dir: str,
-    has_date_header: bool = False,
-    first_line: str = ""
-) -> dict:
+def _prepare_and_split(transfer_file_path: str, output_dir: str, has_date_header: bool, first_line: str) -> dict:
+    """Prepare transfer file and split by product type."""
+    df = _prepare_transfer_dataframe(transfer_file_path)
+    
+    base_name = os.path.splitext(os.path.basename(transfer_file_path))[0]
+    base_folder_name = _get_folder_name(transfer_file_path, base_name)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    file_folder = os.path.join(output_dir, base_name)
+    os.makedirs(file_folder, exist_ok=True)
+    
+    return _process_categories(df, file_folder, base_folder_name, timestamp, has_date_header, first_line)
+
+
+def split_transfer_file_by_type(transfer_file_path: str, output_dir: str,
+                                has_date_header: bool = False, first_line: str = "") -> dict:
     """Split a transfer CSV file into multiple files by product type."""
     try:
-        df = _prepare_transfer_dataframe(transfer_file_path)
-        
-        base_name = os.path.splitext(os.path.basename(transfer_file_path))[0]
-        base_folder_name = _get_folder_name(transfer_file_path, base_name)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        file_folder = os.path.join(output_dir, base_name)
-        os.makedirs(file_folder, exist_ok=True)
-        
-        return _process_categories(df, file_folder, base_folder_name, timestamp, has_date_header, first_line)
-    
+        return _prepare_and_split(transfer_file_path, output_dir, has_date_header, first_line)
     except Exception as e:
         logger.exception("Error splitting file %s: %s", transfer_file_path, e)
         return {}
