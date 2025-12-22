@@ -183,14 +183,11 @@ def _try_convert_excel(split_files: list, transfers_base_dir: str, excel_output_
 def _convert_to_excel(transfers_base_dir: str) -> bool:
     """Convert split transfer CSV files to Excel format."""
     from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
-    
     excel_output_dir = os.path.join("data", "output", "transfers", "excel")
     split_files = _find_split_csv_files(transfers_base_dir)
-    
     if not split_files:
         logger.error("No split CSV files found in %s", transfers_base_dir)
         return False
-    
     return _try_convert_excel(split_files, transfers_base_dir, excel_output_dir)
 
 

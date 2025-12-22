@@ -18,11 +18,8 @@ def _get_excel_file_from_streamlit(excel_files: list) -> str:
         if hasattr(st, 'session_state') and 'selected_file' in st.session_state:
             excel_file = st.session_state['selected_file']
             logger.info("Using Streamlit selected file: %s", excel_file)
-            if excel_file not in excel_files:
-                return None
-            return excel_file
-    except (ImportError, RuntimeError):
-        pass
+            return excel_file if excel_file in excel_files else None
+    except (ImportError, RuntimeError): pass
     return None
 
 
