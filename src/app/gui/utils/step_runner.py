@@ -90,6 +90,23 @@ def _process_step_with_ui(step: dict, progress_bar, status_text, idx: int, total
     return success, message, step_name
 
 
+def _cleanup_and_return_failure(progress_bar, status_text, step: dict, step_name: str, message: str) -> tuple:
+    """Cleanup UI elements and return failure tuple."""
+    import streamlit as st
+    progress_bar.empty()
+    status_text.empty()
+    st.error(f"❌ فشلت الخطوة {step['id']}: {step_name}")
+    return False, f"فشلت الخطوة {step['id']}: {message}"
+
+
+def _cleanup_and_return_success(progress_bar, status_text, step_id: str, target_step_num: int) -> tuple:
+    """Cleanup UI elements and return success tuple."""
+    progress_bar.empty()
+    status_text.empty()
+    target_step_name = STEP_NAMES.get(step_id, AVAILABLE_STEPS[target_step_num - 1]['name'])
+    return True, f"✅ تم تنفيذ جميع الخطوات حتى الخطوة {step_id}: {target_step_name}"
+
+
 def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) -> tuple:
     """Run steps with Streamlit progress bar."""
     import streamlit as st
@@ -99,15 +116,9 @@ def _run_with_streamlit_ui(all_steps: list, step_id: str, target_step_num: int) 
     for idx, step in enumerate(all_steps):
         success, message, step_name = _process_step_with_ui(step, progress_bar, status_text, idx, len(all_steps))
         if not success:
-            progress_bar.empty()
-            status_text.empty()
-            st.error(f"❌ فشلت الخطوة {step['id']}: {step_name}")
-            return False, f"فشلت الخطوة {step['id']}: {message}"
+            return _cleanup_and_return_failure(progress_bar, status_text, step, step_name, message)
     
-    progress_bar.empty()
-    status_text.empty()
-    target_step_name = STEP_NAMES.get(step_id, AVAILABLE_STEPS[target_step_num - 1]['name'])
-    return True, f"✅ تم تنفيذ جميع الخطوات حتى الخطوة {step_id}: {target_step_name}"
+    return _cleanup_and_return_success(progress_bar, status_text, step_id, target_step_num)
 
 
 def _run_without_ui(all_steps: list, step_id: str) -> tuple:
