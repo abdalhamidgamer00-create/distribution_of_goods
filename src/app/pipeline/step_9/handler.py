@@ -82,6 +82,15 @@ def _validate_analytics_directories(branches: list) -> bool:
     return True
 
 
+def _validate_columns(df, analytics_path: str):
+    """Validate analytics columns and return (success, df)."""
+    missing_cols = validate_analytics_columns(df)
+    if missing_cols:
+        logger.error("Missing required columns in %s: %s", analytics_path, missing_cols)
+        return False
+    return True
+
+
 def _load_and_validate_analytics(branch: str):
     """Load and validate analytics file for a branch."""
     analytics_path = get_latest_analytics_path(ANALYTICS_DIR, branch)
@@ -90,12 +99,7 @@ def _load_and_validate_analytics(branch: str):
         return None, None, None
     
     df, has_date_header, first_line = read_analytics_file(analytics_path)
-    if df is None:
-        return None, None, None
-    
-    missing_cols = validate_analytics_columns(df)
-    if missing_cols:
-        logger.error("Missing required columns in %s: %s", analytics_path, missing_cols)
+    if df is None or not _validate_columns(df, analytics_path):
         return None, None, None
     
     return df, has_date_header, first_line

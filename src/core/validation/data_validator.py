@@ -144,17 +144,25 @@ def _check_optional_present(actual_headers: list, optional_headers: list) -> str
     return None
 
 
-def _check_all_headers(actual_headers: list, required_headers: list, optional_headers: list) -> tuple:
-    """Check all headers and return errors and warnings."""
-    errors, warnings = [], []
-    
+def _add_missing_error(errors: list, actual_headers: list, required_headers: list) -> None:
+    """Add error for missing required columns."""
     missing_required = _check_missing_required(actual_headers, required_headers)
     if missing_required:
         errors.append(f"Missing required columns: {', '.join(missing_required)}")
-    
+
+
+def _add_unknown_warning(warnings: list, actual_headers: list, required_headers: list, optional_headers: list) -> None:
+    """Add warning for unknown columns."""
     unknown_columns = _check_unknown_columns(actual_headers, required_headers, optional_headers)
     if unknown_columns:
         warnings.append(f"Unknown columns (will be ignored): {', '.join(unknown_columns[:5])}")
+
+
+def _check_all_headers(actual_headers: list, required_headers: list, optional_headers: list) -> tuple:
+    """Check all headers and return errors and warnings."""
+    errors, warnings = [], []
+    _add_missing_error(errors, actual_headers, required_headers)
+    _add_unknown_warning(warnings, actual_headers, required_headers, optional_headers)
     
     optional_warning = _check_optional_present(actual_headers, optional_headers)
     if optional_warning:
