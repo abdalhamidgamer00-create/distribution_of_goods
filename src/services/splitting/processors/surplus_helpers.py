@@ -26,13 +26,7 @@ def _record_withdrawal(other_branch: str, product_index: int, amount: int, avail
     """Record a withdrawal in the tracking structures."""
     surplus_remaining = math.ceil(max(0, available_surplus - amount))
     new_remaining = math.ceil(max(0, remaining_needed - amount))
-    
-    withdrawals_for_row.append({
-        'surplus_from_branch': amount,
-        'available_branch': other_branch,
-        'surplus_remaining': surplus_remaining,
-        'remaining_needed': new_remaining
-    })
+    withdrawals_for_row.append({'surplus_from_branch': amount, 'available_branch': other_branch, 'surplus_remaining': surplus_remaining, 'remaining_needed': new_remaining})
     withdrawals[(other_branch, product_index)] = withdrawals.get((other_branch, product_index), 0.0) + amount
 
 

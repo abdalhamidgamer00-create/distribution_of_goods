@@ -130,14 +130,11 @@ def _count_excel_by_category(excel_output_dir: str) -> dict:
     """Count Excel files by category."""
     categories = get_product_categories()
     category_counts = {cat: 0 for cat in categories}
-    
     if not os.path.exists(excel_output_dir):
         return category_counts
-    
     for root, dirs, files in os.walk(excel_output_dir):
         for file in files:
             _count_single_excel(file, categories, category_counts)
-    
     return category_counts
 
 
