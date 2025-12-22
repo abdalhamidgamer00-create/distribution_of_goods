@@ -90,14 +90,10 @@ def _process_single_branch_totals(analytics_dir: str, branch: str, branches: lis
                                    product_totals: dict, header_info: dict) -> None:
     """Process a single branch and update product totals."""
     df, branch_has_date_header, branch_first_line = _load_and_validate_branch_analytics(analytics_dir, branch)
-    
     if df is None or not _has_required_columns(df, analytics_dir):
         return
-    
     if not header_info['has_date_header'] and branch_has_date_header:
-        header_info['has_date_header'] = True
-        header_info['first_line'] = branch_first_line
-    
+        header_info['has_date_header'], header_info['first_line'] = True, branch_first_line
     _update_product_totals(product_totals, df, branch, branches)
 
 

@@ -38,13 +38,7 @@ def generate_improvement_suggestions(analysis: dict) -> list:
 
 def _generate_header(csv_file: str, analysis: dict) -> list:
     """Generate report header section."""
-    lines = [
-        "=" * 60,
-        "SALES DATA ANALYSIS REPORT",
-        "=" * 60,
-        f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-        f"File: {csv_file}",
-    ]
+    lines = ["=" * 60, "SALES DATA ANALYSIS REPORT", "=" * 60, f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", f"File: {csv_file}"]
     if analysis.get('date_range'):
         date_range = analysis['date_range']
         lines.append(f"Date Range: {date_range['start']} to {date_range['end']}")
@@ -53,17 +47,7 @@ def _generate_header(csv_file: str, analysis: dict) -> list:
 
 def _generate_statistics(analysis: dict) -> list:
     """Generate statistics section."""
-    return [
-        "\n" + "-" * 60,
-        "STATISTICS",
-        "-" * 60,
-        f"Total Rows (Data): {analysis.get('total_rows', 0):,}",
-        f"Total Columns: {analysis.get('total_columns', 0):,}",
-        f"Total Cells: {analysis.get('total_cells', 0):,}",
-        f"Filled Cells: {analysis.get('filled_cells', 0):,}",
-        f"Empty Cells: {analysis.get('empty_cells', 0):,}",
-        f"Empty Cells Percentage: {analysis.get('empty_cells_percentage', 0)}%",
-    ]
+    return ["\n" + "-" * 60, "STATISTICS", "-" * 60, f"Total Rows (Data): {analysis.get('total_rows', 0):,}", f"Total Columns: {analysis.get('total_columns', 0):,}", f"Total Cells: {analysis.get('total_cells', 0):,}", f"Filled Cells: {analysis.get('filled_cells', 0):,}", f"Empty Cells: {analysis.get('empty_cells', 0):,}", f"Empty Cells Percentage: {analysis.get('empty_cells_percentage', 0)}%"]
 
 
 def _format_suggestions(suggestions: list) -> list:
