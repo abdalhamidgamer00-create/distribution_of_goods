@@ -103,20 +103,25 @@ def _fill_empty_product_records(branches: list, analytics_data: dict, num_produc
                 existing_list.append([_create_empty_withdrawal_record()])
 
 
+def _validate_branch_data(branch_data: dict, timing_stats: dict) -> int:
+    """Validate branch data and return num_products."""
+    if not branch_data or get_branches()[0] not in branch_data:
+        raise ValueError("No data found in CSV file")
+    
+    num_products = len(branch_data[get_branches()[0]])
+    if num_products == 0:
+        raise ValueError("CSV file contains no products")
+    timing_stats["num_products"] = num_products
+    return num_products
+
+
 def _prepare_branch_data_with_timing(csv_path: str, timing_stats: dict) -> tuple:
     """Prepare branch data and track timing."""
     prep_start = perf_counter()
     branch_data, has_date_header, first_line = prepare_branch_data(csv_path)
     timing_stats["prep_time"] = perf_counter() - prep_start
     
-    if not branch_data or get_branches()[0] not in branch_data:
-        raise ValueError("No data found in CSV file")
-    
-    num_products = len(branch_data[get_branches()[0]])
-    timing_stats["num_products"] = num_products
-    if num_products == 0:
-        raise ValueError("CSV file contains no products")
-    
+    num_products = _validate_branch_data(branch_data, timing_stats)
     return branch_data, has_date_header, first_line, num_products
 
 

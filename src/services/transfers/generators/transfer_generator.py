@@ -96,21 +96,22 @@ def _get_analytics_path(analytics_dir: str, target_branch: str) -> tuple:
     return analytics_path, latest_analytics_file, base_name
 
 
+def _build_and_validate_transfer(analytics_df, source_branch: str, target_branch: str):
+    """Build and validate transfer dataframe."""
+    transfer_amounts = _calculate_transfer_amounts(analytics_df, source_branch)
+    return _build_transfer_dataframe(analytics_df, transfer_amounts, target_branch)
+
+
 def _process_transfer(analytics_path: str, source_branch: str, target_branch: str, 
                       transfers_dir: str, base_name: str, has_date_header: bool, first_line: str) -> str:
     """Process transfer from analytics file."""
     analytics_df = _load_analytics_file(analytics_path)
-    
-    transfer_amounts = _calculate_transfer_amounts(analytics_df, source_branch)
-    transfer_df = _build_transfer_dataframe(analytics_df, transfer_amounts, target_branch)
+    transfer_df = _build_and_validate_transfer(analytics_df, source_branch, target_branch)
     
     if transfer_df is None:
         return None
     
-    return _save_transfer_file(
-        transfer_df, transfers_dir, source_branch, target_branch,
-        base_name, has_date_header, first_line
-    )
+    return _save_transfer_file(transfer_df, transfers_dir, source_branch, target_branch, base_name, has_date_header, first_line)
 
 
 def _execute_transfer_process(analytics_path: str, source_branch: str, target_branch: str,
