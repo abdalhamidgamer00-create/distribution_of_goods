@@ -57,15 +57,7 @@ def calculate_remaining_surplus(df: pd.DataFrame, total_withdrawals: dict) -> pd
 
 
 def validate_analytics_columns(df: pd.DataFrame) -> list:
-    """
-    Validate that required columns exist in the DataFrame.
-    
-    Args:
-        df: DataFrame to validate
-        
-    Returns:
-        List of missing column names (empty if all present)
-    """
+    """Validate that required columns exist, return missing column names."""
     required_columns = ['code', 'product_name', 'surplus_quantity']
     return [col for col in required_columns if col not in df.columns]
 
