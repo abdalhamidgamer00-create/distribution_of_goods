@@ -8,28 +8,9 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def _write_csv_with_header(df, filepath: str, has_date_header: bool, first_line: str) -> None:
-    """Write DataFrame to CSV with optional date header."""
-    with open(filepath, 'w', encoding='utf-8-sig', newline='') as f:
-        if has_date_header:
-            f.write(first_line + '\n')
-        df.to_csv(f, index=False, lineterminator='\n')
-    
-    if not os.path.exists(filepath):
-        raise IOError(f"File was not created: {filepath}")
-
-
-def _write_single_branch(branch: str, analytics_data: dict, output_base_dir: str, 
-                          base_filename: str, has_date_header: bool, first_line: str) -> str:
-    """Write a single branch file and return its path."""
-    branch_df = analytics_data[branch]
-    branch_dir = os.path.join(output_base_dir, branch)
-    ensure_directory_exists(branch_dir)
-    output_path = os.path.join(branch_dir, f"{base_filename}_{branch}.csv")
-    _write_csv_with_header(branch_df, output_path, has_date_header, first_line)
-    logger.debug("Written branch file: %s", output_path)
-    return output_path
-
+# =============================================================================
+# PUBLIC API
+# =============================================================================
 
 def write_branch_files(branches: list, analytics_data: dict, output_base_dir: str, 
                        base_filename: str, has_date_header: bool, first_line: str) -> dict:
@@ -38,18 +19,6 @@ def write_branch_files(branches: list, analytics_data: dict, output_base_dir: st
         branch: _write_single_branch(branch, analytics_data, output_base_dir, base_filename, has_date_header, first_line)
         for branch in branches
     }
-
-
-def _write_single_analytics(branch: str, analytics_data: dict, analytics_dir: str, 
-                             base_filename: str, analytics_columns: list, 
-                             has_date_header: bool, first_line: str) -> None:
-    """Write a single analytics file."""
-    branch_dir = os.path.join(analytics_dir, branch)
-    ensure_directory_exists(branch_dir)
-    analytics_df = analytics_data[branch][analytics_columns].copy()
-    analytics_path = os.path.join(branch_dir, f"{base_filename}_{branch}_analytics.csv")
-    _write_csv_with_header(analytics_df, analytics_path, has_date_header, first_line)
-    logger.debug("Written analytics file: %s", analytics_path)
 
 
 def write_analytics_files(branches: list, analytics_data: dict, analytics_dir: str, 
@@ -62,3 +31,48 @@ def write_analytics_files(branches: list, analytics_data: dict, analytics_dir: s
                                 analytics_columns, has_date_header, first_line)
 
 
+# =============================================================================
+# CSV WRITING HELPERS
+# =============================================================================
+
+def _write_csv_with_header(dataframe, filepath: str, has_date_header: bool, first_line: str) -> None:
+    """Write DataFrame to CSV with optional date header."""
+    with open(filepath, 'w', encoding='utf-8-sig', newline='') as file_handle:
+        if has_date_header:
+            file_handle.write(first_line + '\n')
+        dataframe.to_csv(file_handle, index=False, lineterminator='\n')
+    
+    if not os.path.exists(filepath):
+        raise IOError(f"File was not created: {filepath}")
+
+
+# =============================================================================
+# BRANCH FILE HELPERS
+# =============================================================================
+
+def _write_single_branch(branch: str, analytics_data: dict, output_base_dir: str, 
+                          base_filename: str, has_date_header: bool, first_line: str) -> str:
+    """Write a single branch file and return its path."""
+    branch_dataframe = analytics_data[branch]
+    branch_dir = os.path.join(output_base_dir, branch)
+    ensure_directory_exists(branch_dir)
+    output_path = os.path.join(branch_dir, f"{base_filename}_{branch}.csv")
+    _write_csv_with_header(branch_dataframe, output_path, has_date_header, first_line)
+    logger.debug("Written branch file: %s", output_path)
+    return output_path
+
+
+# =============================================================================
+# ANALYTICS FILE HELPERS
+# =============================================================================
+
+def _write_single_analytics(branch: str, analytics_data: dict, analytics_dir: str, 
+                             base_filename: str, analytics_columns: list, 
+                             has_date_header: bool, first_line: str) -> None:
+    """Write a single analytics file."""
+    branch_dir = os.path.join(analytics_dir, branch)
+    ensure_directory_exists(branch_dir)
+    analytics_dataframe = analytics_data[branch][analytics_columns].copy()
+    analytics_path = os.path.join(branch_dir, f"{base_filename}_{branch}_analytics.csv")
+    _write_csv_with_header(analytics_dataframe, analytics_path, has_date_header, first_line)
+    logger.debug("Written analytics file: %s", analytics_path)

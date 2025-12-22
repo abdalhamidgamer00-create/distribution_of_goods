@@ -10,6 +10,26 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_4_sales_analysis(use_latest_file: bool = None) -> bool:
+    """Step 4: Generate sales analysis report."""
+    output_dir = os.path.join("data", "output", "converted", "csv")
+    csv_files = get_csv_files(output_dir)
+    
+    if not csv_files:
+        logger.error("No CSV files found in %s", output_dir)
+        return False
+    
+    return _process_analysis(output_dir, csv_files, use_latest_file)
+
+
+# =============================================================================
+# ANALYSIS EXECUTION HELPERS
+# =============================================================================
+
 def _execute_analysis(csv_path: str, csv_file: str) -> bool:
     """Execute the analysis and generate report."""
     logger.info("Analyzing %s...", csv_file)
@@ -26,21 +46,9 @@ def _process_analysis(output_dir: str, csv_files: list, use_latest_file: bool) -
     try:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
         return _execute_analysis(get_file_path(csv_file, output_dir), csv_file)
-    except ValueError as e:
-        logger.error("Error: %s", e)
+    except ValueError as error:
+        logger.error("Error: %s", error)
         return False
-    except Exception as e:
-        logger.exception("Error during analysis: %s", e); return False
-
-
-def step_4_sales_analysis(use_latest_file: bool = None) -> bool:
-    """Step 4: Generate sales analysis report"""
-    output_dir = os.path.join("data", "output", "converted", "csv")
-    csv_files = get_csv_files(output_dir)
-    
-    if not csv_files:
-        logger.error("No CSV files found in %s", output_dir)
+    except Exception as error:
+        logger.exception("Error during analysis: %s", error)
         return False
-    
-    return _process_analysis(output_dir, csv_files, use_latest_file)
-

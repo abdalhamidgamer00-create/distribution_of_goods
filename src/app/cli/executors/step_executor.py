@@ -7,15 +7,50 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def execute_step(step_id: str) -> bool:
+    """Execute a single step by ID."""
+    step = find_step_by_id(step_id)
+    if step is None:
+        logger.error("Error: Invalid step number!")
+        return False
+    logger.info("Executing: %s\n" + "-" * 50, step["name"])
+    return execute_single_step(step, use_latest_file=False)
+
+
+def execute_step_with_dependencies(step_id: str) -> bool:
+    """Execute all steps from 1 to step_id in sequence."""
+    all_steps = _get_steps_up_to(step_id)
+    if not all_steps:
+        logger.error("✗ No steps found up to step %s", step_id)
+        return False
+    
+    logger.info("=" * 70)
+    logger.info("Running steps 1 through %s (Total: %d steps)", step_id, len(all_steps))
+    logger.info("=" * 70)
+    return _run_and_log_success(all_steps)
+
+
+# =============================================================================
+# STEP LOOKUP HELPERS
+# =============================================================================
+
 def find_step_by_id(step_id: str) -> Optional[dict]:
     """Find a step by its ID."""
-    return next((s for s in AVAILABLE_STEPS if s['id'] == step_id), None)
+    return next((step for step in AVAILABLE_STEPS if step['id'] == step_id), None)
 
 
 def validate_step_function(step: dict) -> bool:
     """Check if step has a valid callable function."""
     return callable(step.get('function'))
 
+
+# =============================================================================
+# STEP EXECUTION HELPERS
+# =============================================================================
 
 def _handle_step_result(step: dict, success: bool) -> bool:
     """Log step result and return success status."""
@@ -33,35 +68,33 @@ def execute_single_step(step: dict, use_latest_file: bool = False) -> bool:
         return False
     try:
         return _handle_step_result(step, step['function'](use_latest_file=use_latest_file))
-    except Exception as e:
-        logger.exception("✗ Step %s crashed: %s", step["id"], e)
+    except Exception as error:
+        logger.exception("✗ Step %s crashed: %s", step["id"], error)
         return False
 
 
-def execute_step(step_id: str) -> bool:
-    """Execute a single step by ID."""
-    step = find_step_by_id(step_id)
-    if step is None:
-        logger.error("Error: Invalid step number!")
-        return False
-    logger.info("Executing: %s\n" + "-" * 50, step["name"])
-    return execute_single_step(step, use_latest_file=False)
-
+# =============================================================================
+# BATCH STEP HELPERS
+# =============================================================================
 
 def _get_steps_up_to(step_id: str) -> list:
     """Get all steps up to and including the target step ID."""
     try:
-        target_step_num = int(step_id)
+        target_step_number = int(step_id)
     except ValueError:
         return []
     
-    return [s for s in AVAILABLE_STEPS if int(s['id']) <= target_step_num]
+    return [step for step in AVAILABLE_STEPS if int(step['id']) <= target_step_number]
 
 
-def _log_step_header(idx: int, total: int, step: dict) -> None:
+# =============================================================================
+# STEP SEQUENCE HELPERS
+# =============================================================================
+
+def _log_step_header(step_index: int, total: int, step: dict) -> None:
     """Log step execution header."""
     logger.info("")
-    logger.info("[%d/%d] Executing: %s", idx, total, step["name"])
+    logger.info("[%d/%d] Executing: %s", step_index, total, step["name"])
     logger.info("-" * 70)
 
 
@@ -74,8 +107,8 @@ def _log_step_failure(step: dict) -> None:
 
 def _run_step_sequence(all_steps: list) -> bool:
     """Run a sequence of steps, stopping on first failure."""
-    for idx, step in enumerate(all_steps, 1):
-        _log_step_header(idx, len(all_steps), step)
+    for step_index, step in enumerate(all_steps, 1):
+        _log_step_header(step_index, len(all_steps), step)
         
         if not execute_single_step(step, use_latest_file=False):
             _log_step_failure(step)
@@ -84,6 +117,10 @@ def _run_step_sequence(all_steps: list) -> bool:
     
     return True
 
+
+# =============================================================================
+# SUCCESS LOGGING HELPERS
+# =============================================================================
 
 def _log_success_banner(steps_count: int) -> None:
     """Log success banner for completed steps."""
@@ -99,16 +136,3 @@ def _run_and_log_success(all_steps: list) -> bool:
     if success:
         _log_success_banner(len(all_steps))
     return success
-
-
-def execute_step_with_dependencies(step_id: str) -> bool:
-    """Execute all steps from 1 to step_id in sequence."""
-    all_steps = _get_steps_up_to(step_id)
-    if not all_steps:
-        logger.error("✗ No steps found up to step %s", step_id)
-        return False
-    
-    logger.info("=" * 70)
-    logger.info("Running steps 1 through %s (Total: %d steps)", step_id, len(all_steps))
-    logger.info("=" * 70)
-    return _run_and_log_success(all_steps)

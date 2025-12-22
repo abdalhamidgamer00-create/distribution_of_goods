@@ -16,6 +16,26 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
+    """Step 7: Generate transfer CSV files between branches."""
+    analytics_dir = os.path.join("data", "output", "branches", "analytics")
+    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
+    
+    analytics_files = _validate_and_get_files(analytics_dir, get_branches())
+    if analytics_files is None:
+        return False
+    
+    return _run_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
+
+
+# =============================================================================
+# VALIDATION HELPERS
+# =============================================================================
+
 def _validate_analytics_directories(analytics_dir: str, branches: list) -> bool:
     """Validate that analytics directories exist for all branches."""
     for branch in branches:
@@ -26,6 +46,23 @@ def _validate_analytics_directories(analytics_dir: str, branches: list) -> bool:
             return False
     return True
 
+
+def _validate_and_get_files(analytics_dir: str, branches: list) -> dict:
+    """Validate and get analytics files."""
+    if not _validate_analytics_directories(analytics_dir, branches):
+        return None
+    
+    analytics_files = _get_analytics_files(analytics_dir, branches)
+    if not analytics_files:
+        logger.error("No analytics files found in %s", analytics_dir)
+        logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
+        return None
+    return analytics_files
+
+
+# =============================================================================
+# FILE DISCOVERY HELPERS
+# =============================================================================
 
 def _get_analytics_files(analytics_dir: str, branches: list) -> dict:
     """Get analytics files for all branches."""
@@ -45,8 +82,8 @@ def _try_extract_date_header(analytics_dir: str, analytics_files: dict) -> tuple
         return None
     
     sample_path = os.path.join(analytics_dir, first_branch, latest_file)
-    with open(sample_path, 'r', encoding='utf-8-sig') as f:
-        first_line = f.readline().strip()
+    with open(sample_path, 'r', encoding='utf-8-sig') as file_handle:
+        first_line = file_handle.readline().strip()
         from src.core.validation.data_validator import extract_dates_from_header
         start_date, end_date = extract_dates_from_header(first_line)
         return (True, first_line) if start_date and end_date else None
@@ -59,6 +96,59 @@ def _extract_date_header_info(analytics_dir: str, analytics_files: dict) -> tupl
         return result if result else (False, "")
     except Exception:
         return False, ""
+
+
+# =============================================================================
+# TRANSFER GENERATION HELPERS
+# =============================================================================
+
+def _log_and_generate(analytics_dir: str, transfers_base_dir: str, has_date_header: bool, first_line: str) -> dict:
+    """Log info and generate transfer files."""
+    logger.info("Generating transfer files...")
+    logger.info("-" * 50)
+    logger.info("Using latest analytics files for each target branch...")
+    return generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
+
+
+def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
+    """Execute the transfer generation process."""
+    has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
+    transfer_files = _log_and_generate(analytics_dir, transfers_base_dir, has_date_header, first_line)
+    
+    if not transfer_files:
+        logger.warning("No transfers found between branches")
+        return False
+    
+    _log_transfer_summary(transfer_files, transfers_base_dir)
+    return True
+
+
+def _run_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
+    """Run transfer generation with error handling."""
+    try:
+        return _execute_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
+    except ValueError as error:
+        logger.error("Error: %s", error)
+        return False
+    except Exception as error:
+        logger.exception("Error during transfer generation: %s", error)
+        return False
+
+
+# =============================================================================
+# LOGGING HELPERS
+# =============================================================================
+
+def _format_file_size(size_bytes: int) -> str:
+    """Format file size in human-readable format."""
+    if size_bytes == 0:
+        return "0 B"
+    
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.1f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.1f} TB"
 
 
 def _group_files_by_source(transfer_files: dict) -> dict:
@@ -86,75 +176,3 @@ def _log_transfer_summary(transfer_files: dict, transfers_base_dir: str) -> None
     for source in sorted(files_by_source.keys()):
         _log_source_files(source, files_by_source[source])
     logger.info("\nTransfer files saved to: %s", transfers_base_dir)
-
-
-def _validate_and_get_files(analytics_dir: str, branches: list) -> dict:
-    """Validate and get analytics files."""
-    if not _validate_analytics_directories(analytics_dir, branches):
-        return None
-    
-    analytics_files = _get_analytics_files(analytics_dir, branches)
-    if not analytics_files:
-        logger.error("No analytics files found in %s", analytics_dir)
-        logger.error("Please run step 5 (Split by Branches) first to generate analytics files")
-        return None
-    return analytics_files
-
-
-def _log_and_generate(analytics_dir: str, transfers_base_dir: str, has_date_header: bool, first_line: str) -> dict:
-    """Log info and generate transfer files."""
-    logger.info("Generating transfer files...")
-    logger.info("-" * 50)
-    logger.info("Using latest analytics files for each target branch...")
-    return generate_transfer_files(analytics_dir, transfers_base_dir, has_date_header, first_line)
-
-
-def _execute_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
-    """Execute the transfer generation process."""
-    has_date_header, first_line = _extract_date_header_info(analytics_dir, analytics_files)
-    transfer_files = _log_and_generate(analytics_dir, transfers_base_dir, has_date_header, first_line)
-    
-    if not transfer_files:
-        logger.warning("No transfers found between branches")
-        return False
-    
-    _log_transfer_summary(transfer_files, transfers_base_dir)
-    return True
-
-
-def _run_transfer_generation(analytics_dir: str, transfers_base_dir: str, analytics_files: dict) -> bool:
-    """Run transfer generation with error handling."""
-    try:
-        return _execute_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
-    except ValueError as e:
-        logger.error("Error: %s", e)
-        return False
-    except Exception as e:
-        logger.exception("Error during transfer generation: %s", e)
-        return False
-
-
-def step_7_generate_transfers(use_latest_file: bool = None) -> bool:
-    """Step 7: Generate transfer CSV files between branches."""
-    analytics_dir = os.path.join("data", "output", "branches", "analytics")
-    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
-    
-    analytics_files = _validate_and_get_files(analytics_dir, get_branches())
-    if analytics_files is None:
-        return False
-    
-    return _run_transfer_generation(analytics_dir, transfers_base_dir, analytics_files)
-
-
-
-def _format_file_size(size_bytes: int) -> str:
-    """Format file size in human-readable format"""
-    if size_bytes == 0:
-        return "0 B"
-    
-    for unit in ['B', 'KB', 'MB', 'GB']:
-        if size_bytes < 1024.0:
-            return f"{size_bytes:.1f} {unit}"
-        size_bytes /= 1024.0
-    return f"{size_bytes:.1f} TB"
-

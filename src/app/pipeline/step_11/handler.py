@@ -20,7 +20,11 @@ from src.app.pipeline.step_11.excel_formatter import (
 
 logger = get_logger(__name__)
 
-# Output directories
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 TRANSFERS_DIR = os.path.join("data", "output", "transfers", "csv")
 REMAINING_SURPLUS_DIR = os.path.join("data", "output", "remaining_surplus", "csv")
 ANALYTICS_DIR = os.path.join("data", "output", "branches", "analytics")
@@ -30,6 +34,62 @@ OUTPUT_MERGED_EXCEL = os.path.join("data", "output", "combined_transfers", "merg
 OUTPUT_SEPARATE_CSV = os.path.join("data", "output", "combined_transfers", "separate", "csv")
 OUTPUT_SEPARATE_EXCEL = os.path.join("data", "output", "combined_transfers", "separate", "excel")
 
+
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
+    """Step 11: Generate combined transfer files with remaining surplus."""
+    if not _validate_input_directories():
+        return False
+    _create_output_directories()
+    try:
+        total_merged, total_separate = _process_all_branches(get_timestamp())
+        _log_summary(total_merged, total_separate)
+        return total_merged > 0 or total_separate > 0
+    except Exception as error:
+        logger.exception(f"Error generating combined transfer files: {error}")
+        return False
+
+
+# =============================================================================
+# VALIDATION HELPERS
+# =============================================================================
+
+def _validate_input_directories() -> bool:
+    """Validate that required input directories exist."""
+    if not os.path.exists(TRANSFERS_DIR):
+        logger.error(f"Transfers directory not found: {TRANSFERS_DIR}\nPlease run Step 7 (Generate Transfer Files) first")
+        return False
+    if not os.path.exists(REMAINING_SURPLUS_DIR):
+        logger.error(f"Remaining surplus directory not found: {REMAINING_SURPLUS_DIR}\nPlease run Step 9 (Generate Remaining Surplus) first")
+        return False
+    return True
+
+
+def _create_output_directories() -> None:
+    """Create output directories if they don't exist."""
+    for directory_path in [OUTPUT_MERGED_CSV, OUTPUT_MERGED_EXCEL, 
+                           OUTPUT_SEPARATE_CSV, OUTPUT_SEPARATE_EXCEL]:
+        os.makedirs(directory_path, exist_ok=True)
+
+
+# =============================================================================
+# DATA RETRIEVAL HELPERS
+# =============================================================================
+
+def _get_combined_data(branch: str):
+    """Get combined data for a branch."""
+    return combine_transfers_and_surplus(
+        branch=branch, transfers_dir=TRANSFERS_DIR,
+        surplus_dir=REMAINING_SURPLUS_DIR, analytics_dir=ANALYTICS_DIR,
+    )
+
+
+# =============================================================================
+# FILE GENERATION HELPERS
+# =============================================================================
 
 def _convert_and_count(files: list, excel_output_dir: str) -> int:
     """Convert files to Excel and return count."""
@@ -51,13 +111,9 @@ def _generate_separate_output(combined_data, branch: str, timestamp: str) -> int
     return _convert_and_count(separate_files, OUTPUT_SEPARATE_EXCEL)
 
 
-def _get_combined_data(branch: str):
-    """Get combined data for a branch."""
-    return combine_transfers_and_surplus(
-        branch=branch, transfers_dir=TRANSFERS_DIR,
-        surplus_dir=REMAINING_SURPLUS_DIR, analytics_dir=ANALYTICS_DIR,
-    )
-
+# =============================================================================
+# BRANCH PROCESSING HELPERS
+# =============================================================================
 
 def _process_single_branch(branch: str, timestamp: str) -> tuple:
     """Process a single branch and return (merged_count, separate_count)."""
@@ -82,37 +138,9 @@ def _process_all_branches(timestamp: str) -> tuple:
     return total_merged, total_separate
 
 
-def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
-    """Step 11: Generate combined transfer files with remaining surplus."""
-    if not _validate_input_directories():
-        return False
-    _create_output_directories()
-    try:
-        total_merged, total_separate = _process_all_branches(get_timestamp())
-        _log_summary(total_merged, total_separate)
-        return total_merged > 0 or total_separate > 0
-    except Exception as e:
-        logger.exception(f"Error generating combined transfer files: {e}"); return False
-
-
-
-def _validate_input_directories() -> bool:
-    """Validate that required input directories exist."""
-    if not os.path.exists(TRANSFERS_DIR):
-        logger.error(f"Transfers directory not found: {TRANSFERS_DIR}\nPlease run Step 7 (Generate Transfer Files) first")
-        return False
-    if not os.path.exists(REMAINING_SURPLUS_DIR):
-        logger.error(f"Remaining surplus directory not found: {REMAINING_SURPLUS_DIR}\nPlease run Step 9 (Generate Remaining Surplus) first")
-        return False
-    return True
-
-
-def _create_output_directories() -> None:
-    """Create output directories if they don't exist."""
-    for dir_path in [OUTPUT_MERGED_CSV, OUTPUT_MERGED_EXCEL, 
-                     OUTPUT_SEPARATE_CSV, OUTPUT_SEPARATE_EXCEL]:
-        os.makedirs(dir_path, exist_ok=True)
-
+# =============================================================================
+# LOGGING HELPERS
+# =============================================================================
 
 def _log_summary(total_merged: int, total_separate: int) -> None:
     """Log summary of generated files."""

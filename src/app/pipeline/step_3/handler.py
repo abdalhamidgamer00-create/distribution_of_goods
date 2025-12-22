@@ -10,6 +10,26 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_3_validate_data(use_latest_file: bool = None):
+    """Step 3: Validate CSV data and date range."""
+    output_dir = os.path.join("data", "output", "converted", "csv")
+    csv_files = get_csv_files(output_dir)
+    
+    if not csv_files:
+        logger.error("No CSV files found in %s", output_dir)
+        return False
+    
+    return _try_validate(output_dir, csv_files, use_latest_file)
+
+
+# =============================================================================
+# DATE LOGGING HELPERS
+# =============================================================================
+
 def _log_date_validation(is_valid: bool, start_date, end_date, message: str) -> None:
     """Log date range validation results."""
     logger.info("[1] Date Range Validation: %s", message)
@@ -20,6 +40,10 @@ def _log_date_validation(is_valid: bool, start_date, end_date, message: str) -> 
     status = ">= 3 months" if is_valid else "less than 3 months"
     logger.info("    %s Date range is %s", "✓" if is_valid else "✗", status)
 
+
+# =============================================================================
+# HEADERS LOGGING HELPERS
+# =============================================================================
 
 def _log_headers_validation(is_valid: bool, errors: list, message: str) -> None:
     """Log column headers validation results."""
@@ -40,18 +64,26 @@ def _log_overall_result(is_valid: bool) -> None:
     logger.info("=" * 50)
 
 
+# =============================================================================
+# FILE MODIFICATION HELPERS
+# =============================================================================
+
 def _remove_first_row(csv_path: str, csv_file: str) -> bool:
     """Remove first row (header with date range) from CSV file."""
     logger.info("Removing first row (header with date range) from %s...", csv_file)
     try:
-        df = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
-        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        dataframe = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
+        dataframe.to_csv(csv_path, index=False, encoding='utf-8-sig')
         logger.info("✓ First row removed successfully")
         return True
-    except Exception as e:
-        logger.exception("✗ Error removing first row: %s", e)
+    except Exception as error:
+        logger.exception("✗ Error removing first row: %s", error)
         return False
 
+
+# =============================================================================
+# VALIDATION HELPERS
+# =============================================================================
 
 def _perform_validation(csv_path: str) -> tuple:
     """Perform date and headers validation."""
@@ -92,20 +124,6 @@ def _try_validate(output_dir: str, csv_files: list, use_latest_file: bool) -> bo
     except ValueError:
         logger.error("Invalid input! Please enter a number.")
         return False
-    except Exception as e:
-        logger.exception("Error during validation: %s", e)
+    except Exception as error:
+        logger.exception("Error during validation: %s", error)
         return False
-
-
-def step_3_validate_data(use_latest_file: bool = None):
-    """Step 3: Validate CSV data and date range."""
-    output_dir = os.path.join("data", "output", "converted", "csv")
-    csv_files = get_csv_files(output_dir)
-    
-    if not csv_files:
-        logger.error("No CSV files found in %s", output_dir)
-        return False
-    
-    return _try_validate(output_dir, csv_files, use_latest_file)
-
-

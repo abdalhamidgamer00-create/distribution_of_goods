@@ -12,35 +12,21 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def _parse_csv_with_date_header(analytics_path: str, first_line: str) -> tuple:
-    """Parse CSV with optional date header detection."""
-    start_date, end_date = extract_dates_from_header(first_line)
-    has_date_header = bool(start_date and end_date)
-    
-    if has_date_header:
-        df = pd.read_csv(analytics_path, skiprows=1, encoding='utf-8-sig')
-    else:
-        df = pd.read_csv(analytics_path, encoding='utf-8-sig')
-    
-    return df, has_date_header
-
+# =============================================================================
+# PUBLIC API
+# =============================================================================
 
 def read_analytics_file(analytics_path: str) -> tuple:
     """Read an analytics file and return its data."""
     try:
-        with open(analytics_path, 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline().strip()
+        with open(analytics_path, 'r', encoding='utf-8-sig') as file_handle:
+            first_line = file_handle.readline().strip()
         
-        df, has_date_header = _parse_csv_with_date_header(analytics_path, first_line)
-        return df, has_date_header, first_line
-    except Exception as e:
-        logger.error("Error reading analytics file %s: %s", analytics_path, e)
+        dataframe, has_date_header = _parse_csv_with_date_header(analytics_path, first_line)
+        return dataframe, has_date_header, first_line
+    except Exception as error:
+        logger.error("Error reading analytics file %s: %s", analytics_path, error)
         return None, False, ''
-
-
-def _build_analytics_path(branch_dir: str, latest_file: str) -> str:
-    """Build full path to analytics file."""
-    return os.path.join(branch_dir, latest_file) if latest_file else None
 
 
 def get_latest_analytics_path(analytics_dir: str, branch: str) -> str:
@@ -49,12 +35,63 @@ def get_latest_analytics_path(analytics_dir: str, branch: str) -> str:
     return _build_analytics_path(branch_dir, get_latest_file(branch_dir, '.csv'))
 
 
-def _extract_withdrawal_amount(row, available_col: str, surplus_col: str, source_branch: str) -> float:
+def extract_withdrawals_from_branch(dataframe: pd.DataFrame, source_branch: str) -> dict:
+    """Extract all withdrawals made FROM a specific branch."""
+    withdrawal_pairs = _build_withdrawal_pairs(dataframe)
+    
+    all_withdrawals = {}
+    for _, row in dataframe.iterrows():
+        row_withdrawals = _process_withdrawal_row(row, source_branch, withdrawal_pairs)
+        for code, amount in row_withdrawals.items():
+            all_withdrawals[code] = all_withdrawals.get(code, 0.0) + amount
+    
+    return all_withdrawals
+
+
+# =============================================================================
+# CSV PARSING HELPERS
+# =============================================================================
+
+def _parse_csv_with_date_header(analytics_path: str, first_line: str) -> tuple:
+    """Parse CSV with optional date header detection."""
+    start_date, end_date = extract_dates_from_header(first_line)
+    has_date_header = bool(start_date and end_date)
+    
+    if has_date_header:
+        dataframe = pd.read_csv(analytics_path, skiprows=1, encoding='utf-8-sig')
+    else:
+        dataframe = pd.read_csv(analytics_path, encoding='utf-8-sig')
+    
+    return dataframe, has_date_header
+
+
+# =============================================================================
+# PATH BUILDING HELPERS
+# =============================================================================
+
+def _build_analytics_path(branch_dir: str, latest_file: str) -> str:
+    """Build full path to analytics file."""
+    return os.path.join(branch_dir, latest_file) if latest_file else None
+
+
+# =============================================================================
+# WITHDRAWAL EXTRACTION HELPERS
+# =============================================================================
+
+def _build_withdrawal_pairs(dataframe: pd.DataFrame) -> list:
+    """Build withdrawal column pairs."""
+    surplus_from_columns = [column for column in dataframe.columns if column.startswith('surplus_from_branch_')]
+    available_branch_columns = [column for column in dataframe.columns if column.startswith('available_branch_')]
+    min_columns = min(len(surplus_from_columns), len(available_branch_columns))
+    return list(zip(available_branch_columns[:min_columns], surplus_from_columns[:min_columns]))
+
+
+def _extract_withdrawal_amount(row, available_column: str, surplus_column: str, source_branch: str) -> float:
     """Extract withdrawal amount from a single column pair."""
-    if pd.notna(row.get(available_col)) and str(row[available_col]).strip() == source_branch:
-        if pd.notna(row.get(surplus_col)):
+    if pd.notna(row.get(available_column)) and str(row[available_column]).strip() == source_branch:
+        if pd.notna(row.get(surplus_column)):
             try:
-                return float(row[surplus_col])
+                return float(row[surplus_column])
             except (ValueError, TypeError):
                 pass
     return 0.0
@@ -67,27 +104,5 @@ def _process_withdrawal_row(row, source_branch: str, withdrawal_pairs: list) -> 
         return {}
     
     product_code = str(product_code)
-    total = sum(_extract_withdrawal_amount(row, a, s, source_branch) for a, s in withdrawal_pairs)
+    total = sum(_extract_withdrawal_amount(row, available, surplus, source_branch) for available, surplus in withdrawal_pairs)
     return {product_code: total} if total > 0 else {}
-
-
-def _build_withdrawal_pairs(df: pd.DataFrame) -> list:
-    """Build withdrawal column pairs."""
-    surplus_from_cols = [col for col in df.columns if col.startswith('surplus_from_branch_')]
-    available_branch_cols = [col for col in df.columns if col.startswith('available_branch_')]
-    min_cols = min(len(surplus_from_cols), len(available_branch_cols))
-    return list(zip(available_branch_cols[:min_cols], surplus_from_cols[:min_cols]))
-
-
-def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:
-    """Extract all withdrawals made FROM a specific branch."""
-    withdrawal_pairs = _build_withdrawal_pairs(df)
-    
-    all_withdrawals = {}
-    for _, row in df.iterrows():
-        row_withdrawals = _process_withdrawal_row(row, source_branch, withdrawal_pairs)
-        for code, amount in row_withdrawals.items():
-            all_withdrawals[code] = all_withdrawals.get(code, 0.0) + amount
-    
-    return all_withdrawals
-

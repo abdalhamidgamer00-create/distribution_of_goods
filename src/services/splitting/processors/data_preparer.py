@@ -8,15 +8,55 @@ from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
-# Default number of days when no date information is available
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 DEFAULT_DAYS_FOR_AVG_SALES = 90
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_dates=False) -> tuple:
+    """Prepare branch data from CSV file."""
+    first_line = _read_first_line(csv_path)
+    start_date, end_date, header_contained_dates = _resolve_date_range(first_line, start_date, end_date)
+    num_days = _validate_date_range(start_date, end_date, require_dates)
+    dataframe = _read_csv_with_header(csv_path, header_contained_dates)
+    branches, base_columns = get_branches(), get_base_columns()
+    _validate_required_columns(dataframe, branches, base_columns)
+    return _build_branch_data_dict(dataframe, branches, base_columns, num_days), header_contained_dates, first_line
+
+
+# =============================================================================
+# FILE READING HELPERS
+# =============================================================================
+
 def _read_first_line(csv_path: str) -> str:
     """Read the first line from a CSV file."""
-    with open(csv_path, 'r', encoding='utf-8-sig') as f:
-        return f.readline().strip()
+    with open(csv_path, 'r', encoding='utf-8-sig') as file_handle:
+        return file_handle.readline().strip()
 
+
+def _read_csv_with_header(csv_path: str, header_contained_dates: bool) -> pd.DataFrame:
+    """Read CSV file, skipping date header if present."""
+    if header_contained_dates:
+        dataframe = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
+    else:
+        dataframe = pd.read_csv(csv_path, encoding='utf-8-sig')
+    
+    if dataframe.empty:
+        raise ValueError("CSV file contains no data")
+    
+    return dataframe
+
+
+# =============================================================================
+# DATE RESOLUTION HELPERS
+# =============================================================================
 
 def _resolve_date_range(first_line: str, start_date, end_date) -> tuple:
     """Resolve date range from parameters or header."""
@@ -62,60 +102,42 @@ def _validate_date_range(start_date, end_date, require_dates: bool) -> int:
     return DEFAULT_DAYS_FOR_AVG_SALES
 
 
-def _read_csv_with_header(csv_path: str, header_contained_dates: bool) -> pd.DataFrame:
-    """Read CSV file, skipping date header if present."""
-    if header_contained_dates:
-        df = pd.read_csv(csv_path, skiprows=1, encoding='utf-8-sig')
-    else:
-        df = pd.read_csv(csv_path, encoding='utf-8-sig')
-    
-    if df.empty:
-        raise ValueError("CSV file contains no data")
-    
-    return df
+# =============================================================================
+# COLUMN VALIDATION HELPERS
+# =============================================================================
 
-
-def _validate_required_columns(df: pd.DataFrame, branches: list, base_columns: list) -> None:
+def _validate_required_columns(dataframe: pd.DataFrame, branches: list, base_columns: list) -> None:
     """Validate that all required columns exist in the DataFrame."""
     required_columns = set(base_columns)
     for branch in branches:
         required_columns.update([f'{branch}_sales', f'{branch}_balance'])
     
-    missing_columns = required_columns - set(df.columns)
+    missing_columns = required_columns - set(dataframe.columns)
     if missing_columns:
         raise ValueError(f"Missing required columns: {missing_columns}")
 
 
-def _create_branch_dataframe(df: pd.DataFrame, branch: str, base_columns: list, num_days: int) -> pd.DataFrame:
+# =============================================================================
+# BRANCH DATAFRAME HELPERS
+# =============================================================================
+
+def _create_branch_dataframe(dataframe: pd.DataFrame, branch: str, base_columns: list, num_days: int) -> pd.DataFrame:
     """Create a processed DataFrame for a single branch."""
-    branch_cols = [f'{branch}_sales', f'{branch}_balance']
-    branch_df = df[base_columns + branch_cols].copy()
-    branch_df.columns = base_columns + ['sales', 'balance']
-    branch_df['sales'] = pd.to_numeric(branch_df['sales'], errors='coerce').fillna(0.0)
-    branch_df['balance'] = pd.to_numeric(branch_df['balance'], errors='coerce').fillna(0.0)
-    branch_df['avg_sales'] = branch_df['sales'] / num_days
-    return calculate_basic_quantities(branch_df)
+    branch_columns = [f'{branch}_sales', f'{branch}_balance']
+    branch_dataframe = dataframe[base_columns + branch_columns].copy()
+    branch_dataframe.columns = base_columns + ['sales', 'balance']
+    branch_dataframe['sales'] = pd.to_numeric(branch_dataframe['sales'], errors='coerce').fillna(0.0)
+    branch_dataframe['balance'] = pd.to_numeric(branch_dataframe['balance'], errors='coerce').fillna(0.0)
+    branch_dataframe['avg_sales'] = branch_dataframe['sales'] / num_days
+    return calculate_basic_quantities(branch_dataframe)
 
 
-def _build_branch_data_dict(df: pd.DataFrame, branches: list, base_columns: list, num_days: int) -> dict:
+def _build_branch_data_dict(dataframe: pd.DataFrame, branches: list, base_columns: list, num_days: int) -> dict:
     """Build dictionary of branch DataFrames."""
     branch_data = {}
     for branch in branches:
-        branch_data[branch] = _create_branch_dataframe(df, branch, base_columns, num_days)
+        branch_data[branch] = _create_branch_dataframe(dataframe, branch, base_columns, num_days)
         logger.info(f"✅ Calculated avg_sales for {branch}: sales / {num_days} days")
     
     logger.info("Prepared data for %d branches, %d products", len(branches), len(branch_data[branches[0]]))
     return branch_data
-
-
-def prepare_branch_data(csv_path: str, start_date=None, end_date=None, require_dates=False) -> tuple:
-    """Prepare branch data from CSV file."""
-    first_line = _read_first_line(csv_path)
-    start_date, end_date, header_contained_dates = _resolve_date_range(first_line, start_date, end_date)
-    num_days = _validate_date_range(start_date, end_date, require_dates)
-    df = _read_csv_with_header(csv_path, header_contained_dates)
-    branches, base_columns = get_branches(), get_base_columns()
-    _validate_required_columns(df, branches, base_columns)
-    return _build_branch_data_dict(df, branches, base_columns, num_days), header_contained_dates, first_line
-
-

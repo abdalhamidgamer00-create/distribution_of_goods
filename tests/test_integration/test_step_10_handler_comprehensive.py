@@ -15,7 +15,7 @@ import pytest
 from src.app.pipeline.step_10.handler import (
     _validate_analytics_directories,
     _write_csv_file,
-    _prepare_category_df,
+    _prepare_category_dataframe,
     _process_single_category,
     _generate_category_files,
     _convert_all_to_excel,
@@ -119,10 +119,10 @@ class TestWriteCsvFile:
         assert first_line in content
 
 
-# ===================== _prepare_category_df Tests =====================
+# ===================== _prepare_category_dataframe Tests =====================
 
 class TestPrepareCategoryDf:
-    """Tests for _prepare_category_df function."""
+    """Tests for _prepare_category_dataframe function."""
     
     def test_filters_by_category(self, sample_shortage_df):
         """
@@ -130,7 +130,7 @@ class TestPrepareCategoryDf:
         WHY: Each file should have single category
         BREAKS: Mixed categories in output
         """
-        result = _prepare_category_df(sample_shortage_df, 'tablets_and_capsules')
+        result = _prepare_category_dataframe(sample_shortage_df, 'tablets_and_capsules')
         
         assert len(result) == 1
         assert result.iloc[0]['code'] == '001'
@@ -141,7 +141,7 @@ class TestPrepareCategoryDf:
         WHY: No empty files should be created
         BREAKS: Empty CSV files created
         """
-        result = _prepare_category_df(sample_shortage_df, 'sachets')
+        result = _prepare_category_dataframe(sample_shortage_df, 'sachets')
         
         assert result is None
     
@@ -151,7 +151,7 @@ class TestPrepareCategoryDf:
         WHY: Category is in filename, not needed in data
         BREAKS: Redundant column in output
         """
-        result = _prepare_category_df(sample_shortage_df, 'tablets_and_capsules')
+        result = _prepare_category_dataframe(sample_shortage_df, 'tablets_and_capsules')
         
         assert 'product_type' not in result.columns
     
@@ -170,7 +170,7 @@ class TestPrepareCategoryDf:
             'product_type': ['tablets_and_capsules']
         })])
         
-        result = _prepare_category_df(df, 'tablets_and_capsules')
+        result = _prepare_category_dataframe(df, 'tablets_and_capsules')
         
         # First item should have highest shortage
         assert result.iloc[0]['shortage_quantity'] == 200

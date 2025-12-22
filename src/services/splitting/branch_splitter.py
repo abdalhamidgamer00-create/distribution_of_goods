@@ -20,6 +20,27 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def split_csv_by_branches(csv_path: str, output_base_dir: str, base_filename: str, analytics_dir: str = None) -> tuple:
+    """Split CSV file by branches into separate files."""
+    _validate_csv_input(csv_path)
+    branches, timing_stats = get_branches(), {}
+    try:
+        return _execute_split(csv_path, output_base_dir, base_filename, analytics_dir, branches, timing_stats)
+    except (FileNotFoundError, ValueError):
+        raise
+    except Exception as error:
+        logger.exception("Error splitting CSV: %s", error)
+        raise ValueError(f"Error splitting CSV: {error}") from error
+
+
+# =============================================================================
+# VALIDATION HELPERS
+# =============================================================================
+
 def _validate_csv_input(csv_path: str) -> None:
     """Validate CSV file exists and is not empty."""
     if not os.path.exists(csv_path):
@@ -27,6 +48,22 @@ def _validate_csv_input(csv_path: str) -> None:
     if os.path.getsize(csv_path) == 0:
         raise ValueError(f"CSV file is empty: {csv_path}")
 
+
+def _validate_branch_data(branch_data: dict, timing_stats: dict) -> int:
+    """Validate branch data and return num_products."""
+    if not branch_data or get_branches()[0] not in branch_data:
+        raise ValueError("No data found in CSV file")
+    
+    num_products = len(branch_data[get_branches()[0]])
+    if num_products == 0:
+        raise ValueError("CSV file contains no products")
+    timing_stats["num_products"] = num_products
+    return num_products
+
+
+# =============================================================================
+# DATA INITIALIZATION HELPERS
+# =============================================================================
 
 def _initialize_analytics_data(branches: list, branch_data: dict) -> dict:
     """Initialize analytics data structure for each branch."""
@@ -47,76 +84,6 @@ def _create_empty_withdrawal_record() -> dict:
     }
 
 
-def _update_analytics_data(branch: str, product_idx: int, withdrawals_list: list, 
-                            analytics_data: dict, max_withdrawals: int) -> int:
-    """Update analytics data with new withdrawals."""
-    existing_withdrawals_list = analytics_data[branch][1]
-    while len(existing_withdrawals_list) < product_idx:
-        existing_withdrawals_list.append([_create_empty_withdrawal_record()])
-    existing_withdrawals_list.append(withdrawals_list)
-    return max(max_withdrawals, len(withdrawals_list))
-
-
-def _merge_withdrawals(withdrawals: dict, all_withdrawals: dict) -> None:
-    """Merge new withdrawals into all_withdrawals."""
-    for key, amount in withdrawals.items():
-        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
-
-
-def _process_single_product_for_branch(branch: str, product_idx: int, branch_data: dict, branches: list,
-                                        analytics_data: dict, all_withdrawals: dict, 
-                                        proportional_allocation: dict, max_withdrawals: int) -> int:
-    """Process a single product for a single branch."""
-    branch_df = analytics_data[branch][0]
-    if branch_df.iloc[product_idx]['needed_quantity'] <= 0:
-        return max_withdrawals
-    
-    withdrawals_list, withdrawals = find_surplus_sources_for_single_product(branch, product_idx, branch_data, branches, all_withdrawals, proportional_allocation)
-    _merge_withdrawals(withdrawals, all_withdrawals)
-    return _update_analytics_data(branch, product_idx, withdrawals_list, analytics_data, max_withdrawals)
-
-
-def _process_product_needing_branches(product_idx: int, branches: list, branch_data: dict, analytics_data: dict, 
-                                        proportional_allocation: dict, all_withdrawals: dict, max_withdrawals: int) -> int:
-    """Process all needing branches for a single product."""
-    needing_branches = get_needing_branches_order_for_product(product_idx, branch_data, branches)
-    for branch in needing_branches:
-        max_withdrawals = _process_single_product_for_branch(branch, product_idx, branch_data, branches, analytics_data, all_withdrawals, proportional_allocation, max_withdrawals)
-    return max_withdrawals
-
-
-def _process_all_products(branches: list, branch_data: dict, analytics_data: dict,
-                          proportional_allocation: dict, num_products: int) -> tuple:
-    """Process all products and return withdrawals data."""
-    all_withdrawals, max_withdrawals = {}, 0
-    for product_idx in range(num_products):
-        max_withdrawals = _process_product_needing_branches(product_idx, branches, branch_data, analytics_data, proportional_allocation, all_withdrawals, max_withdrawals)
-    return all_withdrawals, max_withdrawals
-
-
-def _fill_empty_product_records(branches: list, analytics_data: dict, num_products: int) -> None:
-    """Add empty records for products that weren't processed."""
-    for branch in branches:
-        branch_df = analytics_data[branch][0]
-        existing_list = analytics_data[branch][1]
-        
-        for product_idx in range(len(existing_list), num_products):
-            if branch_df.iloc[product_idx]['needed_quantity'] <= 0:
-                existing_list.append([_create_empty_withdrawal_record()])
-
-
-def _validate_branch_data(branch_data: dict, timing_stats: dict) -> int:
-    """Validate branch data and return num_products."""
-    if not branch_data or get_branches()[0] not in branch_data:
-        raise ValueError("No data found in CSV file")
-    
-    num_products = len(branch_data[get_branches()[0]])
-    if num_products == 0:
-        raise ValueError("CSV file contains no products")
-    timing_stats["num_products"] = num_products
-    return num_products
-
-
 def _prepare_branch_data_with_timing(csv_path: str, timing_stats: dict) -> tuple:
     """Prepare branch data and track timing."""
     prep_start = perf_counter()
@@ -126,6 +93,50 @@ def _prepare_branch_data_with_timing(csv_path: str, timing_stats: dict) -> tuple
     num_products = _validate_branch_data(branch_data, timing_stats)
     return branch_data, has_date_header, first_line, num_products
 
+
+# =============================================================================
+# PROCESSING PIPELINE HELPERS
+# =============================================================================
+
+def _execute_split(csv_path: str, output_base_dir: str, base_filename: str, 
+                   analytics_dir: str, branches: list, timing_stats: dict) -> tuple:
+    """Execute the splitting process."""
+    branch_data, has_date_header, first_line, num_products = _prepare_branch_data_with_timing(csv_path, timing_stats)
+    proportional_allocation = _calculate_allocations(branch_data, branches, timing_stats)
+    
+    processed_data, max_withdrawals = _run_processing_pipeline(branches, branch_data, proportional_allocation, num_products, timing_stats)
+    output_files = _write_output_files(branches, processed_data, output_base_dir, base_filename, analytics_dir, max_withdrawals, has_date_header, first_line, timing_stats)
+    
+    return output_files, timing_stats
+
+
+def _run_processing_pipeline(branches: list, branch_data: dict, proportional_allocation: dict, 
+                              num_products: int, timing_stats: dict) -> tuple:
+    """Run the processing pipeline and return processed data."""
+    analytics_data, all_withdrawals, max_withdrawals = _process_surplus_distribution(
+        branches, branch_data, proportional_allocation, num_products, timing_stats
+    )
+    final_surplus_remaining_dict = calculate_surplus_remaining(branches, branch_data, all_withdrawals)
+    processed_data = process_withdrawals(branches, analytics_data, max_withdrawals, final_surplus_remaining_dict)
+    return processed_data, max_withdrawals
+
+
+def _process_surplus_distribution(branches: list, branch_data: dict, proportional_allocation: dict, 
+                                  num_products: int, timing_stats: dict) -> tuple:
+    """Process surplus distribution and redistribution."""
+    surplus_start = perf_counter()
+    analytics_data = _initialize_analytics_data(branches, branch_data)
+    all_withdrawals, max_withdrawals = _process_all_products(branches, branch_data, analytics_data, proportional_allocation, num_products)
+    _fill_empty_product_records(branches, analytics_data, num_products)
+    timing_stats["surplus_time"] = perf_counter() - surplus_start
+    
+    max_withdrawals = _run_second_round_redistribution(branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, num_products, timing_stats)
+    return analytics_data, all_withdrawals, max_withdrawals
+
+
+# =============================================================================
+# ALLOCATION & REDISTRIBUTION HELPERS
+# =============================================================================
 
 def _calculate_allocations(branch_data: dict, branches: list, timing_stats: dict) -> dict:
     """Calculate proportional allocations with timing."""
@@ -146,18 +157,75 @@ def _run_second_round_redistribution(branches: list, branch_data: dict, analytic
     return max_withdrawals
 
 
-def _process_surplus_distribution(branches: list, branch_data: dict, proportional_allocation: dict, 
-                                  num_products: int, timing_stats: dict) -> tuple:
-    """Process surplus distribution and redistribution."""
-    surplus_start = perf_counter()
-    analytics_data = _initialize_analytics_data(branches, branch_data)
-    all_withdrawals, max_withdrawals = _process_all_products(branches, branch_data, analytics_data, proportional_allocation, num_products)
-    _fill_empty_product_records(branches, analytics_data, num_products)
-    timing_stats["surplus_time"] = perf_counter() - surplus_start
-    
-    max_withdrawals = _run_second_round_redistribution(branches, branch_data, analytics_data, all_withdrawals, max_withdrawals, num_products, timing_stats)
-    return analytics_data, all_withdrawals, max_withdrawals
+# =============================================================================
+# PRODUCT PROCESSING HELPERS
+# =============================================================================
 
+def _process_all_products(branches: list, branch_data: dict, analytics_data: dict,
+                          proportional_allocation: dict, num_products: int) -> tuple:
+    """Process all products and return withdrawals data."""
+    all_withdrawals, max_withdrawals = {}, 0
+    for product_index in range(num_products):
+        max_withdrawals = _process_product_needing_branches(product_index, branches, branch_data, analytics_data, proportional_allocation, all_withdrawals, max_withdrawals)
+    return all_withdrawals, max_withdrawals
+
+
+def _process_product_needing_branches(product_index: int, branches: list, branch_data: dict, analytics_data: dict, 
+                                        proportional_allocation: dict, all_withdrawals: dict, max_withdrawals: int) -> int:
+    """Process all needing branches for a single product."""
+    needing_branches = get_needing_branches_order_for_product(product_index, branch_data, branches)
+    for branch in needing_branches:
+        max_withdrawals = _process_single_product_for_branch(branch, product_index, branch_data, branches, analytics_data, all_withdrawals, proportional_allocation, max_withdrawals)
+    return max_withdrawals
+
+
+def _process_single_product_for_branch(branch: str, product_index: int, branch_data: dict, branches: list,
+                                        analytics_data: dict, all_withdrawals: dict, 
+                                        proportional_allocation: dict, max_withdrawals: int) -> int:
+    """Process a single product for a single branch."""
+    branch_df = analytics_data[branch][0]
+    if branch_df.iloc[product_index]['needed_quantity'] <= 0:
+        return max_withdrawals
+    
+    withdrawals_list, withdrawals = find_surplus_sources_for_single_product(branch, product_index, branch_data, branches, all_withdrawals, proportional_allocation)
+    _merge_withdrawals(withdrawals, all_withdrawals)
+    return _update_analytics_data(branch, product_index, withdrawals_list, analytics_data, max_withdrawals)
+
+
+# =============================================================================
+# ANALYTICS HELPERS
+# =============================================================================
+
+def _update_analytics_data(branch: str, product_index: int, withdrawals_list: list, 
+                            analytics_data: dict, max_withdrawals: int) -> int:
+    """Update analytics data with new withdrawals."""
+    existing_withdrawals_list = analytics_data[branch][1]
+    while len(existing_withdrawals_list) < product_index:
+        existing_withdrawals_list.append([_create_empty_withdrawal_record()])
+    existing_withdrawals_list.append(withdrawals_list)
+    return max(max_withdrawals, len(withdrawals_list))
+
+
+def _merge_withdrawals(withdrawals: dict, all_withdrawals: dict) -> None:
+    """Merge new withdrawals into all_withdrawals."""
+    for key, amount in withdrawals.items():
+        all_withdrawals[key] = all_withdrawals.get(key, 0.0) + amount
+
+
+def _fill_empty_product_records(branches: list, analytics_data: dict, num_products: int) -> None:
+    """Add empty records for products that weren't processed."""
+    for branch in branches:
+        branch_df = analytics_data[branch][0]
+        existing_list = analytics_data[branch][1]
+        
+        for product_index in range(len(existing_list), num_products):
+            if branch_df.iloc[product_index]['needed_quantity'] <= 0:
+                existing_list.append([_create_empty_withdrawal_record()])
+
+
+# =============================================================================
+# OUTPUT HELPERS
+# =============================================================================
 
 def _write_output_files(branches: list, processed_data: dict, output_base_dir: str, base_filename: str,
                         analytics_dir: str, max_withdrawals: int, has_date_header: bool, 
@@ -170,40 +238,3 @@ def _write_output_files(branches: list, processed_data: dict, output_base_dir: s
     write_analytics_files(branches, processed_data, analytics_dir, base_filename, max_withdrawals, has_date_header, first_line)
     timing_stats["write_time"] = perf_counter() - write_start
     return output_files
-
-
-def _run_processing_pipeline(branches: list, branch_data: dict, proportional_allocation: dict, 
-                              num_products: int, timing_stats: dict) -> tuple:
-    """Run the processing pipeline and return processed data."""
-    analytics_data, all_withdrawals, max_withdrawals = _process_surplus_distribution(
-        branches, branch_data, proportional_allocation, num_products, timing_stats
-    )
-    final_surplus_remaining_dict = calculate_surplus_remaining(branches, branch_data, all_withdrawals)
-    processed_data = process_withdrawals(branches, analytics_data, max_withdrawals, final_surplus_remaining_dict)
-    return processed_data, max_withdrawals
-
-
-def _execute_split(csv_path: str, output_base_dir: str, base_filename: str, 
-                   analytics_dir: str, branches: list, timing_stats: dict) -> tuple:
-    """Execute the splitting process."""
-    branch_data, has_date_header, first_line, num_products = _prepare_branch_data_with_timing(csv_path, timing_stats)
-    proportional_allocation = _calculate_allocations(branch_data, branches, timing_stats)
-    
-    processed_data, max_withdrawals = _run_processing_pipeline(branches, branch_data, proportional_allocation, num_products, timing_stats)
-    output_files = _write_output_files(branches, processed_data, output_base_dir, base_filename, analytics_dir, max_withdrawals, has_date_header, first_line, timing_stats)
-    
-    return output_files, timing_stats
-
-
-def split_csv_by_branches(csv_path: str, output_base_dir: str, base_filename: str, analytics_dir: str = None) -> tuple:
-    """Split CSV file by branches into separate files."""
-    _validate_csv_input(csv_path)
-    branches, timing_stats = get_branches(), {}
-    try:
-        return _execute_split(csv_path, output_base_dir, base_filename, analytics_dir, branches, timing_stats)
-    except (FileNotFoundError, ValueError):
-        raise
-    except Exception as e:
-        logger.exception("Error splitting CSV: %s", e)
-        raise ValueError(f"Error splitting CSV: {e}") from e
-

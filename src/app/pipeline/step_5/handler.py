@@ -11,14 +11,39 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_5_rename_columns(use_latest_file: bool = None) -> bool:
+    """Step 5: Rename CSV columns from Arabic to English."""
+    output_dir = os.path.join("data", "output", "converted", "csv")
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    ensure_directory_exists(renamed_dir)
+    
+    csv_files = _get_input_files(output_dir)
+    if csv_files is None:
+        return False
+    
+    return _process_rename(output_dir, csv_files, renamed_dir, use_latest_file)
+
+
+# =============================================================================
+# FILENAME GENERATION HELPERS
+# =============================================================================
+
 def _generate_renamed_filename(csv_file: str) -> str:
     """Generate output filename for renamed CSV."""
-    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    date_string = datetime.now().strftime("%Y%m%d_%H%M%S")
     base_name = os.path.splitext(csv_file)[0]
     base_name_only = os.path.basename(base_name)
     base_name_clean = re.sub(r'_\d{8}_\d{6}', '', base_name_only)
-    return f"{base_name_clean}_renamed_{date_str}.csv"
+    return f"{base_name_clean}_renamed_{date_string}.csv"
 
+
+# =============================================================================
+# FILE DISCOVERY HELPERS
+# =============================================================================
 
 def _get_input_files(output_dir: str) -> list:
     """Get input CSV files and validate."""
@@ -28,6 +53,10 @@ def _get_input_files(output_dir: str) -> list:
         return None
     return csv_files
 
+
+# =============================================================================
+# RENAME EXECUTION HELPERS
+# =============================================================================
 
 def _execute_rename(csv_path: str, csv_file: str, renamed_dir: str) -> bool:
     """Execute the rename operation."""
@@ -44,23 +73,9 @@ def _process_rename(output_dir: str, csv_files: list, renamed_dir: str, use_late
     try:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
         return _execute_rename(get_file_path(csv_file, output_dir), csv_file, renamed_dir)
-    except ValueError as e:
-        logger.error("Error: %s", e)
+    except ValueError as error:
+        logger.error("Error: %s", error)
         return False
-    except Exception as e:
-        logger.exception("Error during column renaming: %s", e); return False
-
-
-def step_5_rename_columns(use_latest_file: bool = None) -> bool:
-    """Step 5: Rename CSV columns from Arabic to English."""
-    output_dir = os.path.join("data", "output", "converted", "csv")
-    renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    ensure_directory_exists(renamed_dir)
-    
-    csv_files = _get_input_files(output_dir)
-    if csv_files is None:
+    except Exception as error:
+        logger.exception("Error during column renaming: %s", error)
         return False
-    
-    return _process_rename(output_dir, csv_files, renamed_dir, use_latest_file)
-
-

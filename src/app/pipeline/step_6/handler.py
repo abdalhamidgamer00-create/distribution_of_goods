@@ -17,6 +17,24 @@ from src.app.pipeline.utils.file_selector import select_csv_file
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
+def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
+    """Step 6: Split CSV file by branches."""
+    renamed_dir = os.path.join("data", "output", "converted", "renamed")
+    csv_files, branches_dir, analytics_dir = _setup_and_validate(renamed_dir)
+    if csv_files is None:
+        return False
+    
+    return _try_execute_split(renamed_dir, csv_files, branches_dir, analytics_dir, use_latest_file)
+
+
+# =============================================================================
+# SETUP HELPERS
+# =============================================================================
+
 def _ensure_branch_directories(branches: list, branches_dir: str, analytics_dir: str) -> None:
     """Ensure branch directories exist for all branches."""
     for branch in branches:
@@ -24,13 +42,26 @@ def _ensure_branch_directories(branches: list, branches_dir: str, analytics_dir:
         ensure_directory_exists(os.path.join(analytics_dir, branch))
 
 
+def _setup_and_validate(renamed_dir: str) -> tuple:
+    """Setup directories and validate input files."""
+    csv_files = get_csv_files(renamed_dir)
+    if not csv_files:
+        logger.error("No CSV files found in %s", renamed_dir)
+        return None, None, None
+    return csv_files, os.path.join("data", "output", "branches", "files"), os.path.join("data", "output", "branches", "analytics")
+
+
 def _generate_base_filename(csv_file: str) -> str:
     """Generate base filename with timestamp."""
-    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    date_string = datetime.now().strftime("%Y%m%d_%H%M%S")
     base_name_only = os.path.basename(os.path.splitext(csv_file)[0])
     base_name_only = re.sub(r'_renamed|_\d{8}_\d{6}', '', base_name_only)
-    return f"{base_name_only}_{date_str}"
+    return f"{base_name_only}_{date_string}"
 
+
+# =============================================================================
+# LOGGING HELPERS
+# =============================================================================
 
 def _log_timing_info(timing_stats: dict, total_duration: float, branch_count: int) -> None:
     """Log timing statistics."""
@@ -53,14 +84,9 @@ def _log_split_results(output_files: dict, timing_stats: dict, total_duration: f
     _log_timing_info(timing_stats, total_duration, len(output_files))
 
 
-def _setup_and_validate(renamed_dir: str) -> tuple:
-    """Setup directories and validate input files."""
-    csv_files = get_csv_files(renamed_dir)
-    if not csv_files:
-        logger.error("No CSV files found in %s", renamed_dir)
-        return None, None, None
-    return csv_files, os.path.join("data", "output", "branches", "files"), os.path.join("data", "output", "branches", "analytics")
-
+# =============================================================================
+# SPLIT EXECUTION HELPERS
+# =============================================================================
 
 def _run_split_and_log(csv_path: str, branches_dir: str, base_filename: str, analytics_dir: str) -> None:
     """Run split and log results."""
@@ -88,20 +114,9 @@ def _try_execute_split(renamed_dir: str, csv_files: list, branches_dir: str, ana
     try:
         csv_file = select_csv_file(renamed_dir, csv_files, use_latest_file)
         return _execute_split(get_file_path(csv_file, renamed_dir), csv_file, branches_dir, analytics_dir)
-    except ValueError as e:
-        logger.error("Error: %s", e)
+    except ValueError as error:
+        logger.error("Error: %s", error)
         return False
-    except Exception as e:
-        logger.exception("Error during splitting: %s", e); return False
-
-
-def step_6_split_by_branches(use_latest_file: bool = None) -> bool:
-    """Step 6: Split CSV file by branches."""
-    renamed_dir = os.path.join("data", "output", "converted", "renamed")
-    csv_files, branches_dir, analytics_dir = _setup_and_validate(renamed_dir)
-    if csv_files is None:
+    except Exception as error:
+        logger.exception("Error during splitting: %s", error)
         return False
-    
-    return _try_execute_split(renamed_dir, csv_files, branches_dir, analytics_dir, use_latest_file)
-
-
