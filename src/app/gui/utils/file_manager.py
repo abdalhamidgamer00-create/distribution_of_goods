@@ -64,29 +64,22 @@ def read_file_for_display(file_path: str, max_rows: int = 100) -> Optional[pd.Da
         return None
 
 
+def _write_files_to_zip(zip_file, files: List[Dict]) -> None:
+    """Write files to ZIP archive."""
+    for file_info in files:
+        file_path = file_info.get("path") or file_info.get("file_path")
+        file_name = file_info.get("zip_path") or file_info.get("arcname") or file_info.get("name") or file_info.get("file_name")
+        if os.path.exists(file_path):
+            zip_file.write(file_path, file_name)
+
+
 def create_download_zip(files: List[Dict], zip_name: str = "download.zip") -> bytes:
-    """
-    إنشاء ملف ZIP من قائمة الملفات.
-    
-    Args:
-        files: قائمة ملفات (كل ملف dict به 'path' و 'name')
-        zip_name: اسم ملف ZIP
-        
-    Returns:
-        Bytes of ZIP file
-    """
+    """إنشاء ملف ZIP من قائمة الملفات."""
     import io
     
     zip_buffer = io.BytesIO()
-    
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for file_info in files:
-            file_path = file_info.get("path") or file_info.get("file_path")
-            # Use provided zip_path/arcname, or fallback to filename
-            file_name = file_info.get("zip_path") or file_info.get("arcname") or file_info.get("name") or file_info.get("file_name")
-            
-            if os.path.exists(file_path):
-                zip_file.write(file_path, file_name)
+        _write_files_to_zip(zip_file, files)
     
     zip_buffer.seek(0)
     return zip_buffer.read()

@@ -41,31 +41,31 @@ def _write_csv_file(df: pd.DataFrame, csv_path: str, has_date_header: bool, firs
         df.to_csv(f, index=False, lineterminator='\n')
 
 
-def _generate_category_files(
-    shortage_df: pd.DataFrame,
-    categories: list,
-    timestamp: str,
-    base_name: str,
-    has_date_header: bool,
-    first_line: str
-) -> dict:
+def _process_single_category(shortage_df: pd.DataFrame, category: str, timestamp: str,
+                              base_name: str, has_date_header: bool, first_line: str) -> dict:
+    """Process a single category and return file info or None."""
+    category_df = shortage_df[shortage_df['product_type'] == category].copy()
+    if len(category_df) == 0:
+        return None
+    
+    category_df = category_df.sort_values('shortage_quantity', ascending=False)
+    category_df = category_df.drop('product_type', axis=1)
+    
+    csv_filename = f"{base_name}_{timestamp}_{category}.csv"
+    csv_path = os.path.join(CSV_OUTPUT_DIR, csv_filename)
+    _write_csv_file(category_df, csv_path, has_date_header, first_line)
+    
+    return {'csv_path': csv_path, 'df': category_df, 'count': len(category_df)}
+
+
+def _generate_category_files(shortage_df: pd.DataFrame, categories: list, timestamp: str,
+                             base_name: str, has_date_header: bool, first_line: str) -> dict:
     """Generate CSV files for each category."""
     generated_files = {}
-    
     for category in categories:
-        category_df = shortage_df[shortage_df['product_type'] == category].copy()
-        if len(category_df) == 0:
-            continue
-        
-        category_df = category_df.sort_values('shortage_quantity', ascending=False)
-        category_df = category_df.drop('product_type', axis=1)
-        
-        csv_filename = f"{base_name}_{timestamp}_{category}.csv"
-        csv_path = os.path.join(CSV_OUTPUT_DIR, csv_filename)
-        _write_csv_file(category_df, csv_path, has_date_header, first_line)
-        
-        generated_files[category] = {'csv_path': csv_path, 'df': category_df, 'count': len(category_df)}
-    
+        result = _process_single_category(shortage_df, category, timestamp, base_name, has_date_header, first_line)
+        if result:
+            generated_files[category] = result
     return generated_files
 
 
