@@ -148,32 +148,38 @@ def _log_excel_summary(excel_count: int, excel_output_dir: str) -> None:
     logger.info("Excel files saved to: %s", excel_output_dir)
 
 
+def _execute_excel_conversion(transfers_base_dir: str, excel_output_dir: str, 
+                               split_files: list, has_date_header: bool, first_line: str) -> bool:
+    """Execute the Excel conversion process."""
+    from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
+    
+    logger.info("Converting split CSV files to Excel format...")
+    logger.info("Found %s split CSV files to convert", len(split_files))
+    
+    excel_count = convert_all_split_files_to_excel(transfers_base_dir, excel_output_dir, has_date_header, first_line)
+    
+    if excel_count == 0:
+        logger.warning("No Excel files were created")
+        return False
+    
+    _log_excel_summary(excel_count, excel_output_dir)
+    return True
+
+
 def _convert_to_excel(transfers_base_dir: str) -> bool:
     """Convert split transfer CSV files to Excel format."""
     from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
     
     excel_output_dir = os.path.join("data", "output", "transfers", "excel")
-    
     split_files = _find_split_csv_files(transfers_base_dir)
+    
     if not split_files:
         logger.error("No split CSV files found in %s", transfers_base_dir)
         return False
     
     try:
         has_date_header, first_line = _extract_date_header(split_files[0])
-        
-        logger.info("Converting split CSV files to Excel format...")
-        logger.info("Found %s split CSV files to convert", len(split_files))
-        
-        excel_count = convert_all_split_files_to_excel(transfers_base_dir, excel_output_dir, has_date_header, first_line)
-        
-        if excel_count == 0:
-            logger.warning("No Excel files were created")
-            return False
-        
-        _log_excel_summary(excel_count, excel_output_dir)
-        return True
-        
+        return _execute_excel_conversion(transfers_base_dir, excel_output_dir, split_files, has_date_header, first_line)
     except Exception as e:
         logger.exception("Error during Excel conversion: %s", e)
         return False

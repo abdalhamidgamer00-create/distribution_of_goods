@@ -88,31 +88,28 @@ def _process_single_branch(branch: str, timestamp: str) -> tuple:
     return merged_count, separate_count
 
 
+def _process_all_branches(timestamp: str) -> tuple:
+    """Process all branches and return total counts."""
+    total_merged = 0
+    total_separate = 0
+    for branch in get_branches():
+        merged, separate = _process_single_branch(branch, timestamp)
+        total_merged += merged
+        total_separate += separate
+    return total_merged, total_separate
+
+
 def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
-    """
-    Step 11: Generate combined transfer files with remaining surplus.
-    
-    Returns:
-        True if successful, False otherwise
-    """
+    """Step 11: Generate combined transfer files with remaining surplus."""
     if not _validate_input_directories():
         return False
     
     _create_output_directories()
-    timestamp = get_timestamp()
     
     try:
-        total_merged = 0
-        total_separate = 0
-        
-        for branch in get_branches():
-            merged, separate = _process_single_branch(branch, timestamp)
-            total_merged += merged
-            total_separate += separate
-        
+        total_merged, total_separate = _process_all_branches(get_timestamp())
         _log_summary(total_merged, total_separate)
         return total_merged > 0 or total_separate > 0
-        
     except Exception as e:
         logger.exception(f"Error generating combined transfer files: {e}")
         return False

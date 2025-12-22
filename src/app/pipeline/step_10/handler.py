@@ -130,11 +130,19 @@ def _generate_all_files(shortage_df, has_date_header: bool, first_line: str) -> 
     return generated_files, categories
 
 
+def _execute_shortage_generation(shortage_df, has_date_header: bool, first_line: str) -> bool:
+    """Execute the shortage file generation process."""
+    logger.info("Found %d products with shortage", len(shortage_df))
+    
+    generated_files, categories = _generate_all_files(shortage_df, has_date_header, first_line)
+    _convert_all_to_excel(generated_files)
+    _log_summary(generated_files, categories, int(shortage_df['shortage_quantity'].sum()))
+    return True
+
+
 def step_10_generate_shortage_files(use_latest_file: bool = None) -> bool:
     """Step 10: Generate shortage files."""
-    branches = get_branches()
-    
-    if not _validate_analytics_directories(branches):
+    if not _validate_analytics_directories(get_branches()):
         return False
     
     try:
@@ -147,14 +155,7 @@ def step_10_generate_shortage_files(use_latest_file: bool = None) -> bool:
             logger.info("No shortage products found. All needs are covered by surplus!")
             return True
         
-        logger.info("Found %d products with shortage", len(shortage_df))
-        
-        generated_files, categories = _generate_all_files(shortage_df, has_date_header, first_line)
-        _convert_all_to_excel(generated_files)
-        _log_summary(generated_files, categories, int(shortage_df['shortage_quantity'].sum()))
-        
-        return True
-        
+        return _execute_shortage_generation(shortage_df, has_date_header, first_line)
     except Exception as e:
         logger.exception("Error generating shortage files: %s", e)
         return False
