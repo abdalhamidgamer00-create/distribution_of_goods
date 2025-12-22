@@ -51,15 +51,17 @@ def _build_transfer_dataframe(analytics_df: pd.DataFrame, transfer_amounts: pd.S
     return transfer_df
 
 
-def _save_transfer_file(
-    transfer_df: pd.DataFrame,
-    transfers_dir: str,
-    source_branch: str,
-    target_branch: str,
-    base_name: str,
-    has_date_header: bool,
-    first_line: str
-) -> str:
+def _write_transfer_csv(transfer_df: pd.DataFrame, transfer_path: str, 
+                         has_date_header: bool, first_line: str) -> None:
+    """Write transfer DataFrame to CSV file."""
+    with open(transfer_path, 'w', encoding='utf-8-sig', newline='') as f:
+        if has_date_header:
+            f.write(first_line + '\n')
+        transfer_df.to_csv(f, index=False, lineterminator='\n')
+
+
+def _save_transfer_file(transfer_df: pd.DataFrame, transfers_dir: str, source_branch: str,
+                        target_branch: str, base_name: str, has_date_header: bool, first_line: str) -> str:
     """Save transfer DataFrame to CSV file."""
     transfer_dir = os.path.join(transfers_dir, f"transfers_from_{source_branch}_to_other_branches")
     os.makedirs(transfer_dir, exist_ok=True)
@@ -67,11 +69,7 @@ def _save_transfer_file(
     transfer_file = f"{base_name}_from_{source_branch}_to_{target_branch}.csv"
     transfer_path = os.path.join(transfer_dir, transfer_file)
     
-    with open(transfer_path, 'w', encoding='utf-8-sig', newline='') as f:
-        if has_date_header:
-            f.write(first_line + '\n')
-        transfer_df.to_csv(f, index=False, lineterminator='\n')
-    
+    _write_transfer_csv(transfer_df, transfer_path, has_date_header, first_line)
     return transfer_path
 
 
@@ -109,25 +107,12 @@ def _process_transfer(analytics_path: str, source_branch: str, target_branch: st
     )
 
 
-def generate_transfer_for_pair(
-    source_branch: str,
-    target_branch: str,
-    analytics_dir: str,
-    transfers_dir: str,
-    has_date_header: bool = False,
-    first_line: str = ""
-) -> str:
-    """Generate transfer CSV file from source branch to target branch."""
-    analytics_path, _, base_name = _get_analytics_path(analytics_dir, target_branch)
-    
-    if not analytics_path:
-        return None
-    
+def _execute_transfer_process(analytics_path: str, source_branch: str, target_branch: str,
+                               transfers_dir: str, base_name: str, has_date_header: bool, first_line: str) -> str:
+    """Execute transfer process with error handling."""
     try:
-        return _process_transfer(
-            analytics_path, source_branch, target_branch, 
-            transfers_dir, base_name, has_date_header, first_line
-        )
+        return _process_transfer(analytics_path, source_branch, target_branch, 
+                                transfers_dir, base_name, has_date_header, first_line)
     except ValueError as exc:
         logger.error("%s", exc)
         return None
@@ -136,6 +121,18 @@ def generate_transfer_for_pair(
     except Exception as e:
         logger.exception("Warning: Error processing %s -> %s: %s", source_branch, target_branch, e)
         return None
+
+
+def generate_transfer_for_pair(source_branch: str, target_branch: str, analytics_dir: str,
+                               transfers_dir: str, has_date_header: bool = False, first_line: str = "") -> str:
+    """Generate transfer CSV file from source branch to target branch."""
+    analytics_path, _, base_name = _get_analytics_path(analytics_dir, target_branch)
+    
+    if not analytics_path:
+        return None
+    
+    return _execute_transfer_process(analytics_path, source_branch, target_branch,
+                                     transfers_dir, base_name, has_date_header, first_line)
 
 
 
