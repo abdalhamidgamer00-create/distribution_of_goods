@@ -97,11 +97,9 @@ def _load_and_validate_analytics(branch: str):
     if not analytics_path:
         logger.warning("No analytics file found for branch: %s", branch)
         return None, None, None
-    
     df, has_date_header, first_line = read_analytics_file(analytics_path)
     if df is None or not _validate_columns(df, analytics_path):
         return None, None, None
-    
     return df, has_date_header, first_line
 
 

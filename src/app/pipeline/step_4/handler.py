@@ -25,14 +25,12 @@ def _process_analysis(output_dir: str, csv_files: list, use_latest_file: bool) -
     """Process analysis with error handling."""
     try:
         csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
-        csv_path = get_file_path(csv_file, output_dir)
-        return _execute_analysis(csv_path, csv_file)
+        return _execute_analysis(get_file_path(csv_file, output_dir), csv_file)
     except ValueError as e:
         logger.error("Error: %s", e)
         return False
     except Exception as e:
-        logger.exception("Error during analysis: %s", e)
-        return False
+        logger.exception("Error during analysis: %s", e); return False
 
 
 def step_4_sales_analysis(use_latest_file: bool = None) -> bool:
