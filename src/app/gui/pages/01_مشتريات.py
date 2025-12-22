@@ -124,6 +124,30 @@ def show_navigation_button(step_id):
                     st.switch_page(page)
 
 
+def _run_step_and_display(step: dict) -> None:
+    """Run a step with dependencies and display result."""
+    if 'selected_file' not in st.session_state:
+        st.error("❌ يرجى اختيار ملف أولاً من قسم إدارة الملفات أعلاه")
+        return
+    
+    success, message = run_step_with_dependencies(step['id'])
+    st.session_state[f'step_{step["id"]}_success'] = success
+    st.success(message) if success else st.error(message)
+
+
+def _display_step_card(step: dict) -> None:
+    """Display a single step card with run button."""
+    with st.container():
+        st.markdown(f"### {step['name']}")
+        st.caption(step['description'])
+        
+        if st.button(f"▶️ تشغيل مع الخطوات السابقة", key=f"run_{step['id']}"):
+            _run_step_and_display(step)
+        
+        show_navigation_button(step['id'])
+        st.markdown("---")
+
+
 def show_steps():
     """Display available steps with run buttons"""
     st.subheader("الخطوات المتاحة")
@@ -134,24 +158,21 @@ def show_steps():
     cols = st.columns(len(visible_steps))
     for idx, step in enumerate(visible_steps):
         with cols[idx]:
-            with st.container():
-                st.markdown(f"### {step['name']}")
-                st.caption(step['description'])
-                
-                if st.button(f"▶️ تشغيل مع الخطوات السابقة", key=f"run_{step['id']}"):
-                    if 'selected_file' not in st.session_state:
-                        st.error("❌ يرجى اختيار ملف أولاً من قسم إدارة الملفات أعلاه")
-                    else:
-                        success, message = run_step_with_dependencies(step['id'])
-                        if success:
-                            st.success(message)
-                            st.session_state[f'step_{step["id"]}_success'] = True
-                        else:
-                            st.error(message)
-                            st.session_state[f'step_{step["id"]}_success'] = False
-                
-                show_navigation_button(step['id'])
-                st.markdown("---")
+            _display_step_card(step)
+
+
+def _execute_steps_with_progress(steps: list, progress_bar, status_text) -> bool:
+    """Execute all steps with progress tracking."""
+    for idx, step in enumerate(steps):
+        status_text.text(f"جاري تنفيذ: {step['name']}")
+        success, message = run_step(step['id'])
+        
+        if not success:
+            st.error(f"فشل في: {step['name']}")
+            return False
+        
+        progress_bar.progress((idx + 1) / len(steps))
+    return True
 
 
 def show_run_all_steps():
@@ -167,49 +188,32 @@ def show_run_all_steps():
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            all_success = True
-            for idx, step in enumerate(steps):
-                status_text.text(f"جاري تنفيذ: {step['name']}")
-                success, message = run_step(step['id'])
-                
-                if not success:
-                    st.error(f"فشل في: {step['name']}")
-                    all_success = False
-                    break
-                
-                progress_bar.progress((idx + 1) / len(steps))
-            
-            if all_success:
+            if _execute_steps_with_progress(steps, progress_bar, status_text):
                 status_text.text("اكتمل تنفيذ جميع الخطوات!")
                 st.success("✅ تم تنفيذ جميع الخطوات بنجاح!")
                 st.session_state['all_steps_success'] = True
 
 
+NAV_BUTTONS = [
+    ("📤 ملفات التحويل", "nav_all_transfer", "pages/06_ملفات_التحويل.py"),
+    ("📦 الفائض المتبقي", "nav_all_surplus", "pages/07_الفائض_المتبقي.py"),
+    ("⚠️ ملفات النقص", "nav_all_shortage", "pages/08_النقص.py"),
+    ("📋 مجمعة", "nav_all_combined", "pages/09_التحويلات_المجمعة.py"),
+    ("📂 منفصلة", "nav_all_separate", "pages/10_التحويلات_المنفصلة.py"),
+]
+
+
 def show_results_navigation():
     """Display navigation buttons to result pages if all steps succeeded"""
-    if st.session_state.get('all_steps_success', False):
-        st.markdown("### 📂 عرض النتائج")
-        col1, col2, col3, col4, col5 = st.columns(5)
-        
-        with col1:
-            if st.button("📤 ملفات التحويل", key="nav_all_transfer", use_container_width=True):
-                st.switch_page("pages/06_ملفات_التحويل.py")
-        
-        with col2:
-            if st.button("📦 الفائض المتبقي", key="nav_all_surplus", use_container_width=True):
-                st.switch_page("pages/07_الفائض_المتبقي.py")
-        
-        with col3:
-            if st.button("⚠️ ملفات النقص", key="nav_all_shortage", use_container_width=True):
-                st.switch_page("pages/08_النقص.py")
-        
-        with col4:
-            if st.button("📋 مجمعة", key="nav_all_combined", use_container_width=True):
-                st.switch_page("pages/09_التحويلات_المجمعة.py")
-        
-        with col5:
-            if st.button("📂 منفصلة", key="nav_all_separate", use_container_width=True):
-                st.switch_page("pages/10_التحويلات_المنفصلة.py")
+    if not st.session_state.get('all_steps_success', False):
+        return
+    
+    st.markdown("### 📂 عرض النتائج")
+    cols = st.columns(len(NAV_BUTTONS))
+    for col, (label, key, page) in zip(cols, NAV_BUTTONS):
+        with col:
+            if st.button(label, key=key, use_container_width=True):
+                st.switch_page(page)
 
 
 # Main page layout
