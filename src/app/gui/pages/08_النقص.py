@@ -3,159 +3,80 @@
 import streamlit as st
 import os
 import sys
-import pandas as pd
 
-
-# =============================================================================
-# PATH CONFIGURATION
-# =============================================================================
-
+# Path configuration
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from src.app.gui.utils.file_manager import (
-    list_output_files,
-    read_file_for_display,
-    create_download_zip,
-    get_file_size_str,
-    organize_files_by_category
-)
+from src.app.gui.utils.file_manager import list_output_files, organize_files_by_category, read_file_for_display, get_file_size_str
 from src.app.gui.utils.translations import CATEGORY_NAMES, MESSAGES
+from src.app.gui.components import render_download_all_button, get_key_from_label
 
+# Page config
+st.set_page_config(page_title="النقص", page_icon="⚠️", layout="wide")
 
-# =============================================================================
-# PAGE CONFIGURATION
-# =============================================================================
-
-st.set_page_config(
-    page_title="النقص",
-    page_icon="⚠️",
-    layout="wide"
-)
-
-
-# =============================================================================
-# AUTHENTICATION
-# =============================================================================
-
+# Auth
 from src.app.gui.utils.auth import check_password
 if not check_password():
     st.stop()
 
+# Constants
+CSV_DIR = os.path.join("data", "output", "shortage", "csv")
+EXCEL_DIR = os.path.join("data", "output", "shortage", "excel")
 
-# =============================================================================
-# PAGE HEADER
-# =============================================================================
 
+def render_shortage_expander(file_info: dict, ext: str) -> None:
+    """Render file expander with shortage-specific metrics."""
+    with st.expander(f"📄 {file_info['name']} ({get_file_size_str(file_info['size'])})"):
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            df = read_file_for_display(file_info['path'], max_rows=100)
+            if df is not None:
+                st.dataframe(df, use_container_width=True)
+                if 'shortage_quantity' in df.columns:
+                    st.metric("إجمالي النقص", f"{int(df['shortage_quantity'].sum()):,} وحدة")
+                st.caption("عرض أول 100 صف")
+        with col2:
+            with open(file_info['path'], 'rb') as f:
+                st.download_button("⬇️ تحميل", f.read(), file_info['name'], "application/octet-stream", key=f"dl_{file_info['name']}_{ext}")
+
+
+# Header
 st.title("⚠️ النقص في المنتجات")
 st.markdown("---")
 
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-SHORTAGE_CSV_DIR = os.path.join("data", "output", "shortage", "csv")
-SHORTAGE_EXCEL_DIR = os.path.join("data", "output", "shortage", "excel")
-
-
-# =============================================================================
-# FILE FILTERING HELPERS
-# =============================================================================
-
-def _get_category_key(selected_category: str) -> str:
-    """Get category key from translated name."""
-    for key, name in CATEGORY_NAMES.items():
-        if name == selected_category:
-            return key
-    return None
-
-
-def _filter_files_by_category(files: list, selected_category: str, file_ext: str) -> list:
-    """Filter files based on selected category."""
-    if selected_category == "الكل":
-        return files
-    
-    category_key = _get_category_key(selected_category)
-    return [file_info for file_info in files 
-            if category_key in file_info['name'].lower() or file_info['name'].endswith(f"_{category_key}{file_ext}")]
-
-
-# =============================================================================
-# RENDERING HELPERS
-# =============================================================================
-
-def _render_download_all_button(display_files: list, file_ext: str) -> None:
-    """Render download all button."""
-    zip_data = create_download_zip(display_files, f"shortage_{file_ext[1:]}.zip")
-    st.download_button(
-        label=f"📦 تحميل جميع ملفات {file_ext[1:].upper()}",
-        data=zip_data,
-        file_name=f"shortage_{file_ext[1:]}.zip",
-        mime="application/zip",
-        use_container_width=True
-    )
-    st.markdown("---")
-
-
-def _render_file_expander(file_info: dict, file_ext: str) -> None:
-    """Render file expander with dataframe and download button."""
-    with st.expander(f"📄 {file_info['name']} ({get_file_size_str(file_info['size'])})"):
-        content_column, download_column = st.columns([3, 1])
-        
-        with content_column:
-            dataframe = read_file_for_display(file_info['path'], max_rows=100)
-            if dataframe is not None:
-                st.dataframe(dataframe, use_container_width=True)
-                
-                if 'shortage_quantity' in dataframe.columns:
-                    total_shortage = dataframe['shortage_quantity'].sum()
-                    st.metric("إجمالي النقص", f"{int(total_shortage):,} وحدة")
-                
-                st.caption("عرض أول 100 صف")
-        
-        with download_column:
-            with open(file_info['path'], 'rb') as file_handle:
-                file_data = file_handle.read()
-            
-            st.download_button(
-                label="⬇️ تحميل",
-                data=file_data,
-                file_name=file_info['name'],
-                mime="application/octet-stream",
-                key=f"download_{file_info['name']}_{file_ext}"
-            )
-
-
-# =============================================================================
-# MAIN CONTENT
-# =============================================================================
-
+# Main content
 excel_tab, csv_tab = st.tabs(["📊 ملفات Excel", "📄 ملفات CSV"])
 
-for tab, directory, file_ext in [(excel_tab, SHORTAGE_EXCEL_DIR, ".xlsx"), (csv_tab, SHORTAGE_CSV_DIR, ".csv")]:
+for tab, directory, ext in [(excel_tab, EXCEL_DIR, ".xlsx"), (csv_tab, CSV_DIR, ".csv")]:
     with tab:
         if not os.path.exists(directory):
-            st.warning(f"المجلد غير موجود: {directory}")
-            st.info("يرجى تشغيل الخطوة 11 أولاً لإنشاء ملفات النقص")
-        else:
-            files = list_output_files(directory, [file_ext])
-            
-            if not files:
-                st.info(MESSAGES["no_files"])
-            else:
-                st.success(f"تم العثور على {len(files)} ملف")
-                
-                by_category = organize_files_by_category(files)
-                
-                category_options = ["الكل"] + [CATEGORY_NAMES.get(category, category) for category in sorted(by_category.keys())]
-                selected_category = st.selectbox("اختر الفئة:", category_options, key=f"category_{file_ext}")
-                
-                display_files = _filter_files_by_category(files, selected_category, file_ext)
-                
-                if display_files:
-                    _render_download_all_button(display_files, file_ext)
-                
-                for file_info in display_files:
-                    _render_file_expander(file_info, file_ext)
+            st.warning("المجلد غير موجود. يرجى تشغيل الخطوة 10 أولاً.")
+            continue
+        
+        files = list_output_files(directory, [ext])
+        if not files:
+            st.info(MESSAGES["no_files"])
+            continue
+        
+        st.success(f"تم العثور على {len(files)} ملف")
+        
+        # Category filter
+        by_cat = organize_files_by_category(files)
+        cat_opts = ["الكل"] + [CATEGORY_NAMES.get(c, c) for c in sorted(by_cat.keys())]
+        sel_cat = st.selectbox("اختر الفئة:", cat_opts, key=f"cat_{ext}")
+        
+        # Filter
+        filtered = files
+        if sel_cat != "الكل":
+            cat_key = get_key_from_label(sel_cat, CATEGORY_NAMES)
+            filtered = [f for f in files if cat_key in f['name'].lower()]
+        
+        # Download all
+        if filtered:
+            render_download_all_button(filtered, f"shortage_{ext[1:]}.zip")
+        
+        # Display files
+        for f in filtered:
+            render_shortage_expander(f, ext)
