@@ -54,10 +54,7 @@ def _execute_surplus_search(surplus_search_order: list, product_index: int, rema
     for other_branch in surplus_search_order:
         if remaining_needed <= 0 or target_amount <= 0:
             break
-        remaining_needed, target_amount = _process_surplus_iteration(
-            other_branch, product_index, remaining_needed, target_amount,
-            branch_data, existing_withdrawals, withdrawals, withdrawals_for_row
-        )
+        remaining_needed, target_amount = _process_surplus_iteration(other_branch, product_index, remaining_needed, target_amount, branch_data, existing_withdrawals, withdrawals, withdrawals_for_row)
     return remaining_needed, target_amount
 
 
