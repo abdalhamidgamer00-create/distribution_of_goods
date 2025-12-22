@@ -27,24 +27,27 @@ def _execute_step_function(step, step_name: str, use_streamlit: bool) -> tuple:
     return False, f"{MESSAGES['failed']}: {step_name}"
 
 
+def _handle_run_step_error(step_name: str, error: Exception, use_streamlit: bool) -> tuple:
+    """Handle step execution error."""
+    error_msg = f"{MESSAGES['error']} في {step_name}: {str(error)}"
+    if use_streamlit:
+        import streamlit as st
+        st.error(error_msg)
+        st.code(traceback.format_exc())
+    return False, error_msg
+
+
 def run_step(step_id: str, use_streamlit: bool = True) -> tuple:
     """تشغيل خطوة معينة وعرض النتائج."""
     step = _find_step_by_id(step_id)
-    
     if not step:
         return False, f"خطوة غير موجودة: {step_id}"
     
     step_name = STEP_NAMES.get(step_id, step["name"])
-    
     try:
         return _execute_step_function(step, step_name, use_streamlit)
     except Exception as e:
-        error_msg = f"{MESSAGES['error']} في {step_name}: {str(e)}"
-        if use_streamlit:
-            import streamlit as st
-            st.error(error_msg)
-            st.code(traceback.format_exc())
-        return False, error_msg
+        return _handle_run_step_error(step_name, e, use_streamlit)
 
 
 def _build_step_info(step: dict) -> dict:

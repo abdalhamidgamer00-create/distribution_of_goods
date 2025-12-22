@@ -166,6 +166,18 @@ def _delete_and_verify(output_dir: str, file_count: int, dir_count: int) -> bool
     return False
 
 
+def _try_clear_directory(output_dir: str) -> bool:
+    """Try to clear directory contents."""
+    logger.info("Clearing output directory: %s...", output_dir)
+    file_count, dir_count = _count_directory_contents(output_dir)
+    
+    empty_result = _handle_empty_directory(file_count, dir_count)
+    if empty_result is not None:
+        return empty_result
+    
+    return _delete_and_verify(output_dir, file_count, dir_count)
+
+
 def clear_output_directory(output_dir: str = "data/output") -> bool:
     """Clear all contents of the output directory after archiving."""
     if not os.path.exists(output_dir):
@@ -173,14 +185,7 @@ def clear_output_directory(output_dir: str = "data/output") -> bool:
         return True
     
     try:
-        logger.info("Clearing output directory: %s...", output_dir)
-        file_count, dir_count = _count_directory_contents(output_dir)
-        
-        empty_result = _handle_empty_directory(file_count, dir_count)
-        if empty_result is not None:
-            return empty_result
-        
-        return _delete_and_verify(output_dir, file_count, dir_count)
+        return _try_clear_directory(output_dir)
     except Exception as e:
         logger.exception("  ✗ Error clearing output directory: %s", e)
         return False
