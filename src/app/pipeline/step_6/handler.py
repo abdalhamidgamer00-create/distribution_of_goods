@@ -87,14 +87,12 @@ def _try_execute_split(renamed_dir: str, csv_files: list, branches_dir: str, ana
     """Try to execute split with error handling."""
     try:
         csv_file = select_csv_file(renamed_dir, csv_files, use_latest_file)
-        csv_path = get_file_path(csv_file, renamed_dir)
-        return _execute_split(csv_path, csv_file, branches_dir, analytics_dir)
+        return _execute_split(get_file_path(csv_file, renamed_dir), csv_file, branches_dir, analytics_dir)
     except ValueError as e:
         logger.error("Error: %s", e)
         return False
     except Exception as e:
-        logger.exception("Error during splitting: %s", e)
-        return False
+        logger.exception("Error during splitting: %s", e); return False
 
 
 def step_6_split_by_branches(use_latest_file: bool = None) -> bool:

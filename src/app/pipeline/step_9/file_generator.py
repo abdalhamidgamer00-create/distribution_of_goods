@@ -84,12 +84,10 @@ def generate_excel_files(files_info: dict, branch: str, output_dir: str) -> int:
     """Convert CSV files to Excel format."""
     branch_dir = os.path.join(output_dir, branch)
     os.makedirs(branch_dir, exist_ok=True)
-    
     success_count = 0
     for category, file_info in files_info.items():
         excel_filename = os.path.splitext(os.path.basename(file_info['csv_path']))[0] + '.xlsx'
-        excel_path = os.path.join(branch_dir, excel_filename)
-        if _convert_single_to_excel(file_info, excel_path, branch, category):
+        if _convert_single_to_excel(file_info, os.path.join(branch_dir, excel_filename), branch, category):
             success_count += 1
     return success_count
 
