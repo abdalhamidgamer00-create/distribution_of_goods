@@ -33,6 +33,21 @@ def _select_from_list(files: list) -> str:
     return files[file_index]
 
 
+def _handle_option_choice(option: str, directory: str, files: list, extensions: list, file_type: str) -> str:
+    """Handle user option choice for file selection."""
+    if option == "2":
+        file = _get_latest_file_with_extensions(directory, extensions)
+        if not file:
+            raise ValueError(f"No {file_type} files found!")
+        logger.info("Using latest file: %s", file)
+        return file
+    elif option == "1":
+        _show_files_list(files, file_type)
+        return _select_from_list(files)
+    else:
+        raise ValueError("Invalid option!")
+
+
 def _select_file_interactive(directory: str, files: list, extensions: list, file_type: str) -> str:
     """Handle interactive file selection when use_latest_file is None."""
     logger.info("Select file option:")
@@ -40,20 +55,7 @@ def _select_file_interactive(directory: str, files: list, extensions: list, file
     logger.info("  2. Use latest file")
     
     option = input("\nSelect option (1 or 2): ").strip()
-    
-    if option == "2":
-        file = _get_latest_file_with_extensions(directory, extensions)
-        if not file:
-            raise ValueError(f"No {file_type} files found!")
-        logger.info("Using latest file: %s", file)
-        return file
-    
-    elif option == "1":
-        _show_files_list(files, file_type)
-        return _select_from_list(files)
-    
-    else:
-        raise ValueError("Invalid option!")
+    return _handle_option_choice(option, directory, files, extensions, file_type)
 
 
 def select_csv_file(output_dir: str, csv_files: list, use_latest_file: bool = None) -> str:
