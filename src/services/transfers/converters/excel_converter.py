@@ -9,20 +9,21 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def _build_excel_output_path(csv_file_path: str, excel_output_dir: str) -> str:
-    """Build output path for Excel file maintaining folder structure."""
-    csv_dir = os.path.dirname(csv_file_path)
-    csv_filename = os.path.basename(csv_file_path)
-    
+def _get_excel_subfolder(csv_dir: str, excel_output_dir: str) -> str:
+    """Get and create Excel subfolder path."""
     subfolder_name = os.path.basename(csv_dir)
-    parent_dir_path = os.path.dirname(csv_dir)
-    parent_dir = os.path.basename(parent_dir_path)
-    
+    parent_dir = os.path.basename(os.path.dirname(csv_dir))
     excel_parent_dir = parent_dir.replace('transfers', 'transfers_excel')
     excel_subfolder = os.path.join(excel_output_dir, excel_parent_dir, subfolder_name)
     os.makedirs(excel_subfolder, exist_ok=True)
-    
-    excel_filename = os.path.splitext(csv_filename)[0] + '.xlsx'
+    return excel_subfolder
+
+
+def _build_excel_output_path(csv_file_path: str, excel_output_dir: str) -> str:
+    """Build output path for Excel file maintaining folder structure."""
+    csv_dir = os.path.dirname(csv_file_path)
+    excel_subfolder = _get_excel_subfolder(csv_dir, excel_output_dir)
+    excel_filename = os.path.splitext(os.path.basename(csv_file_path))[0] + '.xlsx'
     return os.path.join(excel_subfolder, excel_filename)
 
 
