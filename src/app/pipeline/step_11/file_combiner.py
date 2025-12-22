@@ -313,25 +313,17 @@ def _add_product_type_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _build_column_list(df: pd.DataFrame, required_cols: list, optional_cols: list) -> list:
+    """Build final column list from available columns."""
+    final_cols = [col for col in required_cols if col in df.columns]
+    final_cols.extend(col for col in optional_cols if col in df.columns)
+    return final_cols
+
+
 def _prepare_output_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Prepare and order output columns."""
-    # Required columns in order
-    required_cols = [
-        'code', 'product_name', 'quantity_to_transfer', 'target_branch', 
-        'transfer_type', 'sender_balance', 'receiver_balance'
-    ]
-    
-    # Optional columns to include if present
+    required_cols = ['code', 'product_name', 'quantity_to_transfer', 'target_branch', 
+                     'transfer_type', 'sender_balance', 'receiver_balance']
     optional_cols = ['unit', 'selling_price', 'company']
-    
-    # Build final column list
-    final_cols = []
-    for col in required_cols:
-        if col in df.columns:
-            final_cols.append(col)
-    
-    for col in optional_cols:
-        if col in df.columns:
-            final_cols.append(col)
-    
+    final_cols = _build_column_list(df, required_cols, optional_cols)
     return df[final_cols].copy()
