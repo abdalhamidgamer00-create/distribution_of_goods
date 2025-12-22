@@ -108,6 +108,15 @@ def _prepare_shortage_data() -> tuple:
     return shortage_df, has_date_header, first_line
 
 
+def _create_combined_file(shortage_df, timestamp: str, base_name: str, 
+                          has_date_header: bool, first_line: str) -> dict:
+    """Create combined shortage file."""
+    all_df = shortage_df.drop('product_type', axis=1).copy()
+    all_csv_path = os.path.join(CSV_OUTPUT_DIR, f"{base_name}_{timestamp}_all.csv")
+    _write_csv_file(all_df, all_csv_path, has_date_header, first_line)
+    return {'csv_path': all_csv_path, 'df': all_df, 'count': len(all_df)}
+
+
 def _generate_all_files(shortage_df, has_date_header: bool, first_line: str) -> dict:
     """Generate category files and combined file."""
     os.makedirs(CSV_OUTPUT_DIR, exist_ok=True)
@@ -117,16 +126,8 @@ def _generate_all_files(shortage_df, has_date_header: bool, first_line: str) -> 
     base_name = "shortage_products"
     categories = get_product_categories()
     
-    generated_files = _generate_category_files(
-        shortage_df, categories, timestamp, base_name, has_date_header, first_line
-    )
-    
-    # Generate combined file
-    all_df = shortage_df.drop('product_type', axis=1).copy()
-    all_csv_path = os.path.join(CSV_OUTPUT_DIR, f"{base_name}_{timestamp}_all.csv")
-    _write_csv_file(all_df, all_csv_path, has_date_header, first_line)
-    generated_files['all'] = {'csv_path': all_csv_path, 'df': all_df, 'count': len(all_df)}
-    
+    generated_files = _generate_category_files(shortage_df, categories, timestamp, base_name, has_date_header, first_line)
+    generated_files['all'] = _create_combined_file(shortage_df, timestamp, base_name, has_date_header, first_line)
     return generated_files, categories
 
 

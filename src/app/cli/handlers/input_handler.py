@@ -11,24 +11,26 @@ def get_user_choice() -> str:
     return input("\nSelect step number: ").strip()
 
 
-def get_file_selection_mode() -> Optional[bool]:
-    """
-    Get user's file selection preference for batch execution.
-    
-    Returns:
-        True if use latest file, False if select specific, None if invalid
-    """
+def _show_file_options() -> None:
+    """Display file selection options."""
     logger.info("Select file option for all steps:")
     logger.info("  1. Select specific file (will ask for each step)")
     logger.info("  2. Use latest file (applies to all steps)")
-    
-    choice = input("\nSelect option (1 or 2): ").strip()
-    
+
+
+def _parse_file_choice(choice: str) -> Optional[bool]:
+    """Parse user's file selection choice."""
     if choice == "1":
         return False
     elif choice == "2":
         return True
-    else:
-        logger.error("Invalid option!")
-        return None
+    logger.error("Invalid option!")
+    return None
+
+
+def get_file_selection_mode() -> Optional[bool]:
+    """Get user's file selection preference for batch execution."""
+    _show_file_options()
+    choice = input("\nSelect option (1 or 2): ").strip()
+    return _parse_file_choice(choice)
 

@@ -122,25 +122,28 @@ def show_file_management():
     _show_selected_file_status()
 
 
+NAV_BUTTON_CONFIG = {
+    '8': [("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py")],
+    '9': [("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py")],
+    '10': [("⚠️ عرض ملفات النقص", "pages/08_النقص.py")],
+    '11': [("📋 التحويلات المجمعة", "pages/09_التحويلات_المجمعة.py"),
+           ("📂 التحويلات المنفصلة", "pages/10_التحويلات_المنفصلة.py")]
+}
+
+
+def _render_nav_buttons(step_id: str, buttons: list) -> None:
+    """Render navigation buttons for a step."""
+    cols = st.columns(len(buttons))
+    for idx, (label, page) in enumerate(buttons):
+        with cols[idx]:
+            if st.button(label, key=f"nav_{step_id}_{idx}", type="primary", use_container_width=True):
+                st.switch_page(page)
+
+
 def show_navigation_button(step_id):
     """Display navigation button for specific step if successful"""
-    nav_buttons = {
-        '8': [("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py")],
-        '9': [("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py")],
-        '10': [("⚠️ عرض ملفات النقص", "pages/08_النقص.py")],
-        '11': [
-            ("📋 التحويلات المجمعة", "pages/09_التحويلات_المجمعة.py"),
-            ("📂 التحويلات المنفصلة", "pages/10_التحويلات_المنفصلة.py")
-        ]
-    }
-    
-    if step_id in nav_buttons and st.session_state.get(f'step_{step_id}_success', False):
-        buttons = nav_buttons[step_id]
-        cols = st.columns(len(buttons))
-        for idx, (label, page) in enumerate(buttons):
-            with cols[idx]:
-                if st.button(label, key=f"nav_{step_id}_{idx}", type="primary", use_container_width=True):
-                    st.switch_page(page)
+    if step_id in NAV_BUTTON_CONFIG and st.session_state.get(f'step_{step_id}_success', False):
+        _render_nav_buttons(step_id, NAV_BUTTON_CONFIG[step_id])
 
 
 def _run_step_and_display(step: dict) -> None:
