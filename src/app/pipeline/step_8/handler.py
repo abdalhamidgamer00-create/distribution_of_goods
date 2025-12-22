@@ -84,20 +84,26 @@ def _perform_split_and_convert(transfer_files: list, transfers_base_dir: str) ->
     return _convert_to_excel(transfers_base_dir)
 
 
-def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
-    """Step 8: Split transfer files by product type."""
-    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
-    
+def _validate_transfers_dir(transfers_base_dir: str) -> list:
+    """Validate transfers directory and return transfer files."""
     if not os.path.exists(transfers_base_dir):
         logger.error("Transfers directory not found: %s", transfers_base_dir)
         logger.error("Please run step 6 (Generate Transfer Files) first to generate transfer files")
-        return False
+        return []
     
     transfer_files = _find_transfer_files(transfers_base_dir)
-    
     if not transfer_files:
         logger.error("No transfer files found in %s", transfers_base_dir)
         logger.error("Please run step 6 (Generate Transfer Files) first to generate transfer files")
+    return transfer_files
+
+
+def step_8_split_by_product_type(use_latest_file: bool = None) -> bool:
+    """Step 8: Split transfer files by product type."""
+    transfers_base_dir = os.path.join("data", "output", "transfers", "csv")
+    transfer_files = _validate_transfers_dir(transfers_base_dir)
+    
+    if not transfer_files:
         return False
     
     try:
