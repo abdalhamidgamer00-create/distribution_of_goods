@@ -3,26 +3,15 @@
 import math
 
 
-def calculate_available_surplus(
-    branch_data: dict, 
-    branch: str, 
-    product_index: int, 
-    existing_withdrawals: dict
-) -> float:
-    """
-    Calculate available surplus for a product after accounting for withdrawals.
-    Uses floor rounding to ensure whole numbers.
-    
-    Args:
-        branch_data: Dictionary of all branch dataframes
-        branch: Branch name to check
-        product_index: Product index to check
-        existing_withdrawals: Dictionary of withdrawals already made (branch, product_index) -> amount
-        
-    Returns:
-        Available surplus quantity (as integer)
-    """
-    original_surplus = branch_data[branch].iloc[product_index]['surplus_quantity']
+def _get_original_surplus(branch_data: dict, branch: str, product_index: int) -> float:
+    """Get original surplus quantity for a product from branch data."""
+    return branch_data[branch].iloc[product_index]['surplus_quantity']
+
+
+def calculate_available_surplus(branch_data: dict, branch: str, product_index: int, 
+                                existing_withdrawals: dict) -> float:
+    """Calculate available surplus for a product after accounting for withdrawals."""
+    original_surplus = _get_original_surplus(branch_data, branch, product_index)
     already_withdrawn = existing_withdrawals.get((branch, product_index), 0.0)
     return math.floor(max(0, original_surplus - already_withdrawn))
 
