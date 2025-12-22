@@ -19,21 +19,11 @@ def _read_first_line(csv_path: str) -> str:
 
 
 def _resolve_date_range(first_line: str, start_date, end_date) -> tuple:
-    """
-    Resolve date range from parameters or header.
-    
-    Returns:
-        Tuple of (start_date, end_date, header_contained_dates)
-    """
+    """Resolve date range from parameters or header."""
     extracted_start, extracted_end = extract_dates_from_header(first_line)
     header_contained_dates = bool(extracted_start and extracted_end)
     
-    if start_date is None:
-        start_date = extracted_start
-    if end_date is None:
-        end_date = extracted_end
-    
-    return start_date, end_date, header_contained_dates
+    return (start_date or extracted_start, end_date or extracted_end, header_contained_dates)
 
 
 def _raise_date_error_if_required(has_date_info: bool, require_dates: bool) -> None:

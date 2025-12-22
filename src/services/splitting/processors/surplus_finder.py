@@ -110,6 +110,16 @@ def _get_product_data(branch_data: dict, branch: str, product_idx: int) -> tuple
     return branch_df.iloc[product_idx]['needed_quantity'], branch_df.iloc[product_idx]['balance']
 
 
+def _search_and_finalize(branch: str, product_idx: int, branch_data: dict, branches: list,
+                          existing_withdrawals: dict, target_amount: float, needed: float) -> tuple:
+    """Search for surplus and finalize withdrawals."""
+    withdrawals_for_row, withdrawals, remaining_needed = _search_and_withdraw_surplus(
+        branch, product_idx, branch_data, branches, existing_withdrawals, target_amount, needed
+    )
+    result_list, result_dict = _finalize_withdrawals(withdrawals_for_row, remaining_needed)
+    return result_list, result_dict if result_dict is not None else withdrawals
+
+
 def _handle_target_and_search(branch: str, product_idx: int, branch_data: dict, branches: list,
                                existing_withdrawals: dict, proportional_allocation: dict, 
                                needed: float, balance: float) -> tuple:
@@ -120,12 +130,7 @@ def _handle_target_and_search(branch: str, product_idx: int, branch_data: dict, 
     if target_amount <= 0:
         return [_create_empty_withdrawal_record(needed)], {}
     
-    withdrawals_for_row, withdrawals, remaining_needed = _search_and_withdraw_surplus(
-        branch, product_idx, branch_data, branches, existing_withdrawals, target_amount, needed
-    )
-    
-    result_list, result_dict = _finalize_withdrawals(withdrawals_for_row, remaining_needed)
-    return result_list, result_dict if result_dict is not None else withdrawals
+    return _search_and_finalize(branch, product_idx, branch_data, branches, existing_withdrawals, target_amount, needed)
 
 
 def find_surplus_sources_for_single_product(branch: str, product_idx: int, branch_data: dict, branches: list,
