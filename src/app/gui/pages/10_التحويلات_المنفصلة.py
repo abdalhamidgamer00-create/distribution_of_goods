@@ -3,7 +3,6 @@
 import streamlit as st
 import os
 import sys
-import pandas as pd
 
 
 # =============================================================================
@@ -14,13 +13,17 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from src.app.gui.utils.file_manager import (
-    list_output_files,
-    read_file_for_display,
-    create_download_zip,
-    get_file_size_str
+from src.app.gui.utils.file_manager import create_download_zip
+from src.app.gui.utils.translations import CATEGORY_NAMES
+from src.app.gui.utils.gui_components import (
+    BRANCH_LABELS,
+    render_branch_selection_buttons,
+    render_selected_branch_info,
+    render_file_expander,
+    render_download_all_button,
+    get_key_from_label,
+    group_files_by_source_target
 )
-from src.app.gui.utils.translations import BRANCH_NAMES, CATEGORY_NAMES, MESSAGES
 from src.core.domain.branches.config import get_branches
 
 
@@ -51,14 +54,7 @@ if not check_password():
 SEPARATE_CSV_DIR = os.path.join("data", "output", "combined_transfers", "separate", "csv")
 SEPARATE_EXCEL_DIR = os.path.join("data", "output", "combined_transfers", "separate", "excel")
 
-BRANCH_LABELS = {
-    'admin': '🏢 الإدارة',
-    'asherin': '🏪 العشرين',
-    'wardani': '🏬 الوردانى',
-    'akba': '🏭 العقبى',
-    'shahid': '🏗️ الشهيد',
-    'nujum': '⭐ النجوم'
-}
+SESSION_KEY = 'sep_selected_source'
 
 
 # =============================================================================
@@ -128,22 +124,12 @@ def list_files_in_folder(folder_path, extensions):
             if any(filename.endswith(extension) for extension in extensions)]
 
 
-def _get_key_from_label(label: str, labels_dict: dict) -> str:
-    """Get key from translated label."""
-    if label == "الكل":
-        return None
-    for key, value in labels_dict.items():
-        if value == label:
-            return key
-    return None
-
-
 # =============================================================================
-# RENDERING HELPERS
+# ZIP PREPARATION HELPERS
 # =============================================================================
 
-def _render_download_all_button(all_files: list, selected_source: str, file_ext: str) -> None:
-    """Render download all button."""
+def _prepare_and_download(all_files: list, selected_source: str, file_ext: str) -> None:
+    """Prepare zip files and render download button."""
     zip_files = []
     for file_info in all_files:
         new_info = file_info.copy()
@@ -155,52 +141,7 @@ def _render_download_all_button(all_files: list, selected_source: str, file_ext:
         zip_files.append(new_info)
     
     zip_name = f"combined_separate_{selected_source}_{file_ext[1:]}.zip"
-    zip_data = create_download_zip(zip_files, zip_name)
-    st.download_button(
-        label=f"📦 تحميل الملفات المعروضة ({len(all_files)})",
-        data=zip_data,
-        file_name=zip_name,
-        mime="application/zip",
-        use_container_width=True
-    )
-    st.markdown("---")
-
-
-def _render_file_expander(file_info: dict, source: str, target: str, file_ext: str) -> None:
-    """Render file expander with dataframe and download button."""
-    with st.expander(f"📄 {file_info['name']} ({get_file_size_str(file_info['size'])})"):
-        content_column, download_column = st.columns([3, 1])
-        
-        with content_column:
-            dataframe = read_file_for_display(file_info['path'], max_rows=50)
-            if dataframe is not None:
-                st.dataframe(dataframe, use_container_width=True)
-                st.caption("عرض أول 50 صف")
-        
-        with download_column:
-            with open(file_info['path'], 'rb') as file_handle:
-                file_data = file_handle.read()
-            
-            st.download_button(
-                label="⬇️ تحميل",
-                data=file_data,
-                file_name=file_info['name'],
-                mime="application/octet-stream",
-                key=f"sep_download_{source}_{target}_{file_info['name']}_{file_ext}"
-            )
-
-
-def _group_files_by_source_target(all_files: list) -> dict:
-    """Group files by source and target branches."""
-    files_grouped = {}
-    for file_info in all_files:
-        source = file_info.get('source_branch', 'unknown')
-        target = file_info.get('target_branch', 'unknown')
-        key = (source, target)
-        if key not in files_grouped:
-            files_grouped[key] = []
-        files_grouped[key].append(file_info)
-    return files_grouped
+    render_download_all_button(zip_files, zip_name)
 
 
 # =============================================================================
@@ -219,30 +160,12 @@ st.markdown("---")
 st.subheader("📍 اختر الفرع المرسل")
 st.caption("اختر فرع لعرض تحويلاته إلى كل فرع على حدة")
 
-branches = get_branches()
+render_branch_selection_buttons(SESSION_KEY, "sep")
 
-# All branches button
-if st.button("🌐 كل الفروع", key="sep_branch_btn_all", use_container_width=True):
-    st.session_state['sep_selected_source'] = 'all'
-
-# Branch buttons in 3 columns
-column_1, column_2, column_3 = st.columns(3)
-columns = [column_1, column_2, column_3, column_1, column_2, column_3]
-
-for branch_index, branch in enumerate(branches):
-    with columns[branch_index]:
-        if st.button(BRANCH_LABELS.get(branch, branch), key=f"sep_branch_btn_{branch}", use_container_width=True):
-            st.session_state['sep_selected_source'] = branch
-
-# Show selected branch
-if 'sep_selected_source' in st.session_state:
-    selected = st.session_state['sep_selected_source']
-    if selected == 'all':
-        st.info("📂 عرض التحويلات المنفصلة من: **كل الفروع**")
-    else:
-        st.info(f"📂 عرض التحويلات المنفصلة من: **{BRANCH_LABELS.get(selected, selected)}**")
-else:
-    st.warning("⚠️ يرجى اختيار فرع من الأزرار أعلاه")
+selected_source = render_selected_branch_info(
+    SESSION_KEY,
+    "📂 عرض التحويلات المنفصلة من: **{branch_name}**"
+)
 
 st.markdown("---")
 
@@ -251,8 +174,8 @@ st.markdown("---")
 # MAIN CONTENT
 # =============================================================================
 
-if 'sep_selected_source' in st.session_state:
-    selected_source = st.session_state['sep_selected_source']
+if selected_source:
+    branches = get_branches()
     
     excel_tab, csv_tab = st.tabs(["📊 ملفات Excel", "📄 ملفات CSV"])
     
@@ -270,12 +193,12 @@ if 'sep_selected_source' in st.session_state:
                     # Target filter
                     target_options = ["الكل"] + [BRANCH_LABELS.get(branch, branch) for branch in branches]
                     selected_target = st.selectbox("عرض التحويلات إلى:", target_options, key=f"sep_target_{file_ext}")
-                    target_key = _get_key_from_label(selected_target, BRANCH_LABELS)
+                    target_key = get_key_from_label(selected_target, BRANCH_LABELS)
                     
                     # Category filter
                     category_options = ["الكل"] + list(CATEGORY_NAMES.values())
                     selected_category = st.selectbox("فلتر حسب الفئة:", category_options, key=f"sep_category_{file_ext}")
-                    category_key = _get_key_from_label(selected_category, CATEGORY_NAMES)
+                    category_key = get_key_from_label(selected_category, CATEGORY_NAMES)
                     
                     # Collect all files
                     all_files = []
@@ -302,10 +225,10 @@ if 'sep_selected_source' in st.session_state:
                     
                     # Download and display
                     if all_files:
-                        _render_download_all_button(all_files, selected_source, file_ext)
+                        _prepare_and_download(all_files, selected_source, file_ext)
                     
                     # Group by source then target
-                    files_grouped = _group_files_by_source_target(all_files)
+                    files_grouped = group_files_by_source_target(all_files)
                     
                     for (source, target), files in files_grouped.items():
                         source_name = BRANCH_LABELS.get(source, source)
@@ -314,6 +237,6 @@ if 'sep_selected_source' in st.session_state:
                         st.subheader(f"{source_name} ← {target_name}")
                         
                         for file_info in files:
-                            _render_file_expander(file_info, source, target, file_ext)
+                            render_file_expander(file_info, file_ext, key_prefix=f"sep_{source}_{target}")
                         
                         st.markdown("---")
