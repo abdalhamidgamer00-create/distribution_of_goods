@@ -3,36 +3,36 @@
 from datetime import datetime
 
 
-def generate_improvement_suggestions(analysis: dict) -> list:
-    """
-    Generate improvement suggestions based on analysis
-    
-    Args:
-        analysis: Analysis dictionary from analyzer
-        
-    Returns:
-        List of improvement suggestions
-    """
+def _get_empty_cell_suggestions(empty_percentage: float) -> list:
+    """Get suggestions based on empty cell percentage."""
     suggestions = []
-    
-    empty_percentage = analysis.get('empty_cells_percentage', 0)
-    
     if empty_percentage > 10:
         suggestions.append("High percentage of empty cells detected. Consider data validation before processing.")
-    
     if empty_percentage > 5:
         suggestions.append("Review data sources to ensure complete data entry.")
         suggestions.append("Implement data quality checks to prevent missing values.")
-    
     if empty_percentage > 0:
         suggestions.append("Consider filling empty cells with appropriate default values or 'N/A'.")
-    
-    if analysis.get('total_rows', 0) == 0:
+    return suggestions
+
+
+def _get_base_suggestions(total_rows: int) -> list:
+    """Get base suggestions for data quality."""
+    suggestions = []
+    if total_rows == 0:
         suggestions.append("No data rows found. Verify CSV file structure.")
-    
     suggestions.append("Ensure consistent data format across all columns.")
     suggestions.append("Regular data audits to maintain data quality.")
+    return suggestions
+
+
+def generate_improvement_suggestions(analysis: dict) -> list:
+    """Generate improvement suggestions based on analysis."""
+    empty_percentage = analysis.get('empty_cells_percentage', 0)
+    total_rows = analysis.get('total_rows', 0)
     
+    suggestions = _get_empty_cell_suggestions(empty_percentage)
+    suggestions.extend(_get_base_suggestions(total_rows))
     return suggestions
 
 
