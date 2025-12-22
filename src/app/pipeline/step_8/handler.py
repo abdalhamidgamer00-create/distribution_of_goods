@@ -32,12 +32,11 @@ def _extract_date_header(sample_file: str) -> tuple:
     try:
         with open(sample_file, 'r', encoding='utf-8-sig') as f:
             first_line = f.readline().strip()
-            from src.core.validation.data_validator import extract_dates_from_header
-            start_date, end_date = extract_dates_from_header(first_line)
-            if start_date and end_date:
-                return True, first_line
-    except Exception:
-        pass
+        from src.core.validation.data_validator import extract_dates_from_header
+        start_date, end_date = extract_dates_from_header(first_line)
+        if start_date and end_date:
+            return True, first_line
+    except Exception: pass
     return False, ""
 
 
@@ -57,11 +56,9 @@ def _log_split_summary(all_output_files: dict, categories: list) -> None:
 def _execute_split_and_log(transfer_files: list, transfers_base_dir: str, has_date_header: bool, first_line: str) -> bool:
     """Execute splitting and log results."""
     all_output_files = split_all_transfer_files(transfers_base_dir, has_date_header, first_line)
-    
     if not all_output_files:
         logger.warning("No files were split")
         return False
-    
     categories = get_product_categories()
     _log_split_summary(all_output_files, categories)
     logger.info("Split files saved to: %s", transfers_base_dir)
