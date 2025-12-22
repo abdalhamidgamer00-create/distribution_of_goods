@@ -152,19 +152,10 @@ def _build_shortage_dataframe(product_totals: dict, branches: list) -> pd.DataFr
 
 
 def calculate_shortage_products(analytics_dir: str) -> tuple:
-    """
-    Calculate products where total needed exceeds total surplus.
-    
-    Args:
-        analytics_dir: Base analytics directory
-        
-    Returns:
-        Tuple of (DataFrame with shortage products, has_date_header, first_line)
-    """
+    """Calculate products where total needed exceeds total surplus."""
     branches = get_branches()
     product_totals, has_date_header, first_line = _aggregate_branch_totals(analytics_dir, branches)
     shortage_df = _build_shortage_dataframe(product_totals, branches)
-    
     return shortage_df, has_date_header, first_line
 
 

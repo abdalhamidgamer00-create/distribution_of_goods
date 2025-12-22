@@ -71,13 +71,17 @@ def _process_withdrawal_row(row, source_branch: str, withdrawal_pairs: list) -> 
     return {product_code: total} if total > 0 else {}
 
 
-def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:
-    """Extract all withdrawals made FROM a specific branch."""
+def _build_withdrawal_pairs(df: pd.DataFrame) -> list:
+    """Build withdrawal column pairs."""
     surplus_from_cols = [col for col in df.columns if col.startswith('surplus_from_branch_')]
     available_branch_cols = [col for col in df.columns if col.startswith('available_branch_')]
-    
     min_cols = min(len(surplus_from_cols), len(available_branch_cols))
-    withdrawal_pairs = list(zip(available_branch_cols[:min_cols], surplus_from_cols[:min_cols]))
+    return list(zip(available_branch_cols[:min_cols], surplus_from_cols[:min_cols]))
+
+
+def extract_withdrawals_from_branch(df: pd.DataFrame, source_branch: str) -> dict:
+    """Extract all withdrawals made FROM a specific branch."""
+    withdrawal_pairs = _build_withdrawal_pairs(df)
     
     all_withdrawals = {}
     for _, row in df.iterrows():
