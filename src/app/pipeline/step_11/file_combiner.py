@@ -122,18 +122,22 @@ def _normalize_surplus_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _read_and_process_surplus(filepath: str, sender_balances: dict, admin_balances: dict) -> Optional[pd.DataFrame]:
+    """Read surplus file and process it."""
+    df = pd.read_csv(filepath)
+    if df.empty:
+        return None
+    
+    df = _normalize_surplus_columns(df)
+    df['target_branch'] = 'admin'
+    df['transfer_type'] = 'surplus'
+    return _add_balance_columns(df, sender_balances, admin_balances)
+
+
 def _process_single_surplus_file(filepath: str, sender_balances: dict, admin_balances: dict) -> Optional[pd.DataFrame]:
     """Process a single surplus file and format as admin transfer."""
     try:
-        df = pd.read_csv(filepath)
-        if df.empty:
-            return None
-        
-        df = _normalize_surplus_columns(df)
-        df['target_branch'] = 'admin'
-        df['transfer_type'] = 'surplus'
-        return _add_balance_columns(df, sender_balances, admin_balances)
-        
+        return _read_and_process_surplus(filepath, sender_balances, admin_balances)
     except Exception as e:
         logger.warning(f"Error reading {filepath}: {e}")
         return None

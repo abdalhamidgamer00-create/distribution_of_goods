@@ -62,6 +62,14 @@ def _setup_and_validate(renamed_dir: str) -> tuple:
     return csv_files, os.path.join("data", "output", "branches", "files"), os.path.join("data", "output", "branches", "analytics")
 
 
+def _run_split_and_log(csv_path: str, branches_dir: str, base_filename: str, analytics_dir: str) -> None:
+    """Run split and log results."""
+    total_start = perf_counter()
+    output_files, timing_stats = split_csv_by_branches(csv_path, branches_dir, base_filename, analytics_dir)
+    total_duration = perf_counter() - total_start
+    _log_split_results(output_files, timing_stats, total_duration, branches_dir, analytics_dir)
+
+
 def _execute_split(csv_path: str, csv_file: str, branches_dir: str, analytics_dir: str) -> bool:
     """Execute the split operation."""
     branches = get_branches()
@@ -71,11 +79,7 @@ def _execute_split(csv_path: str, csv_file: str, branches_dir: str, analytics_di
     logger.info("Splitting %s by branches...", csv_file)
     logger.info("-" * 50)
     
-    total_start = perf_counter()
-    output_files, timing_stats = split_csv_by_branches(csv_path, branches_dir, base_filename, analytics_dir)
-    total_duration = perf_counter() - total_start
-    
-    _log_split_results(output_files, timing_stats, total_duration, branches_dir, analytics_dir)
+    _run_split_and_log(csv_path, branches_dir, base_filename, analytics_dir)
     return True
 
 
