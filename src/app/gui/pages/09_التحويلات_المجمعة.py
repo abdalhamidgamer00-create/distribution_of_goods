@@ -78,6 +78,18 @@ merged_csv_dir = os.path.join("data", "output", "combined_transfers", "merged", 
 merged_excel_dir = os.path.join("data", "output", "combined_transfers", "merged", "excel")
 
 
+def _parse_folder_info(folder_name: str, folder_path: str) -> dict:
+    """Parse folder name to extract branch information."""
+    parts = folder_name.replace('combined_transfers_from_', '').split('_')
+    branch = parts[0] if parts else 'unknown'
+    return {'name': folder_name, 'path': folder_path, 'branch': branch}
+
+
+def _matches_branch_filter(branch: str, branch_filter: str) -> bool:
+    """Check if branch matches the filter."""
+    return not branch_filter or branch_filter == 'all' or branch == branch_filter
+
+
 def get_branch_folders(base_dir, branch_filter=None):
     """Get all branch folders with timestamps."""
     if not os.path.exists(base_dir):
@@ -87,17 +99,9 @@ def get_branch_folders(base_dir, branch_filter=None):
     for folder_name in os.listdir(base_dir):
         folder_path = os.path.join(base_dir, folder_name)
         if os.path.isdir(folder_path) and folder_name.startswith('combined_transfers_from_'):
-            parts = folder_name.replace('combined_transfers_from_', '').split('_')
-            branch = parts[0] if parts else 'unknown'
-            
-            if branch_filter and branch_filter != 'all' and branch != branch_filter:
-                continue
-                
-            folders.append({
-                'name': folder_name,
-                'path': folder_path,
-                'branch': branch
-            })
+            info = _parse_folder_info(folder_name, folder_path)
+            if _matches_branch_filter(info['branch'], branch_filter):
+                folders.append(info)
     return folders
 
 
