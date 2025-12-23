@@ -54,10 +54,10 @@ class TestGetPasswords:
         """
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth._get_passwords()
+            result = auth.get_passwords()
             
             assert "admin" in result or result == {"admin": "admin123", "user": "user123"}
     
@@ -67,7 +67,7 @@ class TestGetPasswords:
         WHY: Development environment fallback
         BREAKS: App crashes without secrets
         """
-        from src.app.gui.utils.auth import DEFAULT_PASSWORDS
+        from src.app.gui.services.auth.session import DEFAULT_PASSWORDS
         
         # Default passwords should exist
         assert "admin" in DEFAULT_PASSWORDS
@@ -89,10 +89,10 @@ class TestVerifyCredentials:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth._verify_credentials({"admin": "admin123", "user": "user123"})
+            result = auth.verify_credentials({"admin": "admin123", "user": "user123"})
             
             assert result is True
     
@@ -106,10 +106,10 @@ class TestVerifyCredentials:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth._verify_credentials({"admin": "admin123", "user": "user123"})
+            result = auth.verify_credentials({"admin": "admin123", "user": "user123"})
             
             assert result is True
     
@@ -123,10 +123,10 @@ class TestVerifyCredentials:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth._verify_credentials({"admin": "admin123"})
+            result = auth.verify_credentials({"admin": "admin123"})
             
             assert result is False
     
@@ -140,10 +140,10 @@ class TestVerifyCredentials:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth._verify_credentials({"admin": "admin123"})
+            result = auth.verify_credentials({"admin": "admin123"})
             
             assert result is False
 
@@ -164,10 +164,10 @@ class TestPasswordEntered:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            auth._handle_password_entry()
+            auth.handle_password_entry()
             
             assert mock_streamlit.session_state.get("password_correct") is True
     
@@ -182,10 +182,10 @@ class TestPasswordEntered:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            auth._handle_password_entry()
+            auth.handle_password_entry()
             
             assert mock_streamlit.session_state.get("password_correct") is False
     
@@ -200,10 +200,10 @@ class TestPasswordEntered:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            auth._handle_password_entry()
+            auth.handle_password_entry()
             
             # Password should be deleted from session
             assert "password" not in mock_streamlit.session_state
@@ -224,10 +224,10 @@ class TestCheckPassword:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth.check_password()
+            result = auth.check_password_session()
             
             assert result is True
     
@@ -241,10 +241,10 @@ class TestCheckPassword:
         
         with patch.dict('sys.modules', {'streamlit': mock_streamlit}):
             import importlib
-            from src.app.gui.utils import auth
+            from src.app.gui.services.auth import session as auth
             importlib.reload(auth)
             
-            result = auth.check_password()
+            result = auth.check_password_session()
             
             assert result is False
 
@@ -260,7 +260,7 @@ class TestLoginStyles:
         WHY: Arabic UI needs RTL
         BREAKS: Misaligned Arabic text
         """
-        from src.app.gui.utils.auth import LOGIN_STYLES
+        from src.app.gui.services.auth.ui import LOGIN_STYLES
         
         assert "direction: rtl" in LOGIN_STYLES
     
@@ -270,7 +270,7 @@ class TestLoginStyles:
         WHY: Streamlit needs valid HTML
         BREAKS: Styling not applied
         """
-        from src.app.gui.utils.auth import LOGIN_STYLES
+        from src.app.gui.services.auth.ui import LOGIN_STYLES
         
         assert "<style>" in LOGIN_STYLES
         assert "</style>" in LOGIN_STYLES
@@ -287,7 +287,7 @@ class TestDefaultPasswords:
         WHY: Admin access for development
         BREAKS: No admin access in dev
         """
-        from src.app.gui.utils.auth import DEFAULT_PASSWORDS
+        from src.app.gui.services.auth.session import DEFAULT_PASSWORDS
         
         assert "admin" in DEFAULT_PASSWORDS
     
@@ -297,7 +297,7 @@ class TestDefaultPasswords:
         WHY: Test user access
         BREAKS: No test user available
         """
-        from src.app.gui.utils.auth import DEFAULT_PASSWORDS
+        from src.app.gui.services.auth.session import DEFAULT_PASSWORDS
         
         assert "user" in DEFAULT_PASSWORDS
     
@@ -307,7 +307,7 @@ class TestDefaultPasswords:
         WHY: Empty passwords are security risk
         BREAKS: Login with empty password
         """
-        from src.app.gui.utils.auth import DEFAULT_PASSWORDS
+        from src.app.gui.services.auth.session import DEFAULT_PASSWORDS
         
         for username, password in DEFAULT_PASSWORDS.items():
             assert len(password) > 0, f"Password for {username} is empty"
@@ -318,7 +318,7 @@ class TestDefaultPasswords:
         WHY: Very short passwords are weak
         BREAKS: Weak password policy
         """
-        from src.app.gui.utils.auth import DEFAULT_PASSWORDS
+        from src.app.gui.services.auth.session import DEFAULT_PASSWORDS
         
         for username, password in DEFAULT_PASSWORDS.items():
             assert len(password) >= 6, f"Password for {username} is too short"

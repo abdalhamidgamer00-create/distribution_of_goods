@@ -57,21 +57,21 @@ st.markdown("---")
 # Steps
 st.subheader("الخطوات المتاحة")
 steps = get_all_steps()
-visible_steps = [s for s in steps if s['id'] in ['8', '9', '10', '11']]
+visible_steps = [s for s in steps if s.id in ['8', '9', '10', '11']]
 
 cols = st.columns(len(visible_steps))
 for i, step in enumerate(visible_steps):
     with cols[i]:
-        st.markdown(f"### {step['name']}")
-        st.caption(step['description'])
+        st.markdown(f"### {step.name}")
+        st.caption(step.description)
         
         if st.button(
             f"▶️ تشغيل مع الخطوات السابقة",
-            key=f"run_{step['id']}"
+            key=f"run_{step.id}"
         ):
             execute_step_ui(step)
             
-        render_nav_button(step['id'])
+        render_nav_button(step.id)
         st.markdown("---")
 
 # Run all

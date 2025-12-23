@@ -21,7 +21,7 @@ class TestFindStepById:
         step = find_step_by_id("1")
         
         assert step is not None
-        assert step["id"] == "1"
+        assert step.id == "1"
     
     def test_find_nonexistent_step(self):
         """Test finding a non-existent step"""
@@ -47,7 +47,8 @@ class TestValidateStepFunction:
         """Test validation with callable function"""
         from src.app.cli.executors.step_executor import validate_step_function
         
-        step = {"function": lambda: True}
+        step = MagicMock()
+        step.function = lambda: True
         
         assert validate_step_function(step) is True
     
@@ -55,7 +56,8 @@ class TestValidateStepFunction:
         """Test validation without function"""
         from src.app.cli.executors.step_executor import validate_step_function
         
-        step = {}
+        # Create a mock without 'function' attribute
+        step = MagicMock(spec=[])
         
         assert validate_step_function(step) is False
     
@@ -63,7 +65,8 @@ class TestValidateStepFunction:
         """Test validation with non-callable"""
         from src.app.cli.executors.step_executor import validate_step_function
         
-        step = {"function": "not a function"}
+        step = MagicMock()
+        step.function = "not a function"
         
         assert validate_step_function(step) is False
 
@@ -76,7 +79,9 @@ class TestExecuteSingleStep:
         from src.app.cli.executors.step_executor import execute_single_step
         
         mock_func = MagicMock(return_value=True)
-        step = {"id": "test", "function": mock_func}
+        step = MagicMock()
+        step.id = "test"
+        step.function = mock_func
         
         result = execute_single_step(step, use_latest_file=True)
         
@@ -88,7 +93,9 @@ class TestExecuteSingleStep:
         from src.app.cli.executors.step_executor import execute_single_step
         
         mock_func = MagicMock(return_value=False)
-        step = {"id": "test", "function": mock_func}
+        step = MagicMock()
+        step.id = "test"
+        step.function = mock_func
         
         result = execute_single_step(step, use_latest_file=False)
         
@@ -99,7 +106,9 @@ class TestExecuteSingleStep:
         from src.app.cli.executors.step_executor import execute_single_step
         
         mock_func = MagicMock(side_effect=Exception("Test error"))
-        step = {"id": "test", "function": mock_func}
+        step = MagicMock()
+        step.id = "test"
+        step.function = mock_func
         
         result = execute_single_step(step)
         
@@ -109,7 +118,9 @@ class TestExecuteSingleStep:
         """Test execution without valid function"""
         from src.app.cli.executors.step_executor import execute_single_step
         
-        step = {"id": "test", "function": None}
+        step = MagicMock()
+        step.id = "test"
+        step.function = None
         
         result = execute_single_step(step)
         
@@ -131,7 +142,7 @@ class TestExecuteStep:
         """Test executing valid step"""
         from src.app.cli.executors.step_executor import execute_step
         
-        with patch('src.app.cli.executors.step_executor.execute_single_step') as mock_exec:
+        with patch('src.app.cli.executors.step_executor.execution.execute_single_step') as mock_exec:
             mock_exec.return_value = True
             
             result = execute_step("1")
@@ -163,7 +174,7 @@ class TestExecuteStepWithDependencies:
         """Test successful execution with dependencies"""
         from src.app.cli.executors.step_executor import execute_step_with_dependencies
         
-        with patch('src.app.cli.executors.step_executor.execute_single_step') as mock_exec:
+        with patch('src.app.cli.executors.step_executor.sequence.execute_single_step') as mock_exec:
             mock_exec.return_value = True
             
             result = execute_step_with_dependencies("2")
@@ -176,7 +187,7 @@ class TestExecuteStepWithDependencies:
         """Test execution stops on failure"""
         from src.app.cli.executors.step_executor import execute_step_with_dependencies
         
-        with patch('src.app.cli.executors.step_executor.execute_single_step') as mock_exec:
+        with patch('src.app.cli.executors.step_executor.sequence.execute_single_step') as mock_exec:
             # First step fails
             mock_exec.return_value = False
             

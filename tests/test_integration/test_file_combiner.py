@@ -231,7 +231,7 @@ class TestFileCombiner:
     
     def test_prepare_output_columns(self):
         """Test preparing output columns"""
-        from src.app.pipeline.step_11.combiner.writers import _prepare_and_sort
+        from src.app.pipeline.step_11.combiner.writing.utils import prepare_and_sort as _prepare_and_sort
         
         df = pd.DataFrame({
             'code': ['001'],

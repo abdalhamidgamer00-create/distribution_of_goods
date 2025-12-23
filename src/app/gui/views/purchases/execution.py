@@ -1,18 +1,19 @@
 """Purchases view execution component."""
 import streamlit as st
+from typing import Any
 from src.app.gui.services.pipeline_service import (
     run_single_step,
     get_all_steps,
     get_steps_sequence
 )
 
-def execute_step_ui(step: dict) -> None:
+def execute_step_ui(step: Any) -> None:
     """Run a step with dependencies and display result."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
         return
 
-    success, result = get_steps_sequence(step['id'])
+    success, result = get_steps_sequence(step.id)
     
     if not success:
         st.error(result)
@@ -33,11 +34,11 @@ def run_all_steps_ui() -> None:
     status = st.empty()
     
     for i, step in enumerate(steps):
-        status.text(f"جاري تنفيذ: {step['name']}")
-        success, _ = run_single_step(step['id'])
+        status.text(f"جاري تنفيذ: {step.name}")
+        success, _ = run_single_step(step.id)
         
         if not success:
-            st.error(f"فشل في: {step['name']}")
+            st.error(f"فشل في: {step.name}")
             return
             
         progress.progress((i + 1) / len(steps))
@@ -47,14 +48,14 @@ def run_all_steps_ui() -> None:
     st.session_state['all_steps_success'] = True
 
 
-def _run_steps_sequence(all_steps: list, target_step: dict) -> None:
+def _run_steps_sequence(all_steps: list, target_step: Any) -> None:
     """Execute a sequence of steps with progress bar."""
     progress = st.progress(0)
     status = st.empty()
     
     for i, s in enumerate(all_steps):
-        status.text(f"جاري تنفيذ: {s['name']}")
-        s_success, msg = run_single_step(s['id'])
+        status.text(f"جاري تنفيذ: {s.name}")
+        s_success, msg = run_single_step(s.id)
         
         if not s_success:
             progress.empty()
@@ -66,5 +67,5 @@ def _run_steps_sequence(all_steps: list, target_step: dict) -> None:
         
     progress.empty()
     status.empty()
-    st.success(f"✅ تم تنفيذ الخطوات حتى {target_step['name']}")
-    st.session_state[f'step_{target_step["id"]}_success'] = True
+    st.success(f"✅ تم تنفيذ الخطوات حتى {target_step.name}")
+    st.session_state[f'step_{target_step.id}_success'] = True

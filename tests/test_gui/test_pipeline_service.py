@@ -7,14 +7,20 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.app.gui.services.pipeline.execution import (
+    _find_step_by_id
+)
+from src.app.gui.services.pipeline.info import (
+    _build_step_info
+)
+from src.app.gui.services.pipeline.sequences import (
+    _validate_step_id
+)
 from src.app.gui.services.pipeline_service import (
     get_step_info,
     get_all_steps,
     run_single_step,
-    get_steps_sequence,
-    _find_step_by_id,  # Testing private helpers
-    _build_step_info,
-    _validate_step_id
+    get_steps_sequence
 )
 
 
@@ -26,9 +32,9 @@ class TestGetStepInfo:
         info = get_step_info("1")
         
         assert info is not None
-        assert info["id"] == "1"
-        assert "name" in info
-        assert "description" in info
+        assert info.id == "1"
+        assert hasattr(info, "name")
+        assert hasattr(info, "description")
     
     def test_get_nonexistent_step_info(self):
         """Test getting info for non-existent step"""
@@ -41,7 +47,7 @@ class TestGetStepInfo:
         for i in range(1, 12):
             info = get_step_info(str(i))
             assert info is not None, f"Step {i} info should exist"
-            assert info["id"] == str(i)
+            assert info.id == str(i)
 
 
 class TestGetAllSteps:
@@ -59,9 +65,9 @@ class TestGetAllSteps:
         steps = get_all_steps()
         
         for step in steps:
-            assert "id" in step
-            assert "name" in step
-            assert "description" in step
+            assert hasattr(step, "id")
+            assert hasattr(step, "name")
+            assert hasattr(step, "description")
 
 
 class TestRunStep:
@@ -78,48 +84,48 @@ class TestRunStep:
         """Test running a step successfully"""
         from src.app.pipeline.steps import AVAILABLE_STEPS
         
-        # Mock the step function
-        original_func = AVAILABLE_STEPS[0]["function"]
-        AVAILABLE_STEPS[0]["function"] = MagicMock(return_value=True)
-        
-        try:
+        # Create a mock step that mimics the structure but is mutable
+        mock_step = MagicMock()
+        mock_step.id = "1"
+        mock_step.name = "Test Step"
+        mock_step.function = MagicMock(return_value=True)
+
+        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is True
             assert "نجاح" in message or "Success" in message.lower() or "✓" in message or "1" in message
-        finally:
-            AVAILABLE_STEPS[0]["function"] = original_func
     
     def test_run_step_failure(self):
         """Test running a step that fails"""
         from src.app.pipeline.steps import AVAILABLE_STEPS
         
-        # Mock the step function to return False
-        original_func = AVAILABLE_STEPS[0]["function"]
-        AVAILABLE_STEPS[0]["function"] = MagicMock(return_value=False)
-        
-        try:
+        # Create a mock step that mimics the structure but is mutable
+        mock_step = MagicMock()
+        mock_step.id = "1"
+        mock_step.name = "Test Step"
+        mock_step.function = MagicMock(return_value=False)
+
+        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False
-        finally:
-            AVAILABLE_STEPS[0]["function"] = original_func
     
     def test_run_step_exception(self):
         """Test running a step that throws exception"""
         from src.app.pipeline.steps import AVAILABLE_STEPS
         
-        # Mock the step function to throw exception
-        original_func = AVAILABLE_STEPS[0]["function"]
-        AVAILABLE_STEPS[0]["function"] = MagicMock(side_effect=Exception("Test error"))
-        
-        try:
+        # Create a mock step that mimics the structure but is mutable
+        mock_step = MagicMock()
+        mock_step.id = "1"
+        mock_step.name = "Test Step"
+        mock_step.function = MagicMock(side_effect=Exception("Test error"))
+
+        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False
             assert "error" in message.lower() or "خطأ" in message
-        finally:
-            AVAILABLE_STEPS[0]["function"] = original_func
 
 
 class TestGetStepsSequence:
@@ -144,8 +150,8 @@ class TestGetStepsSequence:
         assert success is True
         assert isinstance(steps, list)
         assert len(steps) == 2
-        assert steps[0]['id'] == "1"
-        assert steps[1]['id'] == "2"
+        assert steps[0].id == "1"
+        assert steps[1].id == "2"
 
 
 class TestFindStepById:
@@ -160,8 +166,8 @@ class TestFindStepById:
         step = _find_step_by_id("1")
         
         assert step is not None
-        assert step["id"] == "1"
-        assert "function" in step
+        assert step.id == "1"
+        assert step.function is not None
     
     def test_find_nonexistent_step(self):
         """
@@ -182,7 +188,7 @@ class TestFindStepById:
         step = _find_step_by_id("11")
         
         assert step is not None
-        assert step["id"] == "11"
+        assert step.id == "11"
 
 
 class TestBuildStepInfo:
@@ -199,10 +205,10 @@ class TestBuildStepInfo:
         step = AVAILABLE_STEPS[0]
         info = _build_step_info(step)
         
-        assert "id" in info
-        assert "name" in info
-        assert "description" in info
-        assert "function" in info
+        assert hasattr(info, "id")
+        assert hasattr(info, "name")
+        assert hasattr(info, "description")
+        assert hasattr(info, "function")
     
     def test_info_uses_translation(self):
         """
@@ -216,8 +222,8 @@ class TestBuildStepInfo:
         step = AVAILABLE_STEPS[0]
         info = _build_step_info(step)
         
-        expected_name = STEP_NAMES.get(step["id"], step["name"])
-        assert info["name"] == expected_name
+        expected_name = STEP_NAMES.get(step.id, step.name)
+        assert info.name == expected_name
 
 
 class TestValidateStepId:

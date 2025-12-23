@@ -28,7 +28,9 @@ class TestLogStepProgress:
         WHY: Users need clear progress indication
         BREAKS: Unclear progress during batch execution
         """
-        step = {'id': 'step_1', 'name': 'Archive Output'}
+        step = MagicMock()
+        step.id = 'step_1'
+        step.name = 'Archive Output'
         
         with caplog.at_level('INFO'):
             log_step_progress(step, 1, 11)
@@ -42,7 +44,9 @@ class TestLogStepProgress:
         WHY: Edge case for starting batch
         BREAKS: Off-by-one errors in progress display
         """
-        step = {'id': 'step_1', 'name': 'First Step'}
+        step = MagicMock()
+        step.id = 'step_1'
+        step.name = 'First Step'
         
         with caplog.at_level('INFO'):
             log_step_progress(step, 1, 5)
@@ -63,12 +67,13 @@ class TestExecuteAndTrack:
         BREAKS: Batch stops incorrectly on success
         """
         mock_execute.return_value = True
-        step = {'id': 'step_1', 'name': 'Test Step'}
+        step = MagicMock()
+        step.id = 'step_1'
+        step.name = 'Test Step'
         
         result = _execute_and_track(step, use_latest_file=True)
         
         assert result is True
-        assert step['_last_result'] is True
     
     @patch('src.app.cli.executors.batch_executor.execute_single_step')
     def test_returns_false_on_failed_step(self, mock_execute):
@@ -78,12 +83,13 @@ class TestExecuteAndTrack:
         BREAKS: Silent failures in batch execution
         """
         mock_execute.return_value = False
-        step = {'id': 'step_1', 'name': 'Failing Step'}
+        step = MagicMock()
+        step.id = 'step_1'
+        step.name = 'Failing Step'
         
         result = _execute_and_track(step, use_latest_file=True)
         
         assert result is False
-        assert step['_last_result'] is False
     
     @patch('src.app.cli.executors.batch_executor.execute_single_step')
     def test_passes_file_selection_mode(self, mock_execute):
@@ -93,7 +99,9 @@ class TestExecuteAndTrack:
         BREAKS: Steps always use wrong file selection
         """
         mock_execute.return_value = True
-        step = {'id': 'step_1', 'name': 'Test Step'}
+        step = MagicMock()
+        step.id = 'step_1'
+        step.name = 'Test Step'
         
         _execute_and_track(step, use_latest_file=False)
         
@@ -107,10 +115,6 @@ class TestExecuteAllStepsBatch:
     
     @patch('src.app.cli.executors.batch_executor._execute_and_track')
     @patch('src.app.cli.executors.batch_executor.log_step_progress')
-    @patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [
-        {'id': 'step_1', 'name': 'Step 1'},
-        {'id': 'step_2', 'name': 'Step 2'}
-    ])
     def test_returns_counts_all_success(self, mock_log, mock_execute):
         """
         WHAT: Return correct counts when all steps succeed
@@ -119,18 +123,21 @@ class TestExecuteAllStepsBatch:
         """
         mock_execute.return_value = True
         
-        successful, total = execute_all_steps_batch(use_latest_file=True)
+        step1 = MagicMock()
+        step1.id = 'step_1'
+        step1.name = 'Step 1'
+        step2 = MagicMock()
+        step2.id = 'step_2'
+        step2.name = 'Step 2'
+        
+        with patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2]):
+            successful, total = execute_all_steps_batch(use_latest_file=True)
         
         assert successful == 2
         assert total == 2
     
     @patch('src.app.cli.executors.batch_executor._execute_and_track')
     @patch('src.app.cli.executors.batch_executor.log_step_progress')
-    @patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [
-        {'id': 'step_1', 'name': 'Step 1'},
-        {'id': 'step_2', 'name': 'Step 2'},
-        {'id': 'step_3', 'name': 'Step 3'}
-    ])
     def test_returns_counts_partial_success(self, mock_log, mock_execute):
         """
         WHAT: Return correct counts when some steps fail
@@ -139,7 +146,18 @@ class TestExecuteAllStepsBatch:
         """
         mock_execute.side_effect = [True, False, True]
         
-        successful, total = execute_all_steps_batch(use_latest_file=True)
+        step1 = MagicMock()
+        step1.id = 'step_1'
+        step1.name = 'Step 1'
+        step2 = MagicMock()
+        step2.id = 'step_2'
+        step2.name = 'Step 2'
+        step3 = MagicMock()
+        step3.id = 'step_3'
+        step3.name = 'Step 3'
+        
+        with patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2, step3]):
+            successful, total = execute_all_steps_batch(use_latest_file=True)
         
         assert successful == 2
         assert total == 3

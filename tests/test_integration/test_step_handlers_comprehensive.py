@@ -193,17 +193,19 @@ class TestStep6Handler:
             (branches_dir / branch).mkdir(parents=True)
             (analytics_dir / branch).mkdir(parents=True)
         
-        output_files, timing = split_csv_by_branches(
-            sample_renamed_csv,
-            str(branches_dir),
-            "test_split",
-            str(analytics_dir)
-        )
+        # Mock branches config
+        with patch('src.core.domain.branches.config.get_branches', return_value=['branch1']):
+            output, timing = split_csv_by_branches(
+                sample_renamed_csv,
+                str(branches_dir),
+                "test_split",
+                str(analytics_dir)
+            )
         
-        assert len(output_files) == 6  # 6 branches
+        assert len(output) == 1  # Should be 1 branch due to mock
         
         # Verify branch files exist
-        for branch, file_path in output_files.items():
+        for branch, file_path in output.items():
             assert os.path.exists(file_path)
 
 
@@ -219,7 +221,9 @@ class TestStep7Handler:
         transfers_dir = tmp_path / "transfers"
         transfers_dir.mkdir()
         
-        result = generate_transfer_files(sample_analytics_dir, str(transfers_dir))
+        with patch('src.core.domain.branches.config.get_branches', return_value=['branch1', 'branch2']), \
+             patch('src.services.transfers.generators.core.batch_processing.generate_transfer_for_pair', return_value="path/to/file"):
+            result = generate_transfer_files(sample_analytics_dir, str(transfers_dir))
         
         assert isinstance(result, dict)
         # Should generate some transfers

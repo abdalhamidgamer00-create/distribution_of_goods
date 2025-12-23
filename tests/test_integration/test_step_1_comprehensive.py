@@ -52,7 +52,7 @@ class TestHasFilesInDirectory:
         WHY: Correctly detect files for archiving
         BREAKS: Archiving skipped when files exist
         """
-        from src.app.pipeline.step_1.handler import _has_files_in_directory
+        from src.app.pipeline.step_1.cleaner.files import has_files_in_directory as _has_files_in_directory
         
         result = _has_files_in_directory(temp_directory_with_files)
         
@@ -64,7 +64,7 @@ class TestHasFilesInDirectory:
         WHY: Skip archiving when nothing to archive
         BREAKS: Unnecessary archive operations
         """
-        from src.app.pipeline.step_1.handler import _has_files_in_directory
+        from src.app.pipeline.step_1.cleaner.files import has_files_in_directory as _has_files_in_directory
         
         result = _has_files_in_directory(empty_temp_directory)
         
@@ -76,7 +76,7 @@ class TestHasFilesInDirectory:
         WHY: Graceful handling of missing paths
         BREAKS: Exception on first run
         """
-        from src.app.pipeline.step_1.handler import _has_files_in_directory
+        from src.app.pipeline.step_1.cleaner.files import has_files_in_directory as _has_files_in_directory
         
         result = _has_files_in_directory("/nonexistent/path/that/does/not/exist")
         
@@ -88,7 +88,7 @@ class TestHasFilesInDirectory:
         WHY: All output files should be detected
         BREAKS: Missing nested files in archive
         """
-        from src.app.pipeline.step_1.handler import _has_files_in_directory
+        from src.app.pipeline.step_1.cleaner.files import has_files_in_directory as _has_files_in_directory
         
         # Create only nested files
         output_dir = tmp_path / "output"
@@ -113,7 +113,7 @@ class TestCalculateDirectorySize:
         WHY: Accurate size reporting for archives
         BREAKS: Incorrect size displayed to user
         """
-        from src.app.pipeline.step_1.handler import _calculate_directory_size
+        from src.app.pipeline.step_1.cleaner.files import calculate_directory_size as _calculate_directory_size
         
         test_dir = tmp_path / "size_test"
         test_dir.mkdir()
@@ -134,7 +134,7 @@ class TestCalculateDirectorySize:
         WHY: No errors on empty directories
         BREAKS: Division by zero in compression ratio
         """
-        from src.app.pipeline.step_1.handler import _calculate_directory_size
+        from src.app.pipeline.step_1.cleaner.files import calculate_directory_size as _calculate_directory_size
         
         result = _calculate_directory_size(empty_temp_directory)
         
@@ -146,7 +146,7 @@ class TestCalculateDirectorySize:
         WHY: Graceful error handling
         BREAKS: Exception crashes archiving
         """
-        from src.app.pipeline.step_1.handler import _calculate_directory_size
+        from src.app.pipeline.step_1.cleaner.files import calculate_directory_size as _calculate_directory_size
         
         result = _calculate_directory_size("/nonexistent/path")
         
@@ -164,7 +164,7 @@ class TestFormatSize:
         WHY: Human-readable size display
         BREAKS: Confusing size display
         """
-        from src.app.pipeline.step_1.handler import _format_size
+        from src.app.pipeline.step_1.cleaner.formatting import format_size as _format_size
         
         result = _format_size(500)
         
@@ -177,7 +177,7 @@ class TestFormatSize:
         WHY: Appropriate unit for small files
         BREAKS: Showing too many decimal places
         """
-        from src.app.pipeline.step_1.handler import _format_size
+        from src.app.pipeline.step_1.cleaner.formatting import format_size as _format_size
         
         result = _format_size(2048)
         
@@ -189,7 +189,7 @@ class TestFormatSize:
         WHY: Appropriate unit for typical files
         BREAKS: Wrong unit displayed
         """
-        from src.app.pipeline.step_1.handler import _format_size
+        from src.app.pipeline.step_1.cleaner.formatting import format_size as _format_size
         
         result = _format_size(5 * 1024 * 1024)
         
@@ -201,7 +201,7 @@ class TestFormatSize:
         WHY: Large archive support
         BREAKS: Overflow on large files
         """
-        from src.app.pipeline.step_1.handler import _format_size
+        from src.app.pipeline.step_1.cleaner.formatting import format_size as _format_size
         
         result = _format_size(3 * 1024 * 1024 * 1024)
         
@@ -213,14 +213,14 @@ class TestFormatSize:
 class TestArchiveIfHasFiles:
     """Tests for _archive_if_has_files function."""
     
-    @patch('src.app.pipeline.step_1.handler._execute_archive')
+    @patch('src.app.pipeline.step_1.cleaner.orchestrator._execute_archive')
     def test_archives_when_files_exist(self, mock_execute, temp_directory_with_files, tmp_path):
         """
         WHAT: Call archive when files exist
         WHY: Properly back up output
         BREAKS: Data loss on re-run
         """
-        from src.app.pipeline.step_1.handler import _archive_if_has_files
+        from src.app.pipeline.step_1.cleaner.orchestrator import _archive_if_has_files
         
         mock_execute.return_value = True
         archive_dir = str(tmp_path / "archive")
@@ -236,7 +236,7 @@ class TestArchiveIfHasFiles:
         WHY: Avoid empty archives
         BREAKS: Error on fresh start
         """
-        from src.app.pipeline.step_1.handler import _archive_if_has_files
+        from src.app.pipeline.step_1.cleaner.orchestrator import _archive_if_has_files
         
         archive_dir = str(tmp_path / "archive")
         
@@ -250,14 +250,14 @@ class TestArchiveIfHasFiles:
 class TestStep1ArchiveOutput:
     """Tests for step_1_archive_output main function."""
     
-    @patch('src.app.pipeline.step_1.handler._archive_if_has_files')
+    @patch('src.app.pipeline.step_1.cleaner.orchestrator._archive_if_has_files')
     def test_calls_archive_function(self, mock_archive):
         """
         WHAT: Main function delegates to helper
         WHY: Proper function composition
         BREAKS: Archiving never called
         """
-        from src.app.pipeline.step_1.handler import step_1_archive_output
+        from src.app.pipeline.step_1.cleaner.orchestrator import step_1_archive_output
         
         mock_archive.return_value = True
         
@@ -266,14 +266,14 @@ class TestStep1ArchiveOutput:
         mock_archive.assert_called_once()
         assert result is True
     
-    @patch('src.app.pipeline.step_1.handler._archive_if_has_files')
+    @patch('src.app.pipeline.step_1.cleaner.orchestrator._archive_if_has_files')
     def test_handles_exception(self, mock_archive):
         """
         WHAT: Return False on exception
         WHY: Graceful error handling
         BREAKS: Unhandled exception stops pipeline
         """
-        from src.app.pipeline.step_1.handler import step_1_archive_output
+        from src.app.pipeline.step_1.cleaner.orchestrator import step_1_archive_output
         
         mock_archive.side_effect = Exception("Archive error")
         
@@ -287,7 +287,7 @@ class TestStep1ArchiveOutput:
         WHY: Consistent file locations
         BREAKS: Archives go to wrong location
         """
-        from src.app.pipeline.step_1.handler import step_1_archive_output
+        from src.app.pipeline.step_1.cleaner.orchestrator import step_1_archive_output
         import os
         
         # Verify the function exists and is callable
@@ -305,7 +305,7 @@ class TestLogZipInfo:
         WHY: User feedback on compression
         BREAKS: Missing archive info
         """
-        from src.app.pipeline.step_1.handler import _log_zip_info
+        from src.app.pipeline.step_1.cleaner.reporting import log_zip_info as _log_zip_info
         
         # Create a test zip file
         zip_file = tmp_path / "test.zip"
@@ -323,7 +323,7 @@ class TestLogZipInfo:
         WHY: No error if ZIP creation failed
         BREAKS: Exception on failed archive
         """
-        from src.app.pipeline.step_1.handler import _log_zip_info
+        from src.app.pipeline.step_1.cleaner.reporting import log_zip_info as _log_zip_info
         
         # Should not raise exception
         _log_zip_info("/nonexistent/file.zip", 100)
@@ -334,7 +334,7 @@ class TestLogZipInfo:
         WHY: ZIP might not be created
         BREAKS: NoneType error
         """
-        from src.app.pipeline.step_1.handler import _log_zip_info
+        from src.app.pipeline.step_1.cleaner.reporting import log_zip_info as _log_zip_info
         
         # Should not raise exception
         _log_zip_info(None, 100)

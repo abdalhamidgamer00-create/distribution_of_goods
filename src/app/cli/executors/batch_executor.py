@@ -29,9 +29,11 @@ def execute_all_steps() -> bool:
 # LOGGING HELPERS
 # =============================================================================
 
-def log_step_progress(step: dict, current: int, total: int) -> None:
+from typing import Any
+
+def log_step_progress(step: Any, current: int, total: int) -> None:
     """Log current step progress."""
-    logger.info("[%d/%d] %s - %s", current, total, step["id"], step["name"])
+    logger.info("[%d/%d] %s - %s", current, total, step.id, step.name)
     logger.info("-" * 50)
 
 
@@ -47,11 +49,9 @@ def display_execution_summary(successful: int, total: int) -> None:
 # EXECUTION HELPERS
 # =============================================================================
 
-def _execute_and_track(step: dict, use_latest_file: bool) -> bool:
-    """Execute a step and track its result."""
-    success = execute_single_step(step, use_latest_file)
-    step['_last_result'] = success
-    return success
+def _execute_and_track(step: Any, use_latest_file: bool) -> bool:
+    """Execute a step."""
+    return execute_single_step(step, use_latest_file)
 
 
 def execute_all_steps_batch(use_latest_file: bool) -> tuple[int, int]:

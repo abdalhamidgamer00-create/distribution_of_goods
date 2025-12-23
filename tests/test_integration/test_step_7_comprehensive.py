@@ -16,9 +16,11 @@ from src.app.pipeline.step_7.transfers.finders import (
     extract_date_header_info as _extract_date_header_info,
     validate_and_get_files as _validate_and_get_files,
 )
+from src.app.pipeline.step_7.transfers.generators.logging import (
+    log_source_files
+)
 from src.app.pipeline.step_7.transfers.generators import (
     group_files_by_source as _group_files_by_source,
-    log_source_files as _log_source_files,
     log_transfer_summary as _log_transfer_summary,
     execute_transfer_generation as _execute_transfer_generation,
     run_transfer_generation as _run_transfer_generation,
@@ -243,7 +245,7 @@ class TestValidateAndGetFiles:
 class TestRunTransferGeneration:
     """Tests for _run_transfer_generation function."""
     
-    @patch('src.app.pipeline.step_7.transfers.generators.execute_transfer_generation')
+    @patch('src.app.pipeline.step_7.transfers.generators.execution.execute_transfer_generation')
     def test_returns_success_on_completion(self, mock_execute, analytics_directory):
         """
         WHAT: Return True when generation succeeds

@@ -18,6 +18,6 @@ def run_step_sequence(all_steps: list) -> bool:
         if not execute_single_step(step, use_latest_file=False):
             log_step_failure(step)
             return False
-        logger.info("✓ Step %s completed", step['id'])
+        logger.info("✓ Step %s completed", step.id)
     
     return True

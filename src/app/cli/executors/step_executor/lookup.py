@@ -1,10 +1,10 @@
 """Step lookup and validation."""
 
-from typing import Optional
+from typing import Optional, Any
 from src.app.pipeline.steps import AVAILABLE_STEPS
 
 
-def find_step_by_id(step_id: str) -> Optional[dict]:
+def find_step_by_id(step_id: str) -> Optional[Any]:
     """Find a step by its ID."""
     return next(
         (step for step in AVAILABLE_STEPS if step.id == step_id), None
@@ -40,7 +40,9 @@ def get_step_prior_to_step(target_step_id: str):
     return None
 
 
-def validate_step_function(step: dict) -> bool:
+def validate_step_function(step: Any) -> bool:
     """Check if step has a valid callable function."""
+    if not hasattr(step, 'function'):
+        return False
     return callable(step.function)
 

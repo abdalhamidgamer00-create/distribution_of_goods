@@ -109,10 +109,10 @@ class TestCssStyling:
         BREAKS: Left-aligned Arabic text
         """
         from pathlib import Path
-        app_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "app.py"
+        layout_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "layout" / "styles.py"
         
-        if app_path.exists():
-            content = app_path.read_text(encoding='utf-8')
+        if layout_path.exists():
+            content = layout_path.read_text(encoding='utf-8')
             assert "direction: rtl" in content
     
     def test_has_text_align_right(self):
@@ -122,10 +122,10 @@ class TestCssStyling:
         BREAKS: Left-aligned Arabic
         """
         from pathlib import Path
-        app_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "app.py"
+        layout_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "layout" / "styles.py"
         
-        if app_path.exists():
-            content = app_path.read_text(encoding='utf-8')
+        if layout_path.exists():
+            content = layout_path.read_text(encoding='utf-8')
             assert "text-align: right" in content
 
 
@@ -141,10 +141,10 @@ class TestSidebarNavigation:
         BREAKS: Missing navigation links
         """
         from pathlib import Path
-        app_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "app.py"
+        sidebar_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "layout" / "sidebar.py"
         
-        if app_path.exists():
-            content = app_path.read_text(encoding='utf-8')
+        if sidebar_path.exists():
+            content = sidebar_path.read_text(encoding='utf-8')
             # Check for main sections
             assert "مشتريات" in content
             assert "مبيعات" in content
@@ -157,10 +157,10 @@ class TestSidebarNavigation:
         BREAKS: No navigation possible
         """
         from pathlib import Path
-        app_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "app.py"
+        sidebar_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "layout" / "sidebar.py"
         
-        if app_path.exists():
-            content = app_path.read_text(encoding='utf-8')
+        if sidebar_path.exists():
+            content = sidebar_path.read_text(encoding='utf-8')
             assert "page_link" in content
     
     def test_has_expander_for_purchases(self):
@@ -170,10 +170,10 @@ class TestSidebarNavigation:
         BREAKS: Cluttered navigation
         """
         from pathlib import Path
-        app_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "app.py"
+        sidebar_path = Path(__file__).parent.parent.parent / "src" / "app" / "gui" / "layout" / "sidebar.py"
         
-        if app_path.exists():
-            content = app_path.read_text(encoding='utf-8')
+        if sidebar_path.exists():
+            content = sidebar_path.read_text(encoding='utf-8')
             assert "expander" in content
 
 

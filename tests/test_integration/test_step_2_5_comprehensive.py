@@ -13,14 +13,17 @@ import pandas as pd
 import pytest
 
 # Step 2 imports
-from src.app.pipeline.step_2.handler import (
-    _generate_output_filename,
-    _log_conversion_result,
-    _perform_conversion,
-    _validate_and_select,
-    _try_convert_excel,
-    step_2_convert_excel_to_csv,
+from src.app.pipeline.step_2.converter.naming import (
+    generate_output_filename
 )
+from src.app.pipeline.step_2.converter.core import (
+    log_conversion_result,
+    perform_conversion
+)
+from src.app.pipeline.step_2.converter.selection import (
+    validate_and_select
+)
+from src.app.pipeline.step_2 import handler
 
 # Step 5 imports
 from src.app.pipeline.step_5.handler import (
@@ -37,13 +40,12 @@ from src.app.pipeline.step_5.handler import (
 class TestGenerateOutputFilename:
     """Tests for _generate_output_filename function."""
     
-    def test_generates_csv_extension(self):
-        """
-        WHAT: Output should have .csv extension
-        WHY: Correct file format for output
-        BREAKS: Wrong file extension
-        """
-        result = _generate_output_filename("test_file.xlsx")
+    def test_generate_output_filename(self):
+        """Test output filename generation"""
+        excel_name = "test_file.xlsx"
+        expected = "test_file.csv"
+        
+        result = generate_output_filename(excel_name)
         
         assert result.endswith(".csv")
     
@@ -53,7 +55,7 @@ class TestGenerateOutputFilename:
         WHY: Avoid timestamp duplication
         BREAKS: Multiple timestamps in name
         """
-        result = _generate_output_filename("data_20231201_120000.xlsx")
+        result = generate_output_filename("data_20231201_120000.xlsx")
         
         # Should not have old timestamp
         assert "20231201_120000" not in result
@@ -64,7 +66,7 @@ class TestGenerateOutputFilename:
         WHY: Unique file naming
         BREAKS: Overwriting existing files
         """
-        result = _generate_output_filename("test.xlsx")
+        result = generate_output_filename("test.xlsx")
         
         # Should have a timestamp pattern
         assert "_" in result
@@ -74,7 +76,7 @@ class TestGenerateOutputFilename:
 # ===================== Step 2: _log_conversion_result Tests =====================
 
 class TestLogConversionResult:
-    """Tests for _log_conversion_result function."""
+    """Tests for log_conversion_result function."""
     
     def test_logs_success(self, caplog):
         """
@@ -83,7 +85,7 @@ class TestLogConversionResult:
         BREAKS: No success feedback
         """
         with caplog.at_level('INFO'):
-            _log_conversion_result(True, "/path/to/output")
+            log_conversion_result(True, "/path/to/output")
         
         assert "successful" in caplog.text.lower()
     
@@ -94,7 +96,7 @@ class TestLogConversionResult:
         BREAKS: Silent failure
         """
         with caplog.at_level('ERROR'):
-            _log_conversion_result(False, "/path/to/output")
+            log_conversion_result(False, "/path/to/output")
         
         assert "failed" in caplog.text.lower()
 
@@ -102,10 +104,10 @@ class TestLogConversionResult:
 # ===================== Step 2: _validate_and_select Tests =====================
 
 class TestValidateAndSelect:
-    """Tests for _validate_and_select function."""
+    """Tests for validate_and_select function."""
     
-    @patch('src.app.pipeline.step_2.handler._select_excel_file_source')
-    @patch('src.app.pipeline.step_2.handler.get_excel_files')
+    @patch('src.app.pipeline.step_2.converter.selection.select_excel_file_source')
+    @patch('src.app.pipeline.step_2.converter.selection.get_excel_files')
     def test_returns_selected_file(self, mock_files, mock_select, tmp_path):
         """
         WHAT: Return selected Excel file
@@ -115,11 +117,11 @@ class TestValidateAndSelect:
         mock_files.return_value = ["file.xlsx"]
         mock_select.return_value = "file.xlsx"
         
-        result = _validate_and_select(str(tmp_path), True)
+        result = validate_and_select(str(tmp_path), True)
         
         assert result == "file.xlsx"
     
-    @patch('src.app.pipeline.step_2.handler.get_excel_files')
+    @patch('src.app.pipeline.step_2.converter.selection.get_excel_files')
     def test_returns_none_when_no_files(self, mock_files, tmp_path):
         """
         WHAT: Return None when no Excel files
@@ -128,7 +130,7 @@ class TestValidateAndSelect:
         """
         mock_files.return_value = []
         
-        result = _validate_and_select(str(tmp_path), True)
+        result = validate_and_select(str(tmp_path), True)
         
         assert result is None
 
@@ -138,8 +140,8 @@ class TestValidateAndSelect:
 class TestStep2ConvertExcelToCsv:
     """Tests for step_2_convert_excel_to_csv main function."""
     
-    @patch('src.app.pipeline.step_2.handler._try_convert_excel')
-    @patch('src.app.pipeline.step_2.handler.ensure_directory_exists')
+    @patch('src.app.pipeline.step_2.converter.orchestrator.try_convert_excel')
+    @patch('src.app.pipeline.step_2.converter.orchestrator.ensure_directory_exists')
     def test_returns_true_on_success(self, mock_ensure, mock_convert):
         """
         WHAT: Return True on successful conversion
@@ -148,12 +150,12 @@ class TestStep2ConvertExcelToCsv:
         """
         mock_convert.return_value = True
         
-        result = step_2_convert_excel_to_csv()
+        result = handler.step_2_convert_excel_to_csv()
         
         assert result is True
     
-    @patch('src.app.pipeline.step_2.handler._try_convert_excel')
-    @patch('src.app.pipeline.step_2.handler.ensure_directory_exists')
+    @patch('src.app.pipeline.step_2.converter.orchestrator.try_convert_excel')
+    @patch('src.app.pipeline.step_2.converter.orchestrator.ensure_directory_exists')
     def test_handles_exception(self, mock_ensure, mock_convert):
         """
         WHAT: Return False on exception
@@ -162,7 +164,7 @@ class TestStep2ConvertExcelToCsv:
         """
         mock_convert.side_effect = Exception("Error")
         
-        result = step_2_convert_excel_to_csv()
+        result = handler.step_2_convert_excel_to_csv()
         
         assert result is False
 

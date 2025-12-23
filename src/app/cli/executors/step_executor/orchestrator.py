@@ -22,7 +22,7 @@ def execute_step(step_id: str) -> bool:
     if step is None:
         logger.error("Error: Invalid step number!")
         return False
-    logger.info("Executing: %s\n" + "-" * 50, step["name"])
+    logger.info("Executing: %s\n" + "-" * 50, step.name)
     return execution.execute_single_step(step, use_latest_file=False)
 
 

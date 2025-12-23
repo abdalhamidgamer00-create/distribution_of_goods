@@ -1,6 +1,6 @@
 """Pipeline step execution logic."""
 
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, Any
 from src.app.pipeline.steps import AVAILABLE_STEPS
 from src.app.gui.utils.translations import STEP_NAMES, MESSAGES
 
@@ -10,11 +10,11 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
     if not step:
         return False, f"خطوة غير موجودة: {step_id}"
     
-    step_name = STEP_NAMES.get(step_id, step["name"])
+    step_name = STEP_NAMES.get(step_id, step.name)
     
     try:
         # Execute pure function
-        result = step["function"](use_latest_file=True)
+        result = step.function(use_latest_file=True)
         
         if result:
             return True, f"{MESSAGES['success']}: {step_name}"
@@ -24,7 +24,7 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
         return False, f"{MESSAGES['error']} في {step_name}: {str(error)}"
 
 
-def _find_step_by_id(step_id: str) -> Optional[Dict]:
+def _find_step_by_id(step_id: str) -> Any:
     """Find step by its ID."""
     for step in AVAILABLE_STEPS:
         if step.id == step_id:

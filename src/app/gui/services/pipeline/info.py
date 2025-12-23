@@ -1,27 +1,30 @@
 """Pipeline step information helpers."""
 
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 from src.app.pipeline.steps import AVAILABLE_STEPS
 from src.app.gui.utils.translations import STEP_NAMES, STEP_DESCRIPTIONS
 
-def get_all_steps() -> List[Dict]:
+from src.core.domain.pipeline.step import Step
+
+def get_all_steps() -> List[Step]:
     """Get all available pipeline steps with translations."""
     steps = []
     
     for step in AVAILABLE_STEPS:
-        steps.append({
-            "id": step.id,
-            "name": STEP_NAMES.get(step.id, step.name),
-            "description": STEP_DESCRIPTIONS.get(
+        steps.append(Step(
+            id=step.id,
+            name=STEP_NAMES.get(step.id, step.name),
+            description=STEP_DESCRIPTIONS.get(
                 step.id, 
                 step.description
-            )
-        })
+            ),
+            function=step.function
+        ))
         
     return steps
 
 
-def get_step_info(step_id: str) -> Optional[Dict]:
+def get_step_info(step_id: str) -> Optional[Step]:
     """Get information for a specific step."""
     for step in AVAILABLE_STEPS:
         if step.id == step_id:
@@ -29,14 +32,14 @@ def get_step_info(step_id: str) -> Optional[Dict]:
     return None
 
 
-def _build_step_info(step: Any) -> Dict:
-    """Build step info dictionary."""
-    return {
-        "id": step.id,
-        "name": STEP_NAMES.get(step.id, step.name),
-        "description": STEP_DESCRIPTIONS.get(
+def _build_step_info(step: Any) -> Step:
+    """Build step info object."""
+    return Step(
+        id=step.id,
+        name=STEP_NAMES.get(step.id, step.name),
+        description=STEP_DESCRIPTIONS.get(
             step.id, 
             step.description
         ),
-        "function": step.function
-    }
+        function=step.function
+    )

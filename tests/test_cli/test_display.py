@@ -56,7 +56,7 @@ class TestDisplayMenu:
         
         assert "Menu" in caplog.text or "Project" in caplog.text
     
-    def test_displays_all_steps(self, caplog):
+    def test_displays_all_steps(self, capsys):
         """
         WHAT: Display all available steps
         WHY: All options should be visible
@@ -64,12 +64,13 @@ class TestDisplayMenu:
         """
         from src.app.pipeline.steps import AVAILABLE_STEPS
         
-        with caplog.at_level('INFO'):
-            display_menu()
+        display_menu()
+        
+        captured = capsys.readouterr()
         
         # Should show at least some step numbers
         for i in range(1, min(5, len(AVAILABLE_STEPS) + 1)):
-            assert str(i) in caplog.text
+            assert str(i) in captured.out
     
     def test_displays_exit_option(self, caplog):
         """

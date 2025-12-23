@@ -5,17 +5,19 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def log_step_header(step_index: int, total: int, step: dict) -> None:
+from typing import Any
+
+def log_step_header(step_index: int, total: int, step: Any) -> None:
     """Log step execution header."""
     logger.info("")
-    logger.info("[%d/%d] Executing: %s", step_index, total, step["name"])
+    logger.info("[%d/%d] Executing: %s", step_index, total, step.name)
     logger.info("-" * 70)
 
 
-def log_step_failure(step: dict) -> None:
+def log_step_failure(step: Any) -> None:
     """Log step failure message."""
     logger.error("")
-    logger.error("✗ FAILED at step %s: %s", step['id'], step['name'])
+    logger.error("✗ FAILED at step %s: %s", step.id, step.name)
     logger.error("Stopping execution. Previous steps completed successfully.")
 
 
