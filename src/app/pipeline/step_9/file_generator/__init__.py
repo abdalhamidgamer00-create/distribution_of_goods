@@ -1,4 +1,4 @@
-"""File generator facade."""
+"""File Generator Package."""
 
 from src.app.pipeline.step_9.file_generator.processing import add_product_type_column
 from src.app.pipeline.step_9.file_generator.csv_writer import generate_csv_files
