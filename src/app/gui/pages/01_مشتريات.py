@@ -15,8 +15,8 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Imports
-from src.app.gui.utils.step_runner import get_all_steps
-from src.app.gui.page_templates.purchases_helpers import (
+from src.app.gui.services.pipeline_service import get_all_steps
+from src.app.gui.views.purchases_view import (
     show_metrics,
     start_file_management_ui,
     execute_step_ui,

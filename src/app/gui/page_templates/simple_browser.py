@@ -1,10 +1,10 @@
 """Generic file browser template."""
 import streamlit as st
 import os
-from src.app.gui.utils.file_manager import (
+from src.app.gui.services.file_service import (
     list_output_files,
-    organize_files_by_branch,
-    organize_files_by_category
+    group_files_by_branch,
+    group_files_by_category
 )
 from src.app.gui.utils.translations import (
     BRANCH_NAMES, 
@@ -107,7 +107,7 @@ def _process_directory_tab(
 
 def _filter_files_by_branch(files: list, key: str, ext: str) -> list:
     """Filter files based on selected branch."""
-    by_branch = organize_files_by_branch(files)
+    by_branch = group_files_by_branch(files)
     
     if not by_branch:
         return files
@@ -129,7 +129,7 @@ def _filter_files_by_branch(files: list, key: str, ext: str) -> list:
 
 def _filter_files_by_category(files: list, key: str, ext: str) -> list:
     """Filter files based on selected category."""
-    by_cat = organize_files_by_category(files)
+    by_cat = group_files_by_category(files)
     
     if not by_cat:
         return files

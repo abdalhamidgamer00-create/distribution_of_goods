@@ -1,11 +1,16 @@
-"""Helper functions for purchases page."""
-import streamlit as st
+"""Purchases page view component."""
 import os
+import streamlit as st
 from datetime import datetime
-from src.app.gui.utils.step_runner import (
-    run_step,
-    get_all_steps, 
-    run_step_with_dependencies
+from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.gui.services.pipeline_service import (
+    run_single_step,
+    get_all_steps,
+    get_steps_sequence
+)
+from src.app.gui.services.file_service import (
+    save_uploaded_file,
+    list_files_by_mtime
 )
 
 
@@ -69,13 +74,37 @@ def execute_step_ui(step: dict) -> None:
         st.error("❌ يرجى اختيار ملف أولاً")
         return
 
-    success, message = run_step_with_dependencies(step['id'])
-    st.session_state[f'step_{step["id"]}_success'] = success
+    success, result = get_steps_sequence(step['id'])
     
-    if success:
-        st.success(message)
-    else:
-        st.error(message)
+    if not success:
+        st.error(result)
+        return
+        
+    all_steps = result
+    
+    # We run steps sequentially here (Controller logic in View?)
+    # ideally PipelineService could run the sequence.
+    # But for now we replicate previous behavior: show progress UI.
+    
+    progress = st.progress(0)
+    status = st.empty()
+    
+    for i, s in enumerate(all_steps):
+        status.text(f"جاري تنفيذ: {s['name']}")
+        s_success, msg = run_single_step(s['id'])
+        
+        if not s_success:
+            progress.empty()
+            status.empty()
+            st.error(msg)
+            return
+            
+        progress.progress((i + 1) / len(all_steps))
+        
+    progress.empty()
+    status.empty()
+    st.success(f"✅ تم تنفيذ الخطوات حتى {step['name']}")
+    st.session_state[f'step_{step["id"]}_success'] = True
 
 
 def run_all_steps_ui() -> None:
@@ -90,7 +119,7 @@ def run_all_steps_ui() -> None:
     
     for i, step in enumerate(steps):
         status.text(f"جاري تنفيذ: {step['name']}")
-        success, _ = run_step(step['id'])
+        success, _ = run_single_step(step['id'])
         
         if not success:
             st.error(f"فشل في: {step['name']}")
@@ -141,37 +170,6 @@ def render_results_navigation() -> None:
                 st.switch_page(page)
 
 
-def save_uploaded_file(uploaded_file) -> None:
-    """Save uploaded file to input directory."""
-    input_dir = os.path.join("data", "input")
-    os.makedirs(input_dir, exist_ok=True)
-    
-    file_path = os.path.join(input_dir, uploaded_file.name)
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-        
-    st.success(f"✅ تم رفع الملف: {uploaded_file.name}")
-    st.session_state['selected_file'] = uploaded_file.name
-    st.session_state['file_source'] = 'uploaded'
-
-
-def fetch_excel_files(input_dir: str) -> list:
-    """Get Excel files sorted by modification time."""
-    if not os.path.exists(input_dir):
-        return None
-        
-    files = [
-        f for f in os.listdir(input_dir) 
-        if f.endswith(('.xlsx', '.xls'))
-    ]
-    
-    return sorted(
-        files, 
-        key=lambda x: os.path.getmtime(os.path.join(input_dir, x)), 
-        reverse=True
-    )
-
-
 # =============================================================================
 # PRIVATE HELPERS
 # =============================================================================
@@ -185,19 +183,22 @@ def _render_file_uploader() -> None:
         key="file_uploader"
     )
     if uploaded:
-        save_uploaded_file(uploaded)
+        path = save_uploaded_file(
+            uploaded.getbuffer(), 
+            uploaded.name, 
+            os.path.join("data", "input")
+        )
+        st.success(f"✅ تم رفع الملف: {uploaded.name}")
+        st.session_state['selected_file'] = uploaded.name
+        st.session_state['file_source'] = 'uploaded'
 
 
 def _render_existing_files() -> None:
     """Render validation and selection of existing files."""
     st.markdown("### 📂 استخدام أحدث ملف")
     input_dir = os.path.join("data", "input")
-    files = fetch_excel_files(input_dir)
+    files = list_files_by_mtime(input_dir, ['.xlsx', '.xls'])
     
-    if files is None:
-        st.error("❌ مجلد البيانات غير موجود")
-        return
-        
     if not files:
         st.warning("⚠️ لا توجد ملفات Excel")
         return

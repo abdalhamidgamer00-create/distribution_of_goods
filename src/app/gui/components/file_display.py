@@ -1,9 +1,9 @@
 """File display UI components."""
 import streamlit as st
-from src.app.gui.utils.file_manager import (
-    read_file_for_display,
-    create_download_zip,
-    get_file_size_str
+from src.app.gui.services.file_service import (
+    read_file_content,
+    create_zip_archive,
+    format_file_size
 )
 
 
@@ -18,7 +18,7 @@ def render_file_expander(
     max_rows: int = 50
 ) -> None:
     """Render file expander with dataframe preview and download button."""
-    size_str = get_file_size_str(file_info['size'])
+    size_str = format_file_size(file_info['size'])
     expander_label = f"📄 {file_info['name']} ({size_str})"
     
     with st.expander(expander_label):
@@ -45,7 +45,7 @@ def render_download_all_button(
     if not files:
         return
     
-    zip_data = create_download_zip(files, zip_name)
+    zip_data = create_zip_archive(files)
     
     st.download_button(
         label=label_template.format(count=len(files)),
@@ -65,7 +65,7 @@ def render_download_all_button(
 
 def _render_file_preview(file_info: dict, max_rows: int) -> None:
     """Render dataframe preview in the expander."""
-    dataframe = read_file_for_display(
+    dataframe = read_file_content(
         file_info['path'], 
         max_rows=max_rows
     )

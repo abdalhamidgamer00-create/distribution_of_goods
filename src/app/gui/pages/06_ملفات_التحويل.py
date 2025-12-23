@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../../..')
 ))
 
-from src.app.gui.page_templates.branch_browser import (
+from src.app.gui.views.browsers.transfers_view import (
     render_transfers_browser
 )
 from src.app.gui.page_config import FILE_BROWSERS

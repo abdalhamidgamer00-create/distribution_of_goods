@@ -1,11 +1,8 @@
-"""Tests for GUI file_manager module - most functions don't need Streamlit"""
-
 import os
 import sys
 import zipfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-
 import pandas as pd
 import pytest
 
@@ -13,13 +10,22 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.app.gui.services.file_service import (
+    list_output_files,
+    read_file_content,
+    create_zip_archive,
+    format_file_size,
+    group_files_by_branch,
+    group_files_by_category
+)
+
 
 class TestListOutputFiles:
     """Tests for list_output_files function"""
     
     def test_list_files_in_existing_directory(self, tmp_path):
         """Test listing files in existing directory"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         # Create test files
         (tmp_path / "file1.csv").write_text("data")
@@ -36,7 +42,7 @@ class TestListOutputFiles:
     
     def test_list_files_nonexistent_directory(self):
         """Test listing files in non-existent directory"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         files = list_output_files("/nonexistent/path")
         
@@ -44,7 +50,7 @@ class TestListOutputFiles:
     
     def test_list_files_empty_directory(self, tmp_path):
         """Test listing files in empty directory"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         files = list_output_files(str(tmp_path))
         
@@ -52,7 +58,7 @@ class TestListOutputFiles:
     
     def test_list_files_custom_extensions(self, tmp_path):
         """Test listing files with custom extensions"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         (tmp_path / "file1.csv").write_text("data")
         (tmp_path / "file2.txt").write_text("data")
@@ -64,7 +70,7 @@ class TestListOutputFiles:
     
     def test_list_files_recursive(self, tmp_path):
         """Test listing files recursively in subdirectories"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         subdir = tmp_path / "subdir"
         subdir.mkdir()
@@ -77,7 +83,7 @@ class TestListOutputFiles:
     
     def test_list_files_returns_file_info(self, tmp_path):
         """Test that listed files have complete info"""
-        from src.app.gui.utils.file_manager import list_output_files
+        from src.app.gui.services.file_service import list_output_files
         
         (tmp_path / "test.csv").write_text("some,data,here")
         
@@ -97,34 +103,34 @@ class TestGetFileSizeStr:
     
     def test_bytes(self):
         """Test size in bytes"""
-        from src.app.gui.utils.file_manager import get_file_size_str
+        from src.app.gui.services.file_service import format_file_size
         
-        result = get_file_size_str(500)
+        result = format_file_size(500)
         
         assert "B" in result
         assert "500" in result
     
     def test_kilobytes(self):
         """Test size in kilobytes"""
-        from src.app.gui.utils.file_manager import get_file_size_str
+        from src.app.gui.services.file_service import format_file_size
         
-        result = get_file_size_str(2048)
+        result = format_file_size(2048)
         
         assert "KB" in result
     
     def test_megabytes(self):
         """Test size in megabytes"""
-        from src.app.gui.utils.file_manager import get_file_size_str
+        from src.app.gui.services.file_service import format_file_size
         
-        result = get_file_size_str(2 * 1024 * 1024)
+        result = format_file_size(2 * 1024 * 1024)
         
         assert "MB" in result
     
     def test_gigabytes(self):
         """Test size in gigabytes"""
-        from src.app.gui.utils.file_manager import get_file_size_str
+        from src.app.gui.services.file_service import format_file_size
         
-        result = get_file_size_str(2 * 1024 * 1024 * 1024)
+        result = format_file_size(2 * 1024 * 1024 * 1024)
         
         assert "GB" in result
 
@@ -134,7 +140,7 @@ class TestCreateDownloadZip:
     
     def test_create_zip_single_file(self, tmp_path):
         """Test creating zip with single file"""
-        from src.app.gui.utils.file_manager import create_download_zip
+        from src.app.gui.services.file_service import create_zip_archive
         
         # Create test file
         test_file = tmp_path / "test.csv"
@@ -142,7 +148,7 @@ class TestCreateDownloadZip:
         
         files = [{"path": str(test_file), "name": "test.csv"}]
         
-        zip_bytes = create_download_zip(files)
+        zip_bytes = create_zip_archive(files)
         
         assert len(zip_bytes) > 0
         
@@ -153,7 +159,7 @@ class TestCreateDownloadZip:
     
     def test_create_zip_multiple_files(self, tmp_path):
         """Test creating zip with multiple files"""
-        from src.app.gui.utils.file_manager import create_download_zip
+        from src.app.gui.services.file_service import create_zip_archive
         
         (tmp_path / "file1.csv").write_text("data1")
         (tmp_path / "file2.csv").write_text("data2")
@@ -163,7 +169,7 @@ class TestCreateDownloadZip:
             {"path": str(tmp_path / "file2.csv"), "name": "file2.csv"}
         ]
         
-        zip_bytes = create_download_zip(files)
+        zip_bytes = create_zip_archive(files)
         
         import io
         with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zf:
@@ -171,11 +177,11 @@ class TestCreateDownloadZip:
     
     def test_create_zip_skip_nonexistent(self, tmp_path):
         """Test that non-existent files are skipped"""
-        from src.app.gui.utils.file_manager import create_download_zip
+        from src.app.gui.services.file_service import create_zip_archive
         
         files = [{"path": "/nonexistent/file.csv", "name": "missing.csv"}]
         
-        zip_bytes = create_download_zip(files)
+        zip_bytes = create_zip_archive(files)
         
         # Should create empty zip
         assert len(zip_bytes) > 0
@@ -186,7 +192,7 @@ class TestOrganizeFilesByBranch:
     
     def test_organize_by_branch_from_path(self):
         """Test organizing files by branch from path"""
-        from src.app.gui.utils.file_manager import organize_files_by_branch
+        from src.app.gui.services.file_service import group_files_by_branch
         
         files = [
             {"name": "file1.csv", "relative_path": "admin/file1.csv"},
@@ -194,20 +200,20 @@ class TestOrganizeFilesByBranch:
             {"name": "file3.csv", "relative_path": "admin/file3.csv"}
         ]
         
-        organized = organize_files_by_branch(files)
+        organized = group_files_by_branch(files)
         
         assert "admin" in organized
         assert len(organized["admin"]) == 2
     
     def test_organize_unknown_branch(self):
         """Test that unknown branches go to 'other'"""
-        from src.app.gui.utils.file_manager import organize_files_by_branch
+        from src.app.gui.services.file_service import group_files_by_branch
         
         files = [
             {"name": "unknown.csv", "relative_path": "unknown_branch/file.csv"}
         ]
         
-        organized = organize_files_by_branch(files)
+        organized = group_files_by_branch(files)
         
         assert "other" in organized
 
@@ -217,7 +223,7 @@ class TestOrganizeFilesByCategory:
     
     def test_organize_by_category(self):
         """Test organizing files by category"""
-        from src.app.gui.utils.file_manager import organize_files_by_category
+        from src.app.gui.services.file_service import group_files_by_category
         
         files = [
             {"name": "transfer_tablets_and_capsules.csv"},
@@ -225,7 +231,7 @@ class TestOrganizeFilesByCategory:
             {"name": "transfer_syrups.csv"}
         ]
         
-        organized = organize_files_by_category(files)
+        organized = group_files_by_category(files)
         
         assert "tablets_and_capsules" in organized
         assert "injections" in organized
@@ -233,13 +239,13 @@ class TestOrganizeFilesByCategory:
     
     def test_organize_unknown_category(self):
         """Test that unknown categories go to 'other'"""
-        from src.app.gui.utils.file_manager import organize_files_by_category
+        from src.app.gui.services.file_service import group_files_by_category
         
         files = [
             {"name": "random_file.csv"}
         ]
         
-        organized = organize_files_by_category(files)
+        organized = group_files_by_category(files)
         
         assert "other" in organized
 
@@ -253,13 +259,13 @@ class TestReadFileForDisplay:
         mock_st = MagicMock()
         
         with patch.dict('sys.modules', {'streamlit': mock_st}):
-            from src.app.gui.utils.file_manager import read_file_for_display
+            from src.app.gui.services.file_service import read_file_content
             
             # Create test CSV
             csv_file = tmp_path / "test.csv"
             csv_file.write_text("code,name,value\n001,A,10\n002,B,20")
             
-            df = read_file_for_display(str(csv_file))
+            df = read_file_content(str(csv_file))
             
             # May return DataFrame or None depending on implementation
             if df is not None:
@@ -268,11 +274,11 @@ class TestReadFileForDisplay:
     def test_read_nonexistent_file(self, tmp_path):
         """Test reading non-existent file"""
         # Need to patch streamlit at the module level
-        with patch('src.app.gui.utils.file_manager.st') as mock_st:
-            from src.app.gui.utils.file_manager import read_file_for_display
+        with patch('src.app.gui.services.file_service') as mock_st:
+            from src.app.gui.services.file_service import read_file_content
             
-            result = read_file_for_display("/nonexistent/file.csv")
+            result = read_file_content("/nonexistent/file.csv")
             
-            # Should return None and call st.error
+            # Should return None
             assert result is None
-            mock_st.error.assert_called_once()
+            # mock_st.error.assert_called_once() # Error is silent now in service logic
