@@ -1,7 +1,4 @@
-"""Shortage calculator module.
-
-This module is a facade for the shortage calculation logic.
-"""
+"""Shortage calculator package."""
 
 from src.app.pipeline.step_10.shortage_calculator.orchestrator import (
     calculate_shortage_products

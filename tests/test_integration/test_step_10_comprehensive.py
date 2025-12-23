@@ -9,24 +9,35 @@ import tempfile
 import shutil
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+import unittest
 
 import pandas as pd
 import pytest
 
-from src.app.pipeline.step_10.shortage_calculator import (
-    _load_analytics_dataframe,
+# Import from new package structure
+from src.app.pipeline.step_10.shortage_calculator.loading import (
+    load_analytics_dataframe as _load_analytics_dataframe,
     read_analytics_file,
-    _has_required_columns,
-    _initialize_product_totals,
-    _update_single_row,
-    _update_product_totals,
-    _load_and_validate_branch_analytics,
-    _aggregate_branch_totals,
-    _get_shortage_columns,
-    _build_shortage_row,
-    _build_shortage_dataframe,
-    calculate_shortage_products,
+    load_and_validate_branch_analytics as _load_and_validate_branch_analytics,
+)
+from src.app.pipeline.step_10.shortage_calculator.validation import (
+    has_required_columns as _has_required_columns,
     REQUIRED_COLUMNS
+)
+from src.app.pipeline.step_10.shortage_calculator.core import (
+    initialize_product_totals as _initialize_product_totals,
+    update_single_row as _update_single_row,
+    update_product_totals as _update_product_totals,
+    process_single_branch_totals as _process_single_branch_totals,
+    aggregate_branch_totals as _aggregate_branch_totals,
+)
+from src.app.pipeline.step_10.shortage_calculator.builder import (
+    get_shortage_columns as _get_shortage_columns,
+    build_shortage_row as _build_shortage_row,
+    build_shortage_dataframe as _build_shortage_dataframe,
+)
+from src.app.pipeline.step_10.shortage_calculator.orchestrator import (
+    calculate_shortage_products
 )
 
 
@@ -431,7 +442,7 @@ class TestBuildShortageRow:
 class TestBuildShortageDataframe:
     """Tests for _build_shortage_dataframe function."""
     
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_search_order')
+    @patch('src.app.pipeline.step_10.shortage_calculator.builder.get_search_order')
     def test_filter_products_with_shortage(self, mock_get_search_order):
         """
         WHAT: Only include products where needed > surplus
@@ -462,7 +473,7 @@ class TestBuildShortageDataframe:
         assert len(result) == 1
         assert result.iloc[0]['code'] == '001'
     
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_search_order')
+    @patch('src.app.pipeline.step_10.shortage_calculator.builder.get_search_order')
     def test_empty_result_when_no_shortage(self, mock_get_search_order):
         """
         WHAT: Return empty DataFrame when no products have shortage
@@ -486,7 +497,7 @@ class TestBuildShortageDataframe:
         assert len(result) == 0
         assert isinstance(result, pd.DataFrame)
     
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_search_order')
+    @patch('src.app.pipeline.step_10.shortage_calculator.builder.get_search_order')
     def test_sorted_by_shortage_descending(self, mock_get_search_order):
         """
         WHAT: Results sorted by shortage_quantity descending
@@ -524,8 +535,8 @@ class TestBuildShortageDataframe:
 class TestCalculateShortageProductsIntegration:
     """Integration tests for calculate_shortage_products function."""
     
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_search_order')
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_branches')
+    @patch('src.app.pipeline.step_10.shortage_calculator.builder.get_search_order')
+    @patch('src.app.pipeline.step_10.shortage_calculator.orchestrator.get_branches')
     def test_full_calculation_flow(self, mock_get_branches, mock_get_search_order, analytics_test_directory):
         """
         WHAT: Test complete shortage calculation workflow
@@ -533,6 +544,7 @@ class TestCalculateShortageProductsIntegration:
         BREAKS: Complete shortage calculation failure
         """
         mock_get_branches.return_value = ['admin', 'wardani', 'akba']
+        # Also need to patch getting search order as it's used in builder
         mock_get_search_order.return_value = ['admin', 'wardani', 'akba']
         
         shortage_df, has_date_header, first_line = calculate_shortage_products(analytics_test_directory)
@@ -543,8 +555,8 @@ class TestCalculateShortageProductsIntegration:
             assert 'shortage_quantity' in shortage_df.columns
             assert 'code' in shortage_df.columns
     
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_search_order')
-    @patch('src.app.pipeline.step_10.shortage_calculator.get_branches')
+    @patch('src.app.pipeline.step_10.shortage_calculator.builder.get_search_order')
+    @patch('src.app.pipeline.step_10.shortage_calculator.orchestrator.get_branches')
     def test_empty_analytics_directory(self, mock_get_branches, mock_get_search_order, tmp_path):
         """
         WHAT: Handle empty analytics directory gracefully
