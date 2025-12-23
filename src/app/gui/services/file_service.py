@@ -10,6 +10,8 @@ from src.app.gui.services.file import (
     group_files_by_branch,
     group_files_by_category,
     group_files_by_source_target,
+    collect_separate_files,
+    collect_transfer_files,
     format_file_size
 )
 
@@ -24,5 +26,7 @@ __all__ = [
     'group_files_by_branch',
     'group_files_by_category',
     'group_files_by_source_target',
+    'collect_separate_files',
+    'collect_transfer_files',
     'format_file_size'
 ]

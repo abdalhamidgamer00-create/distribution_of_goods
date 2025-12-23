@@ -3,7 +3,10 @@ import os
 import re
 import streamlit as st
 from src.core.domain.branches.config import get_branches
-from src.app.gui.services.file_service import list_output_files
+from src.app.gui.services.file_service import (
+    list_output_files,
+    collect_transfer_files
+)
 from src.app.gui.components import (
     BRANCH_LABELS,
     render_branch_selection_section,
@@ -62,7 +65,7 @@ def _process_transfer_tab(
         st.warning(f"يرجى تشغيل الخطوة {step} أولاً.")
         return
 
-    files = _collect_transfer_files(directory, ext, sel, branches)
+    files = collect_transfer_files(directory, ext, sel, branches)
     
     if not files:
         st.warning("لا توجد ملفات")
@@ -72,29 +75,6 @@ def _process_transfer_tab(
     
     if files:
         _display_transfers(files, kp, sel, ext)
-
-
-def _collect_transfer_files(
-    d: str,
-    ext: str,
-    sel: str,
-    branches: list
-) -> list:
-    """Collect files based on selected branch."""
-    prefix = (
-        "transfers_excel_from_" if ext == ".xlsx" 
-        else "transfers_from_"
-    )
-    files = []
-    
-    target_branches = branches if sel == 'all' else [sel]
-    
-    for b in target_branches:
-        p = os.path.join(d, f"{prefix}{b}_to_other_branches")
-        if os.path.exists(p):
-            files.extend(list_output_files(p, [ext]))
-            
-    return files
 
 
 def _filter_transfers(

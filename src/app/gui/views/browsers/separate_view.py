@@ -6,7 +6,8 @@ from src.app.gui.utils.translations import CATEGORY_NAMES
 from src.app.gui.services.file_service import (
     group_files_by_source_target,
     list_files_in_folder,
-    get_matching_folders
+    get_matching_folders,
+    collect_separate_files
 )
 from src.app.gui.components import (
     BRANCH_LABELS,
@@ -84,7 +85,7 @@ def _process_separate_tab(
         return
 
     tk, ck = _render_filters(kp, ext)
-    files = _collect_separate_files(sources, ext, tk, ck)
+    files = collect_separate_files(sources, ext, tk, ck)
     
     st.success(f"تم العثور على {len(files)} ملف")
     
@@ -106,59 +107,6 @@ def _render_filters(kp: str, ext: str) -> tuple:
     ck = get_key_from_label(cl, CATEGORY_NAMES)
     
     return tk, ck
-
-
-def _collect_separate_files(
-    sources: list, 
-    ext: str, 
-    tk: str, 
-    ck: str
-) -> list:
-    """Collect separate files matching filters."""
-    files = []
-    for src in sources:
-        for tgt_name in os.listdir(src['path']):
-            tp = os.path.join(src['path'], tgt_name)
-            
-            if not _is_valid_target_folder(tp, tgt_name):
-                continue
-                
-            tgt = tgt_name.replace('to_', '')
-            if tk and tgt != tk:
-                continue
-                
-            files.extend(_get_folder_files(src, tp, tgt, tgt_name, ext, ck))
-            
-    return files
-
-
-def _is_valid_target_folder(path: str, name: str) -> bool:
-    """Check if folder is a valid target folder."""
-    return os.path.isdir(path) and name.startswith('to_')
-
-
-def _get_folder_files(
-    src: dict, 
-    tp: str, 
-    tgt: str, 
-    tgt_name: str, 
-    ext: str, 
-    ck: str
-) -> list:
-    """Get files from a target folder matching criteria."""
-    files = []
-    for f in list_files_in_folder(tp, [ext]):
-        if ck and ck not in f['name'].lower():
-            continue
-            
-        f.update({
-            'source_branch': src['branch'],
-            'target_branch': tgt,
-            'source_folder': src['name'],
-            'target_folder': tgt_name
-        })
-        files.append(f)
-    return files
 
 
 def _display_separate(

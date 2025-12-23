@@ -16,7 +16,7 @@ if project_root not in sys.path:
 
 # Imports
 from src.app.gui.services.pipeline_service import get_all_steps
-from src.app.gui.views.purchases_view import (
+from src.app.gui.views.purchases import (
     show_metrics,
     start_file_management_ui,
     execute_step_ui,

@@ -12,6 +12,10 @@ from .grouper import (
     group_files_by_category, 
     group_files_by_source_target
 )
+from .collectors import (
+    collect_separate_files,
+    collect_transfer_files
+)
 from .helpers import format_file_size
 
 __all__ = [
@@ -25,5 +29,7 @@ __all__ = [
     'group_files_by_branch',
     'group_files_by_category',
     'group_files_by_source_target',
+    'collect_separate_files',
+    'collect_transfer_files',
     'format_file_size'
 ]
