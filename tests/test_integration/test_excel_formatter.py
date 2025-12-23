@@ -56,7 +56,7 @@ class TestExcelFormatting:
     
     def test_convert_single_file_directly(self, tmp_path):
         """Test _convert_single_file function directly"""
-        from src.app.pipeline.step_11.excel_formatter import _convert_single_file
+        from src.app.pipeline.step_11.excel_formatter.converter import convert_single_file as _convert_single_file
         
         # Create test CSV
         csv_dir = tmp_path / "csv" / "transfers_from_shahid_20241220" / "to_admin"
@@ -83,7 +83,7 @@ class TestExcelFormatting:
     
     def test_apply_conditional_formatting(self, tmp_path):
         """Test _apply_conditional_formatting function"""
-        from src.app.pipeline.step_11.excel_formatter import _apply_conditional_formatting
+        from src.app.pipeline.step_11.excel_formatter.converter import apply_conditional_formatting as _apply_conditional_formatting
         import openpyxl
         
         # Create test DataFrame
@@ -119,7 +119,7 @@ class TestExcelFormatting:
     
     def test_convert_empty_csv(self, tmp_path):
         """Test converting empty CSV file (headers only)"""
-        from src.app.pipeline.step_11.excel_formatter import _convert_single_file
+        from src.app.pipeline.step_11.excel_formatter.converter import convert_single_file as _convert_single_file
         
         csv_dir = tmp_path / "csv" / "folder"
         csv_dir.mkdir(parents=True)
@@ -180,7 +180,7 @@ class TestExcelFormatting:
     
     def test_merged_folder_structure(self, tmp_path):
         """Test merged file folder structure (1 level)"""
-        from src.app.pipeline.step_11.excel_formatter import _convert_single_file
+        from src.app.pipeline.step_11.excel_formatter.converter import convert_single_file as _convert_single_file
         
         # Merged structure: csv/combined_transfers_from_xxx/file.csv
         csv_dir = tmp_path / "csv" / "combined_transfers_from_admin_20241220"
@@ -206,7 +206,7 @@ class TestExcelFormatting:
     
     def test_separate_folder_structure(self, tmp_path):
         """Test separate file folder structure (2 levels)"""
-        from src.app.pipeline.step_11.excel_formatter import _convert_single_file
+        from src.app.pipeline.step_11.excel_formatter.converter import convert_single_file as _convert_single_file
         
         # Separate structure: csv/transfers_from_xxx/to_yyy/file.csv
         csv_dir = tmp_path / "csv" / "transfers_from_admin_20241220" / "to_shahid"
@@ -232,7 +232,7 @@ class TestExcelFormatting:
     
     def test_column_widths_applied(self, tmp_path):
         """Test that column widths are applied correctly"""
-        from src.app.pipeline.step_11.excel_formatter import _apply_conditional_formatting
+        from src.app.pipeline.step_11.excel_formatter.converter import apply_conditional_formatting as _apply_conditional_formatting
         import openpyxl
         
         df = pd.DataFrame({
@@ -263,7 +263,7 @@ class TestExcelFormatting:
     
     def test_borders_applied(self, tmp_path):
         """Test that borders are applied to all cells"""
-        from src.app.pipeline.step_11.excel_formatter import _apply_conditional_formatting
+        from src.app.pipeline.step_11.excel_formatter.converter import apply_conditional_formatting as _apply_conditional_formatting
         import openpyxl
         
         df = pd.DataFrame({

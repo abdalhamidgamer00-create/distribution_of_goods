@@ -263,11 +263,13 @@ class TestStep7TransferHandler:
     
     def test_format_file_size(self):
         """Test file size formatting"""
-        from src.app.pipeline.step_7.handler import _format_file_size
+        from src.app.pipeline.step_7.transfers.generators import format_file_size
         
-        assert _format_file_size(0) == "0 B"
-        assert "B" in _format_file_size(100)
-        assert "KB" in _format_file_size(2048)
+        assert format_file_size(0) == "0 B"
+        assert format_file_size(100) == "100.0 B"
+        assert format_file_size(1024) == "1.0 KB"
+        assert format_file_size(1024 * 1024) == "1.0 MB"
+        assert format_file_size(1024 * 1024 * 1024) == "1.0 GB"
     
     def test_generate_transfers_from_analytics(self, tmp_path):
         """Test generating transfer files from analytics"""
