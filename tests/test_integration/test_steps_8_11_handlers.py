@@ -321,42 +321,41 @@ class TestStep11Handler:
     
     def test_step_11_validates_directories(self, tmp_path, monkeypatch):
         """Test step 11 validates input directories"""
-        from src.app.pipeline.step_11.handler import _validate_input_directories
+        from src.app.pipeline.step_11.runner.validation import validate_input_directories
         
-        data_dir = tmp_path / "data" / "output"
-        data_dir.mkdir(parents=True)
+        # Mock paths in the validation module
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.TRANSFERS_DIR', str(tmp_path / 'transfers'))
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.REMAINING_SURPLUS_DIR', str(tmp_path / 'surplus'))
         
-        monkeypatch.chdir(tmp_path)
+        # Test missing directories
+        assert validate_input_directories() is False
         
-        # Without required directories
-        with patch('src.app.pipeline.step_11.handler.TRANSFERS_DIR', 
-                   str(data_dir / "transfers")), \
-             patch('src.app.pipeline.step_11.handler.REMAINING_SURPLUS_DIR',
-                   str(data_dir / "surplus")):
-            result = _validate_input_directories()
-            assert result is False
+        # Test existing directories
+        (tmp_path / 'transfers').mkdir()
+        (tmp_path / 'surplus').mkdir()
+        assert validate_input_directories() is True
     
     def test_step_11_creates_output_directories(self, tmp_path, monkeypatch):
         """Test step 11 creates output directories"""
-        from src.app.pipeline.step_11.handler import _create_output_directories
+        from src.app.pipeline.step_11.runner.validation import create_output_directories
         
-        monkeypatch.chdir(tmp_path)
+        # Mock paths
+        dirs = {
+            'merged_csv': tmp_path / 'merged/csv',
+            'merged_excel': tmp_path / 'merged/excel',
+            'separate_csv': tmp_path / 'separate/csv',
+            'separate_excel': tmp_path / 'separate/excel'
+        }
         
-        output_dirs = [
-            tmp_path / "merged_csv",
-            tmp_path / "merged_excel",
-            tmp_path / "separate_csv",
-            tmp_path / "separate_excel"
-        ]
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.OUTPUT_MERGED_CSV', str(dirs['merged_csv']))
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.OUTPUT_MERGED_EXCEL', str(dirs['merged_excel']))
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.OUTPUT_SEPARATE_CSV', str(dirs['separate_csv']))
+        monkeypatch.setattr('src.app.pipeline.step_11.runner.validation.OUTPUT_SEPARATE_EXCEL', str(dirs['separate_excel']))
         
-        with patch('src.app.pipeline.step_11.handler.OUTPUT_MERGED_CSV', str(output_dirs[0])), \
-             patch('src.app.pipeline.step_11.handler.OUTPUT_MERGED_EXCEL', str(output_dirs[1])), \
-             patch('src.app.pipeline.step_11.handler.OUTPUT_SEPARATE_CSV', str(output_dirs[2])), \
-             patch('src.app.pipeline.step_11.handler.OUTPUT_SEPARATE_EXCEL', str(output_dirs[3])):
-            _create_output_directories()
-            
-            for d in output_dirs:
-                assert d.exists()
+        create_output_directories()
+        
+        for dir_path in dirs.values():
+            assert dir_path.exists()
 
 
 # ===================== Step 9 Sub-module Tests =====================
