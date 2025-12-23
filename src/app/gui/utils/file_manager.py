@@ -1,19 +1,23 @@
 """إدارة الملفات والتحميل"""
-
 import os
 import zipfile
+import io
 import streamlit as st
 import pandas as pd
-from pathlib import Path
 from typing import List, Dict, Optional
-from src.app.gui.utils.translations import BRANCH_NAMES, CATEGORY_NAMES, MESSAGES
-
+from src.app.gui.utils.translations import (
+    BRANCH_NAMES,
+    CATEGORY_NAMES
+)
 
 # =============================================================================
 # PUBLIC API
 # =============================================================================
 
-def list_output_files(directory: str, file_extensions: List[str] = None) -> List[Dict]:
+def list_output_files(
+    directory: str, 
+    file_extensions: List[str] = None
+) -> List[Dict]:
     """قائمة بجميع الملفات في مجلد معين."""
     if file_extensions is None:
         file_extensions = ['.csv', '.xlsx']
@@ -21,27 +25,38 @@ def list_output_files(directory: str, file_extensions: List[str] = None) -> List
     if not os.path.exists(directory):
         return []
     
-    return sorted(_collect_matching_files(directory, file_extensions), key=lambda file: file["name"])
+    matching_files = _collect_matching_files(directory, file_extensions)
+    return sorted(matching_files, key=lambda f: f["name"])
 
 
-def read_file_for_display(file_path: str, max_rows: int = 100) -> Optional[pd.DataFrame]:
+def read_file_for_display(
+    file_path: str, 
+    max_rows: int = 100
+) -> Optional[pd.DataFrame]:
     """قراءة ملف لعرضه في Streamlit."""
     try:
         if file_path.endswith('.csv'):
             return _read_csv_file_for_display(file_path, max_rows)
         elif file_path.endswith('.xlsx'):
             return pd.read_excel(file_path, nrows=max_rows)
+        return None
     except Exception as error:
         st.error(f"خطأ في قراءة الملف: {str(error)}")
         return None
 
 
-def create_download_zip(files: List[Dict], zip_name: str = "download.zip") -> bytes:
+def create_download_zip(
+    files: List[Dict], 
+    zip_name: str = "download.zip"
+) -> bytes:
     """إنشاء ملف ZIP من قائمة الملفات."""
-    import io
-    
     zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_handle:
+    
+    with zipfile.ZipFile(
+        zip_buffer, 
+        'w', 
+        zipfile.ZIP_DEFLATED
+    ) as zip_handle:
         _write_files_to_zip(zip_handle, files)
     
     zip_buffer.seek(0)
@@ -57,12 +72,15 @@ def get_file_size_str(size_bytes: int) -> str:
     return f"{size_bytes:.1f} TB"
 
 
-def organize_files_by_branch(files: List[Dict]) -> Dict[str, List[Dict]]:
+def organize_files_by_branch(
+    files: List[Dict]
+) -> Dict[str, List[Dict]]:
     """تنظيم الملفات حسب الفرع."""
     organized = {}
     
     for file_info in files:
-        branch = _find_branch_from_path(file_info) or _find_branch_from_filename(file_info) or "other"
+        branch = _determine_file_branch(file_info)
+        
         if branch not in organized:
             organized[branch] = []
         organized[branch].append(file_info)
@@ -70,7 +88,9 @@ def organize_files_by_branch(files: List[Dict]) -> Dict[str, List[Dict]]:
     return organized
 
 
-def organize_files_by_category(files: List[Dict]) -> Dict[str, List[Dict]]:
+def organize_files_by_category(
+    files: List[Dict]
+) -> Dict[str, List[Dict]]:
     """تنظيم الملفات حسب الفئة."""
     organized = {}
     for file_info in files:
@@ -82,10 +102,15 @@ def organize_files_by_category(files: List[Dict]) -> Dict[str, List[Dict]]:
 
 
 # =============================================================================
-# FILE INFO HELPERS
+# PRIVATE HELPERS: FILE COLLECTION
 # =============================================================================
 
-def _build_file_info(file_path: str, filename: str, extension: str, directory: str) -> Dict:
+def _build_file_info(
+    file_path: str,
+    filename: str,
+    extension: str,
+    directory: str
+) -> Dict:
     """Build file info dictionary."""
     return {
         "name": filename,
@@ -96,53 +121,90 @@ def _build_file_info(file_path: str, filename: str, extension: str, directory: s
     }
 
 
-def _collect_matching_files(directory: str, file_extensions: List[str]) -> List[Dict]:
+def _collect_matching_files(
+    directory: str, 
+    file_extensions: List[str]
+) -> List[Dict]:
     """Collect files matching extensions."""
     files = []
-    for root, directories, filenames in os.walk(directory):
+    for root, _, filenames in os.walk(directory):
         for filename in filenames:
             _, extension = os.path.splitext(filename)
+            
             if extension.lower() in file_extensions:
                 file_path = os.path.join(root, filename)
-                files.append(_build_file_info(file_path, filename, extension, directory))
+                files.append(_build_file_info(
+                    file_path, 
+                    filename, 
+                    extension, 
+                    directory
+                ))
     return files
 
 
 # =============================================================================
-# FILE READING HELPERS
+# PRIVATE HELPERS: FILE READING & WRITING
 # =============================================================================
 
-def _read_csv_file_for_display(file_path: str, max_rows: int) -> Optional[pd.DataFrame]:
+def _read_csv_file_for_display(
+    file_path: str, 
+    max_rows: int
+) -> Optional[pd.DataFrame]:
     """Read CSV file with date header detection."""
+    # Import specific validation logic
+    from src.core.validation.data_validator import (
+        extract_dates_from_header
+    )
+    
     with open(file_path, 'r', encoding='utf-8-sig') as file_handle:
         first_line = file_handle.readline().strip()
     
-    from src.core.validation.data_validator import extract_dates_from_header
     start_date, end_date = extract_dates_from_header(first_line)
     
-    if start_date and end_date:
-        return pd.read_csv(file_path, skiprows=1, encoding='utf-8-sig', nrows=max_rows)
-    return pd.read_csv(file_path, encoding='utf-8-sig', nrows=max_rows)
+    skip_rows = 1 if (start_date and end_date) else 0
+    return pd.read_csv(
+        file_path, 
+        skiprows=skip_rows, 
+        encoding='utf-8-sig', 
+        nrows=max_rows
+    )
 
-
-# =============================================================================
-# ZIP FILE HELPERS
-# =============================================================================
 
 def _write_files_to_zip(zip_handle, files: List[Dict]) -> None:
     """Write files to ZIP archive."""
     for file_info in files:
-        file_path = file_info.get("path") or file_info.get("file_path")
-        file_name = file_info.get("zip_path") or file_info.get("arcname") or file_info.get("name") or file_info.get("file_name")
-        if os.path.exists(file_path):
+        # Resolve path
+        file_path = (
+            file_info.get("path") or 
+            file_info.get("file_path")
+        )
+        
+        # Resolve name inside zip
+        file_name = (
+            file_info.get("zip_path") or 
+            file_info.get("arcname") or 
+            file_info.get("name") or 
+            file_info.get("file_name")
+        )
+        
+        if file_path and os.path.exists(file_path):
             zip_handle.write(file_path, file_name)
 
 
 # =============================================================================
-# BRANCH FINDING HELPERS
+# PRIVATE HELPERS: CLASSIFICATION
 # =============================================================================
 
-def _find_branch_from_path(file_info: Dict) -> str:
+def _determine_file_branch(file_info: Dict) -> str:
+    """Determine branch from file info."""
+    return (
+        _find_branch_from_path(file_info) or 
+        _find_branch_from_filename(file_info) or 
+        "other"
+    )
+
+
+def _find_branch_from_path(file_info: Dict) -> Optional[str]:
     """Find branch name from file path."""
     path_parts = file_info.get("relative_path", "").split(os.sep)
     for part in path_parts:
@@ -151,7 +213,7 @@ def _find_branch_from_path(file_info: Dict) -> str:
     return None
 
 
-def _find_branch_from_filename(file_info: Dict) -> str:
+def _find_branch_from_filename(file_info: Dict) -> Optional[str]:
     """Find branch name from filename."""
     filename = file_info.get("name", "").lower()
     for key in BRANCH_NAMES.keys():
@@ -160,14 +222,15 @@ def _find_branch_from_filename(file_info: Dict) -> str:
     return None
 
 
-# =============================================================================
-# CATEGORY FINDING HELPERS
-# =============================================================================
-
 def _find_category(filename: str) -> str:
     """Find category for a filename."""
     filename = filename.lower()
-    for category_key, category_name in CATEGORY_NAMES.items():
-        if f"_{category_key}" in filename or filename.endswith(f"_{category_key}.csv") or filename.endswith(f"_{category_key}.xlsx"):
-            return category_key
+    for cat_key in CATEGORY_NAMES.keys():
+        is_match = (
+            f"_{cat_key}" in filename or 
+            filename.endswith(f"_{cat_key}.csv") or 
+            filename.endswith(f"_{cat_key}.xlsx")
+        )
+        if is_match:
+            return cat_key
     return "other"
