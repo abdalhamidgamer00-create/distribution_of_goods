@@ -8,7 +8,7 @@ Provides two output modes: merged (all targets in one file) and separate (per ta
 import os
 from src.core.domain.branches.config import get_branches
 from src.shared.utils.logging_utils import get_logger
-from src.app.pipeline.step_11.file_combiner import (
+from src.app.pipeline.step_11.combiner import (
     combine_transfers_and_surplus,
     generate_merged_files,
     generate_separate_files,

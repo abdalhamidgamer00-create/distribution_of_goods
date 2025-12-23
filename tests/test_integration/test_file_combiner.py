@@ -89,7 +89,7 @@ class TestFileCombiner:
     
     def test_get_timestamp(self):
         """Test timestamp generation"""
-        from src.app.pipeline.step_11.file_combiner import get_timestamp
+        from src.app.pipeline.step_11.combiner.writers import get_timestamp
         
         ts = get_timestamp()
         
@@ -101,16 +101,16 @@ class TestFileCombiner:
     
     def test_extract_target_branch(self):
         """Test target branch extraction from filename"""
-        from src.app.pipeline.step_11.file_combiner import _extract_target_branch
+        from src.app.pipeline.step_11.combiner.processors import extract_target_branch
         
         # Test various filename patterns
-        assert _extract_target_branch("transfer_from_admin_to_shahid.csv") == "shahid"
-        assert _extract_target_branch("transfer_from_admin_to_wardani.csv") == "wardani"
-        assert _extract_target_branch("some_file_to_akba.csv") == "akba"
+        assert extract_target_branch("transfer_from_admin_to_shahid.csv") == "shahid"
+        assert extract_target_branch("transfer_from_admin_to_wardani.csv") == "wardani"
+        assert extract_target_branch("some_file_to_akba.csv") == "akba"
     
     def test_combine_transfers_and_surplus(self, setup_combiner_env):
         """Test combining transfers with surplus"""
-        from src.app.pipeline.step_11.file_combiner import combine_transfers_and_surplus
+        from src.app.pipeline.step_11.combiner.merger import combine_transfers_and_surplus
         
         env = setup_combiner_env
         
@@ -127,11 +127,11 @@ class TestFileCombiner:
     
     def test_read_transfer_files(self, setup_combiner_env):
         """Test reading transfer files for a branch"""
-        from src.app.pipeline.step_11.file_combiner import _read_transfer_files
+        from src.app.pipeline.step_11.combiner.readers import read_transfer_files
         
         env = setup_combiner_env
         
-        result = _read_transfer_files(
+        result = read_transfer_files(
             branch=env['branches'][0],
             transfers_dir=str(env['transfers_dir']),
             analytics_dir=str(env['analytics_dir'])
@@ -142,11 +142,11 @@ class TestFileCombiner:
     
     def test_read_surplus_as_admin_transfer(self, setup_combiner_env):
         """Test reading surplus as admin transfer"""
-        from src.app.pipeline.step_11.file_combiner import _read_surplus_as_admin_transfer
+        from src.app.pipeline.step_11.combiner.readers import read_surplus_as_admin_transfer
         
         env = setup_combiner_env
         
-        result = _read_surplus_as_admin_transfer(
+        result = read_surplus_as_admin_transfer(
             branch=env['branches'][1],  # Non-admin branch
             surplus_dir=str(env['surplus_dir']),
             analytics_dir=str(env['analytics_dir'])
@@ -158,7 +158,7 @@ class TestFileCombiner:
     
     def test_generate_merged_files(self, setup_combiner_env):
         """Test generating merged files"""
-        from src.app.pipeline.step_11.file_combiner import generate_merged_files, get_timestamp
+        from src.app.pipeline.step_11.combiner.writers import generate_merged_files, get_timestamp
         
         env = setup_combiner_env
         
@@ -184,7 +184,7 @@ class TestFileCombiner:
     
     def test_generate_separate_files(self, setup_combiner_env):
         """Test generating separate files"""
-        from src.app.pipeline.step_11.file_combiner import generate_separate_files, get_timestamp
+        from src.app.pipeline.step_11.combiner.writers import generate_separate_files, get_timestamp
         
         env = setup_combiner_env
         
@@ -210,7 +210,7 @@ class TestFileCombiner:
     
     def test_add_product_type_column(self):
         """Test adding product type column"""
-        from src.app.pipeline.step_11.file_combiner import _add_product_type_column
+        from src.app.pipeline.step_11.combiner.classifiers import add_product_type_column
         
         df = pd.DataFrame({
             'code': ['001', '002', '003', '004', '005', '006'],
@@ -224,14 +224,14 @@ class TestFileCombiner:
             ]
         })
         
-        result = _add_product_type_column(df)
+        result = add_product_type_column(df)
         
         assert 'product_type' in result.columns
         assert result['product_type'].iloc[0] == 'tablets_and_capsules'
     
     def test_prepare_output_columns(self):
         """Test preparing output columns"""
-        from src.app.pipeline.step_11.file_combiner import _prepare_output_columns
+        from src.app.pipeline.step_11.combiner.writers import _prepare_and_sort
         
         df = pd.DataFrame({
             'code': ['001'],
@@ -243,7 +243,7 @@ class TestFileCombiner:
             'extra_column': ['should be kept']
         })
         
-        result = _prepare_output_columns(df)
+        result = _prepare_and_sort(df)
         
         assert isinstance(result, pd.DataFrame)
         # Should have reordered columns
@@ -331,7 +331,7 @@ class TestFileCombinerEdgeCases:
     
     def test_combine_empty_transfers(self, tmp_path):
         """Test combining with no transfer files"""
-        from src.app.pipeline.step_11.file_combiner import combine_transfers_and_surplus
+        from src.app.pipeline.step_11.combiner.merger import combine_transfers_and_surplus
         
         # Create empty directories
         transfers_dir = tmp_path / "transfers"
@@ -353,17 +353,17 @@ class TestFileCombinerEdgeCases:
     
     def test_extract_target_branch_no_match(self):
         """Test target branch extraction with no _to_ pattern"""
-        from src.app.pipeline.step_11.file_combiner import _extract_target_branch
+        from src.app.pipeline.step_11.combiner.processors import extract_target_branch
         
         # No _to_ in filename - may return None or empty string
-        result = _extract_target_branch("some_random_file.csv")
+        result = extract_target_branch("some_random_file.csv")
         
         # Should return None or empty or some value
         assert result is None or isinstance(result, str)
     
     def test_generate_files_empty_df(self, tmp_path):
         """Test generating files with empty DataFrame"""
-        from src.app.pipeline.step_11.file_combiner import generate_merged_files
+        from src.app.pipeline.step_11.combiner.writers import generate_merged_files
         
         df = pd.DataFrame()
         

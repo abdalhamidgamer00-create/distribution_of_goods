@@ -9,7 +9,7 @@ from src.shared.utils.file_handler import (
     get_csv_files,
     ensure_directory_exists,
 )
-from src.services.splitting.branch_splitter import split_csv_by_branches
+from src.services.splitting.core import split_csv_by_branches
 from src.core.domain.branches.config import get_branches
 from src.shared.utils.logging_utils import get_logger
 from src.app.pipeline.utils.file_selector import select_csv_file

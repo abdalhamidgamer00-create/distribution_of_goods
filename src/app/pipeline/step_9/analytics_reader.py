@@ -6,7 +6,7 @@ Handles reading analytics files and extracting withdrawal data.
 import os
 import pandas as pd
 from src.shared.utils.file_handler import get_latest_file
-from src.core.validation.data_validator import extract_dates_from_header
+from src.core.validation import extract_dates_from_header
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

@@ -159,7 +159,7 @@ class TestStep3ValidateHandler:
     
     def test_validate_csv_with_date_header(self, sample_csv_with_headers):
         """Test CSV validation with date header"""
-        from src.core.validation.data_validator import validate_csv_header, validate_csv_headers
+        from src.core.validation import validate_csv_header, validate_csv_headers
         
         is_valid_date, start, end, msg = validate_csv_header(sample_csv_with_headers)
         
@@ -169,7 +169,7 @@ class TestStep3ValidateHandler:
     
     def test_validate_csv_headers(self, sample_csv_with_headers):
         """Test CSV column headers validation"""
-        from src.core.validation.data_validator import validate_csv_headers
+        from src.core.validation import validate_csv_headers
         
         is_valid, errors, msg = validate_csv_headers(sample_csv_with_headers)
         
@@ -230,7 +230,7 @@ class TestStep6SplitHandler:
     def test_split_csv_by_branches(self, sample_csv_with_headers, tmp_path):
         """Test splitting CSV by branches"""
         from src.services.conversion.converters.csv_column_renamer import rename_csv_columns
-        from src.services.splitting.branch_splitter import split_csv_by_branches
+        from src.services.splitting.core import split_csv_by_branches
         
         # First rename columns
         renamed_path = tmp_path / "renamed.csv"
@@ -408,9 +408,9 @@ class TestFullPipelineFlow:
         """Test running steps 2-6 in sequence with real data"""
         from src.services.conversion.converters.excel_to_csv import convert_excel_to_csv
         from src.services.conversion.converters.csv_column_renamer import rename_csv_columns
-        from src.core.validation.data_validator import validate_csv_header
+        from src.core.validation import validate_csv_header
         from src.core.domain.analysis.sales_analyzer import analyze_csv_data
-        from src.services.splitting.branch_splitter import split_csv_by_branches
+        from src.services.splitting.core import split_csv_by_branches
         
         env = pipeline_test_env
         

@@ -81,7 +81,7 @@ def _extract_date_header(sample_file: str) -> tuple:
     try:
         with open(sample_file, 'r', encoding='utf-8-sig') as file_handle:
             first_line = file_handle.readline().strip()
-        from src.core.validation.data_validator import extract_dates_from_header
+        from src.core.validation import extract_dates_from_header
         start_date, end_date = extract_dates_from_header(first_line)
         if start_date and end_date:
             return True, first_line

@@ -21,7 +21,7 @@ def _read_csv_file(
     max_rows: int
 ) -> Optional[pd.DataFrame]:
     """Read CSV file with date header detection."""
-    from src.core.validation.data_validator import (
+    from src.core.validation import (
         extract_dates_from_header
     )
     

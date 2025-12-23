@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from src.shared.utils.file_handler import get_file_path, get_csv_files
 from src.shared.utils.logging_utils import get_logger
-from src.core.validation.data_validator import validate_csv_header, validate_csv_headers
+from src.core.validation import validate_csv_header, validate_csv_headers
 from src.app.pipeline.utils.file_selector import select_csv_file
 
 logger = get_logger(__name__)

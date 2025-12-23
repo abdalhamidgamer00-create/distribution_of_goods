@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from src.core.validation.data_validator import extract_dates_from_header
+from src.core.validation import extract_dates_from_header
 
 
 # =============================================================================

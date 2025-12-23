@@ -203,7 +203,7 @@ class TestTransferGenerationIntegration:
     def test_full_pipeline_flow(self, renamed_csv_path, tmp_path):
         """Test the full flow from data prep to transfer generation"""
         from src.services.splitting.processors.data_preparer import prepare_branch_data
-        from src.services.splitting.branch_splitter import split_csv_by_branches
+        from src.services.splitting.core import split_csv_by_branches
         
         output_dir = tmp_path / "output"
         output_dir.mkdir()

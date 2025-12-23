@@ -108,7 +108,7 @@ class TestStep3Handler:
     
     def test_validate_converted_csv(self, sample_converted_csv):
         """Test validation with actual converted CSV"""
-        from src.core.validation.data_validator import validate_csv_header, validate_csv_headers
+        from src.core.validation import validate_csv_headers, validate_csv_header, extract_dates_from_header
         
         # Validate date header
         is_valid_date, start, end, msg = validate_csv_header(sample_converted_csv)
@@ -183,7 +183,7 @@ class TestStep6Handler:
     
     def test_split_renamed_csv(self, sample_renamed_csv, tmp_path):
         """Test splitting actual renamed CSV"""
-        from src.services.splitting.branch_splitter import split_csv_by_branches
+        from src.services.splitting.core import split_csv_by_branches
         from src.core.domain.branches.config import get_branches
         
         branches_dir = tmp_path / "branches"

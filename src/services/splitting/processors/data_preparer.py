@@ -3,7 +3,7 @@
 import pandas as pd
 from src.core.domain.branches.config import get_base_columns, get_branches
 from src.core.domain.calculations.quantity_calculator import calculate_basic_quantities
-from src.core.validation.data_validator import extract_dates_from_header, calculate_days_between
+from src.core.validation import extract_dates_from_header, calculate_days_between
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

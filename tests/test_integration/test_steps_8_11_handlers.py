@@ -272,15 +272,16 @@ class TestStep9Handler:
         assert result is False
     
     def test_validate_analytics_directories(self, setup_step_9_env):
-        """Test _validate_analytics_directories function"""
-        from src.app.pipeline.step_9.handler import _validate_analytics_directories
+        """Test validate_analytics_directories function"""
+        from src.app.pipeline.step_9.surplus.loading import validate_analytics_directories
         from src.core.domain.branches.config import get_branches
         
-        # Patch the ANALYTICS_DIR constant
-        with patch('src.app.pipeline.step_9.handler.ANALYTICS_DIR', 
-                   str(setup_step_9_env['analytics_dir'])):
-            result = _validate_analytics_directories(get_branches())
-            assert result is True
+        # Pass the directory explicitly
+        result = validate_analytics_directories(
+            get_branches(), 
+            str(setup_step_9_env['analytics_dir'])
+        )
+        assert result is True
 
 
 # ===================== Step 10 Handler Tests =====================
@@ -405,7 +406,7 @@ class TestStep11Submodules:
     
     def test_get_timestamp(self):
         """Test timestamp generation"""
-        from src.app.pipeline.step_11.file_combiner import get_timestamp
+        from src.app.pipeline.step_11.combiner.writers import get_timestamp
         
         ts = get_timestamp()
         

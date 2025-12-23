@@ -7,7 +7,7 @@ import os
 import pandas as pd
 from src.core.domain.branches.config import get_branches, get_search_order
 from src.shared.utils.file_handler import get_latest_file
-from src.core.validation.data_validator import extract_dates_from_header
+from src.core.validation import extract_dates_from_header
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

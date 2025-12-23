@@ -84,7 +84,7 @@ def _try_extract_date_header(analytics_dir: str, analytics_files: dict) -> tuple
     sample_path = os.path.join(analytics_dir, first_branch, latest_file)
     with open(sample_path, 'r', encoding='utf-8-sig') as file_handle:
         first_line = file_handle.readline().strip()
-        from src.core.validation.data_validator import extract_dates_from_header
+        from src.core.validation import extract_dates_from_header
         start_date, end_date = extract_dates_from_header(first_line)
         return (True, first_line) if start_date and end_date else None
 

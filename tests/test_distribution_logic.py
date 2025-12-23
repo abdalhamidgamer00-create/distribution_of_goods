@@ -19,7 +19,7 @@ from src.core.domain.calculations.order_calculator import (
 )
 
 
-from src.core.validation.data_validator import extract_dates_from_header
+from src.core.validation import extract_dates_from_header
 
 
 def load_test_data(csv_path: str):

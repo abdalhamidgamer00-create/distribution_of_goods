@@ -10,7 +10,7 @@ def _read_csv_with_date_detection(csv_path: str) -> tuple:
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
         first_line = f.readline().strip()
     
-    from src.core.validation.data_validator import extract_dates_from_header
+    from src.core.validation import extract_dates_from_header
     start_date, end_date = extract_dates_from_header(first_line)
     
     if start_date and end_date:

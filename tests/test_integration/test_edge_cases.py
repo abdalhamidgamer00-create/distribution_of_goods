@@ -197,7 +197,7 @@ class TestDataValidatorEdgeCases:
     
     def test_extract_dates_invalid_format(self):
         """Test extracting dates from invalid format (lines 26-27)"""
-        from src.core.validation.data_validator import extract_dates_from_header
+        from src.core.validation import extract_dates_from_header
         
         # Invalid date format
         header = "من: invalid/date إلى: another/invalid"
@@ -208,7 +208,7 @@ class TestDataValidatorEdgeCases:
     
     def test_validate_headers_missing_file(self):
         """Test header validation with missing file (lines 104-106)"""
-        from src.core.validation.data_validator import validate_csv_headers
+        from src.core.validation import validate_csv_headers
         
         is_valid, errors, message = validate_csv_headers("/nonexistent/file.csv")
         
@@ -217,7 +217,7 @@ class TestDataValidatorEdgeCases:
     
     def test_validate_header_short_date_range(self, tmp_path):
         """Test validation with date range < 3 months (line 158)"""
-        from src.core.validation.data_validator import validate_csv_header
+        from src.core.validation import validate_csv_header
         
         # Create CSV with short date range (less than 3 months)
         csv_path = tmp_path / "short_range.csv"
@@ -235,7 +235,7 @@ class TestDataValidatorEdgeCases:
     
     def test_validate_csv_header_no_dates(self, tmp_path):
         """Test validate_csv_header with no dates in header (lines 176, 179)"""
-        from src.core.validation.data_validator import validate_csv_header
+        from src.core.validation import validate_csv_header
         
         csv_path = tmp_path / "no_dates.csv"
         with open(csv_path, 'w', encoding='utf-8-sig') as f:
@@ -291,7 +291,7 @@ class TestBranchSplitterEdgeCases:
     
     def test_split_csv_nonexistent_file(self, tmp_path):
         """Test splitting a non-existent file"""
-        from src.services.splitting.branch_splitter import split_csv_by_branches
+        from src.services.splitting.core import split_csv_by_branches
         
         with pytest.raises(Exception):
             split_csv_by_branches(
