@@ -1,7 +1,4 @@
-"""Step 7: Generate transfer files handler.
-
-This module is a facade for the Step 7 transfer generation logic.
-"""
+"""Step 7 transfers package."""
 
 from src.app.pipeline.step_7.transfers.orchestrator import (
     step_7_generate_transfers

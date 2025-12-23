@@ -4,21 +4,28 @@ import os
 import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
+import unittest
 
 import pytest
 
-from src.app.pipeline.step_7.handler import (
-    _validate_analytics_directories,
-    _get_analytics_files,
-    _extract_date_header_info,
-    _group_files_by_source,
-    _log_source_files,
-    _log_transfer_summary,
-    _validate_and_get_files,
-    _execute_transfer_generation,
-    _run_transfer_generation,
+from src.app.pipeline.step_7.transfers.validators import (
+    validate_analytics_directories as _validate_analytics_directories,
+)
+from src.app.pipeline.step_7.transfers.finders import (
+    get_analytics_files as _get_analytics_files,
+    extract_date_header_info as _extract_date_header_info,
+    validate_and_get_files as _validate_and_get_files,
+)
+from src.app.pipeline.step_7.transfers.generators import (
+    group_files_by_source as _group_files_by_source,
+    log_source_files as _log_source_files,
+    log_transfer_summary as _log_transfer_summary,
+    execute_transfer_generation as _execute_transfer_generation,
+    run_transfer_generation as _run_transfer_generation,
+    format_file_size as _format_file_size,
+)
+from src.app.pipeline.step_7.transfers.orchestrator import (
     step_7_generate_transfers,
-    _format_file_size,
 )
 
 
@@ -236,7 +243,7 @@ class TestValidateAndGetFiles:
 class TestRunTransferGeneration:
     """Tests for _run_transfer_generation function."""
     
-    @patch('src.app.pipeline.step_7.handler._execute_transfer_generation')
+    @patch('src.app.pipeline.step_7.transfers.generators.execute_transfer_generation')
     def test_returns_success_on_completion(self, mock_execute, analytics_directory):
         """
         WHAT: Return True when generation succeeds
@@ -249,7 +256,7 @@ class TestRunTransferGeneration:
         
         assert result is True
     
-    @patch('src.app.pipeline.step_7.handler._execute_transfer_generation')
+    @patch('src.app.pipeline.step_7.transfers.generators.execute_transfer_generation')
     def test_handles_value_error(self, mock_execute, analytics_directory):
         """
         WHAT: Handle ValueError gracefully
@@ -262,7 +269,7 @@ class TestRunTransferGeneration:
         
         assert result is False
     
-    @patch('src.app.pipeline.step_7.handler._execute_transfer_generation')
+    @patch('src.app.pipeline.step_7.transfers.generators.execute_transfer_generation')
     def test_handles_general_exception(self, mock_execute, analytics_directory):
         """
         WHAT: Handle general exceptions gracefully
@@ -277,42 +284,34 @@ class TestRunTransferGeneration:
 
 
 # ===================== step_7_generate_transfers Tests =====================
-
-class TestStep7GenerateTransfers:
+class TestStep7GenerateTransfers(unittest.TestCase):
     """Tests for step_7_generate_transfers main function."""
-    
-    @patch('src.app.pipeline.step_7.handler._run_transfer_generation')
-    @patch('src.app.pipeline.step_7.handler._validate_and_get_files')
-    @patch('src.app.pipeline.step_7.handler.get_branches')
-    def test_calls_generation_on_valid_input(self, mock_branches, mock_validate, mock_run):
-        """
-        WHAT: Call generation when input is valid
-        WHY: Main workflow should proceed
-        BREAKS: Generation never called
-        """
-        mock_branches.return_value = ["admin", "wardani"]
-        mock_validate.return_value = {"admin": ["file.csv"]}
+
+    @patch('src.app.pipeline.step_7.transfers.orchestrator.generators.run_transfer_generation')
+    @patch('src.app.pipeline.step_7.transfers.orchestrator.finders.validate_and_get_files')
+    @patch('src.app.pipeline.step_7.transfers.orchestrator.get_branches')
+    def test_success(self, mock_get_branches, mock_validate, mock_run):
+        """Test successful execution."""
+        mock_get_branches.return_value = ['branch1']
+        mock_validate.return_value = {'branch1': ['file1.csv']}
         mock_run.return_value = True
-        
+
         result = step_7_generate_transfers()
-        
+
+        self.assertTrue(result)
+        mock_validate.assert_called_once()
         mock_run.assert_called_once()
-        assert result is True
-    
-    @patch('src.app.pipeline.step_7.handler._validate_and_get_files')
-    @patch('src.app.pipeline.step_7.handler.get_branches')
-    def test_returns_false_on_invalid_input(self, mock_branches, mock_validate):
-        """
-        WHAT: Return False when validation fails
-        WHY: Don't proceed with invalid data
-        BREAKS: Crash on invalid input
-        """
-        mock_branches.return_value = ["admin"]
+
+    @patch('src.app.pipeline.step_7.transfers.orchestrator.finders.validate_and_get_files')
+    @patch('src.app.pipeline.step_7.transfers.orchestrator.get_branches')
+    def test_validation_failure(self, mock_get_branches, mock_validate):
+        """Test failure during validation."""
+        mock_get_branches.return_value = ['branch1']
         mock_validate.return_value = None
-        
+
         result = step_7_generate_transfers()
-        
-        assert result is False
+
+        self.assertFalse(result)
 
 
 # ===================== _extract_date_header_info Tests =====================
