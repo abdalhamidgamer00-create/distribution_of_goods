@@ -1,15 +1,15 @@
-"""Tests for the SplitDataByBranch use case."""
+"""Tests for the SegmentBranches use case."""
 
 import pytest
 from unittest.mock import MagicMock
-from src.application.use_cases.branch_split import SplitDataByBranch
+from src.application.use_cases.segment_branches import SegmentBranches
 from src.domain.services.branch_service import BranchSplitter
 from src.domain.models.entities import (
-    Branch, Product, StockLevel, ConsolidatedStock, BranchStock
+    Branch, Product, StockLevel, ConsolidatedStock
 )
 
 
-class TestSplitDataByBranch:
+class TestSegmentBranches:
     
     @pytest.fixture
     def mock_repo(self):
@@ -37,19 +37,20 @@ class TestSplitDataByBranch:
 
     def test_execute_calls_repository_methods(self, mock_repo, splitter):
         # Arrange
-        use_case = SplitDataByBranch(mock_repo, splitter)
+        use_case = SegmentBranches(mock_repo, splitter)
         
         # Act
-        use_case.execute()
+        result = use_case.execute()
         
         # Assert
+        assert result is True
         mock_repo.load_branches.assert_called_once()
         mock_repo.load_consolidated_stock.assert_called_once()
         assert mock_repo.save_branch_stocks.call_count == 2
         
     def test_execute_saves_correct_data_per_branch(self, mock_repo, splitter):
         # Arrange
-        use_case = SplitDataByBranch(mock_repo, splitter)
+        use_case = SegmentBranches(mock_repo, splitter)
         
         # Act
         use_case.execute()
