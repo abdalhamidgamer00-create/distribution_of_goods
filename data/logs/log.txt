@@ -33910,3 +33910,34 @@ Execution Summary:
   Failed: 0
   Success rate: 100.0%
 ==================================================
+2025-12-23 10:20:15,185 | INFO     | src.app.cli.ui.display | 
+==================================================
+2025-12-23 10:20:15,186 | INFO     | src.app.cli.ui.display | Project Menu - Distribution of Goods
+2025-12-23 10:20:15,186 | INFO     | src.app.cli.ui.display | ==================================================
+Available steps:
+2025-12-23 10:20:15,186 | INFO     | src.app.cli.ui.display |   1. Archive Previous Output
+2025-12-23 10:20:15,186 | INFO     | src.app.cli.ui.display |      Archive previous output files before starting new process (skips if no files exist)
+2025-12-23 10:20:15,186 | INFO     | src.app.cli.ui.display |   2. Convert Excel to CSV
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |      Convert selected Excel file from input folder to CSV
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |   3. Validate Data
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |      Validate CSV data, check date range (>= 3 months) and Column Headers Validation
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |   4. Sales Analysis
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |      Generate comprehensive sales analysis report with statistics and improvement suggestions
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |   5. Rename Columns
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |      Rename CSV columns from Arabic to English
+2025-12-23 10:20:15,187 | INFO     | src.app.cli.ui.display |   6. Split by Branches
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |      Split CSV file into 6 separate files, one for each branch
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |   7. Generate Transfer Files
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |      Generate transfer CSV files for each branch to all other branches
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |   8. Split Transfer Files by Product Type & Convert to Excel
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |      Split transfer files into 6 categories and convert them to Excel format
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |   9. Generate Remaining Surplus Files
+2025-12-23 10:20:15,188 | INFO     | src.app.cli.ui.display |      Generate files for products with remaining surplus after distribution (CSV and Excel)
+2025-12-23 10:20:15,189 | INFO     | src.app.cli.ui.display |   10. Generate Shortage Files
+2025-12-23 10:20:15,189 | INFO     | src.app.cli.ui.display |      Generate files for products where total needed exceeds total surplus (unfulfilled demand)
+2025-12-23 10:20:15,189 | INFO     | src.app.cli.ui.display |   11. Generate Combined Transfer Files
+2025-12-23 10:20:15,189 | INFO     | src.app.cli.ui.display |      Combine transfers with remaining surplus (to admin) in merged/separate formats with balance coloring
+2025-12-23 10:20:15,189 | INFO     | src.app.cli.ui.display | 
+  12. Execute all steps
+  0. Exit
+==================================================
