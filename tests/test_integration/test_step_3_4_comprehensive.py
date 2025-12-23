@@ -13,17 +13,24 @@ import pandas as pd
 import pytest
 
 # Step 3 imports
-from src.app.pipeline.step_3.handler import (
-    _log_date_validation,
-    _log_headers_validation,
-    _log_overall_result,
-    _remove_first_row,
-    _perform_validation,
-    _handle_post_validation,
-    _validate_csv_file,
-    _try_validate,
-    step_3_validate_data,
+# Step 3 imports
+from src.app.pipeline.step_3.validator.logging import (
+    log_date_validation as _log_date_validation,
+    log_headers_validation as _log_headers_validation,
+    log_overall_result as _log_overall_result,
 )
+from src.app.pipeline.step_3.validator.modification import (
+    remove_first_row as _remove_first_row,
+)
+from src.app.pipeline.step_3.validator.validation import (
+    perform_validation as _perform_validation,
+    handle_post_validation as _handle_post_validation,
+)
+from src.app.pipeline.step_3.validator.selection import (
+    validate_csv_file as _validate_csv_file,
+    try_validate as _try_validate,
+)
+from src.app.pipeline.step_3.validator.orchestrator import step_3_validate_data
 
 # Step 4 imports
 from src.app.pipeline.step_4.handler import (
@@ -209,8 +216,8 @@ class TestLogOverallResult:
 class TestStep3ValidateData:
     """Tests for step_3_validate_data main function."""
     
-    @patch('src.app.pipeline.step_3.handler._try_validate')
-    @patch('src.app.pipeline.step_3.handler.get_csv_files')
+    @patch('src.app.pipeline.step_3.validator.orchestrator.selection.try_validate')
+    @patch('src.app.pipeline.step_3.validator.orchestrator.get_csv_files')
     def test_returns_true_on_success(self, mock_files, mock_validate):
         """
         WHAT: Return True on successful validation
@@ -224,7 +231,7 @@ class TestStep3ValidateData:
         
         assert result is True
     
-    @patch('src.app.pipeline.step_3.handler.get_csv_files')
+    @patch('src.app.pipeline.step_3.validator.orchestrator.get_csv_files')
     def test_returns_false_when_no_files(self, mock_files):
         """
         WHAT: Return False when no CSV files found
@@ -243,7 +250,7 @@ class TestStep3ValidateData:
 class TestTryValidate:
     """Tests for _try_validate function."""
     
-    @patch('src.app.pipeline.step_3.handler._validate_csv_file')
+    @patch('src.app.pipeline.step_3.validator.selection.validate_csv_file')
     def test_handles_value_error(self, mock_validate, tmp_path):
         """
         WHAT: Handle ValueError gracefully
@@ -256,7 +263,7 @@ class TestTryValidate:
         
         assert result is False
     
-    @patch('src.app.pipeline.step_3.handler._validate_csv_file')
+    @patch('src.app.pipeline.step_3.validator.selection.validate_csv_file')
     def test_handles_general_exception(self, mock_validate, tmp_path):
         """
         WHAT: Handle general exceptions
