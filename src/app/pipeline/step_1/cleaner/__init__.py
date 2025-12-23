@@ -1,4 +1,4 @@
-"""Step 1: Archive handler facade."""
+"""Cleaner Package."""
 
 from src.app.pipeline.step_1.cleaner.orchestrator import step_1_archive_output
 
