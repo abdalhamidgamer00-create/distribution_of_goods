@@ -19,7 +19,7 @@ class SegmentationService:
         self._analytics_dir = os.path.join("data", "output", "branches", "analytics")
         self._files_dir = os.path.join("data", "output", "branches", "files")
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Splits the normalized CSV into branch-specific analytics and user files."""
         if not os.path.exists(self._input_dir):
             logger.error(f"Input directory not found: {self._input_dir}")

@@ -19,7 +19,7 @@ class TransferOptimizer:
         self._transfer_dir = os.path.join("data", "output", "transfers", "csv")
         self._renamed_dir = os.path.join("data", "output", "converted", "renamed")
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Runs the distribution engine and saves the resulting transfer files."""
         if not os.path.exists(self._stock_dir):
             logger.error(f"Stock directory not found: {self._stock_dir}")

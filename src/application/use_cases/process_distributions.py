@@ -36,13 +36,18 @@ class ProcessDistributions:
         branches = self._repository.load_branches()
         products = self._repository.load_products()
         
+        from src.shared.utils.logging_utils import get_logger
+        logger = get_logger(__name__)
+        logger.info(f"ProcessDistributions: Loaded {len(branches)} branches and {len(products)} products.")
+        
         all_results = []
         
         # Pre-load all stock levels for all branches to avoid repeated IO
-        branch_stocks_map = {
-            branch.name: self._repository.load_stock_levels(branch)
-            for branch in branches
-        }
+        branch_stocks_map = {}
+        for branch in branches:
+            stocks = self._repository.load_stock_levels(branch)
+            branch_stocks_map[branch.name] = stocks
+            logger.info(f"  - Branch '{branch.name}': Loaded {len(stocks)} stock levels.")
         
         for product in products:
             needing_branches = []
@@ -75,5 +80,9 @@ class ProcessDistributions:
 
     def save(self, results: List[DistributionResult]) -> None:
         """Persists the generated transfers."""
+        from src.shared.utils.logging_utils import get_logger
+        logger = get_logger(__name__)
+        
         transfers = [t for res in results for t in res.transfers]
+        logger.info(f"ProcessDistributions: Saving {len(transfers)} transfers from {len(results)} product results.")
         self._repository.save_transfers(transfers)

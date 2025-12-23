@@ -21,7 +21,7 @@ class ConsolidationService:
     def __init__(self, repository: DataRepository):
         self._repository = repository
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Processes all branches to generate consolidated logistics files."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         

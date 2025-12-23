@@ -8,9 +8,13 @@ from src.domain.models.entities import (
 )
 from src.domain.models.distribution import Transfer, DistributionResult
 from src.infrastructure.persistence.mappers import StockMapper
+from src.shared.utils.logging_utils import get_logger
 from src.shared.utils.file_handler import ensure_directory_exists
 from src.shared.constants import BRANCHES
 from src.application.interfaces.repository import DataRepository
+from src.core.validation.dates import extract_dates_from_header
+
+logger = get_logger(__name__)
 
 
 class PandasDataRepository(DataRepository):
@@ -33,15 +37,24 @@ class PandasDataRepository(DataRepository):
         return [item.product for item in consolidated]
 
     def _read_csv_with_header_detection(self, file_path: str) -> pd.DataFrame:
-        """Reads CSV and handles optional 1-line date header."""
+        """Reads CSV and handles optional 1-line date header using domain logic."""
         with open(file_path, 'r', encoding='utf-8-sig') as f:
             first_line = f.readline().strip()
         
-        # Check if first line is date header (contains 'من:' or 'إلى:' or ' - ')
-        if 'من:' in first_line or 'إلى:' in first_line or ' - ' in first_line:
-            return pd.read_csv(file_path, skiprows=1)
-        else:
-            return pd.read_csv(file_path)
+        # Use domain logic for date header detection
+        start_date, end_date = extract_dates_from_header(first_line)
+        
+        if start_date and end_date:
+            logger.info(f"Detected date header in {file_path}, skipping first line.")
+            return pd.read_csv(file_path, skiprows=1, encoding='utf-8-sig')
+        
+        # Fallback: Check for typical "Unnamed" artifacts if read incorrectly
+        df = pd.read_csv(file_path, encoding='utf-8-sig', nrows=5)
+        if df.columns[0].startswith('Unnamed') or 'الفترة من' in df.columns[0]:
+            logger.warning(f"Detected potential malformed header in {file_path}, retrying with skip.")
+            return pd.read_csv(file_path, skiprows=1, encoding='utf-8-sig')
+
+        return pd.read_csv(file_path, encoding='utf-8-sig')
 
     def load_consolidated_stock(self) -> List[ConsolidatedStock]:
         """Loads and maps consolidated stock from the latest input CSV."""
@@ -69,37 +82,51 @@ class PandasDataRepository(DataRepository):
         
         try:
             df = self._read_csv_with_header_detection(csv_path)
-            # Ensure column names are stripped of whitespace
-            df.columns = [c.strip() for c in df.columns]
+            # Ensure column names are stripped of whitespace and BOM
+            df.columns = [c.strip().replace('\ufeff', '') for c in df.columns]
             
-            return [
-                StockMapper.to_consolidated_stock(row, num_days) 
-                for _, row in df.iterrows()
-            ]
+            logger.info(f"Loaded CSV from {csv_path} with columns: {list(df.columns)}")
+            
+            if 'code' not in df.columns:
+                logger.error(f"CRITICAL: 'code' column missing in {csv_path}!")
+                # Try to find a column that looks like 'code'
+                for col in df.columns:
+                    if 'code' in col.lower() or 'كود' in col:
+                        logger.warning(f"Found potential match: '{col}'")
+
+            results = []
+            for _, row in df.iterrows():
+                obj = StockMapper.to_consolidated_stock(row, num_days)
+                if obj:
+                    results.append(obj)
+            return results
         except Exception as e:
-            print(f"Error loading consolidated stock from {csv_path}: {e}")
+            logger.error(f"Error loading consolidated stock from {csv_path}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return []
 
     def save_branch_stocks(self, branch: Branch, stocks: List[BranchStock]) -> None:
         """Saves branch-specific stock levels to CSV."""
         df = StockMapper.to_branch_dataframe(stocks)
         
-        branch_dir = os.path.join(self._output_dir, branch.name)
+        branch_dir = os.path.join(self._analytics_dir, branch.name)
         os.makedirs(branch_dir, exist_ok=True)
         
         output_path = os.path.join(branch_dir, f"main_analysis_{branch.name}.csv")
         df.to_csv(output_path, index=False, encoding='utf-8-sig')
 
     def load_stock_levels(self, branch: Branch) -> Dict[str, StockLevel]:
-        """Load stock levels from branch-specific analytics files."""
-        branch_dir = os.path.join(self._analytics_dir, branch.name)
-        file_path = os.path.join(branch_dir, f"main_analysis_{branch.name}.csv")
+        """Loads stock levels for a specific branch."""
+        file_name = f"main_analysis_{branch.name}.csv"
+        file_path = os.path.join(self._analytics_dir, branch.name, file_name)
         
         if not os.path.exists(file_path):
+            logger.warning(f"Stock levels file not found for branch {branch.name}: {file_path}")
             return {}
             
         try:
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, encoding='utf-8-sig')
             stocks = {}
             for _, row in df.iterrows():
                 # Flexible column name lookup
@@ -363,7 +390,7 @@ class PandasDataRepository(DataRepository):
             if file.endswith('.csv') and 'remaining_surplus' in file:
                 path = os.path.join(branch_dir, file)
                 try:
-                    df = pd.read_csv(path)
+                    df = pd.read_csv(path, encoding='utf-8-sig')
                     for _, row in df.iterrows():
                         data.append({
                             'code': str(row['code']),

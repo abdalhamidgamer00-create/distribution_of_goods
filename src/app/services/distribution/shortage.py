@@ -19,7 +19,7 @@ class ShortageReporter:
         self._shortage_dir = os.path.join("data", "output", "shortage")
         self._renamed_dir = os.path.join("data", "output", "converted", "renamed")
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Calculates and saves reports for net shortages across all branches."""
         if not os.path.exists(self._stock_dir):
             logger.error(f"Stock directory not found: {self._stock_dir}")

@@ -17,7 +17,7 @@ class ArchivatorService:
         self._output_dir = os.path.join("data", "output")
         self._archive_base_dir = os.path.join("data", "archive")
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Archivates previous output files if they exist."""
         try:
             if not has_files_in_directory(self._output_dir):

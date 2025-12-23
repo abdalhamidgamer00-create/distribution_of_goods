@@ -23,7 +23,7 @@ class NormalizationService:
         self._input_dir = os.path.join("data", "output", "converted", "csv")
         self._output_dir = os.path.join("data", "output", "converted", "renamed")
 
-    def execute(self, use_latest_file: bool = None) -> bool:
+    def execute(self, use_latest_file: bool = None, **kwargs) -> bool:
         """Standardizes CSV columns and saves the result to the renamed directory."""
         ensure_directory_exists(self._output_dir)
         

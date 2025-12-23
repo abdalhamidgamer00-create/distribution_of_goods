@@ -17,7 +17,7 @@ class TransferClassifier:
         self._csv_dir = os.path.join("data", "output", "transfers", "csv")
         self._excel_dir = os.path.join("data", "output", "transfers", "excel")
 
-    def execute(self) -> bool:
+    def execute(self, **kwargs) -> bool:
         """Splits raw transfers into categorized files for both CSV and Excel."""
         if not os.path.exists(self._csv_dir):
             logger.error(f"Transfers CSV directory not found: {self._csv_dir}")

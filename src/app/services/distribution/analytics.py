@@ -17,7 +17,7 @@ class AnalyticsService:
         self._repository = repository
         self._converted_dir = os.path.join("data", "output", "converted", "csv")
 
-    def execute(self, use_latest_file: bool = None) -> bool:
+    def execute(self, use_latest_file: bool = None, **kwargs) -> bool:
         """Analyzes CSV data and generates a detailed report."""
         csv_files = get_csv_files(self._converted_dir)
         

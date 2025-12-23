@@ -16,7 +16,7 @@ class IngestionService:
         self._input_dir = os.path.join("data", "input")
         self._converted_dir = os.path.join("data", "output", "converted", "csv")
 
-    def execute(self, use_latest_file: bool = None) -> bool:
+    def execute(self, use_latest_file: bool = None, **kwargs) -> bool:
         """Converts Excel files from input directory to CSV."""
         ensure_directory_exists(self._converted_dir)
         

@@ -15,7 +15,7 @@ class ValidationService:
         self._repository = repository
         self._converted_dir = os.path.join("data", "output", "converted", "csv")
 
-    def execute(self, use_latest_file: bool = None) -> bool:
+    def execute(self, use_latest_file: bool = None, **kwargs) -> bool:
         """Validates CSV files in the converted directory."""
         csv_files = get_csv_files(self._converted_dir)
         

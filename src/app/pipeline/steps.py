@@ -40,36 +40,36 @@ AVAILABLE_STEPS = [
         id="6",
         name="Branch Segmentation",
         description="Partition global data into branch-specific datasets",
-        function=lambda use_latest_file=None: manager.run_service("segment")
+        function=lambda use_latest_file=None: manager.run_service("segment", use_latest_file=use_latest_file)
     ),
     Step(
         id="7",
         name="Transfer Optimization",
         description="Calculate optimal stock movements between branches",
-        function=lambda use_latest_file=None: manager.run_service("optimize")
+        function=lambda use_latest_file=None: manager.run_service("optimize", use_latest_file=use_latest_file)
     ),
     Step(
         id="8",
         name="Transfer Classification",
         description="Group transfers by category and convert to Excel",
-        function=lambda use_latest_file=None: manager.run_service("classify")
+        function=lambda use_latest_file=None: manager.run_service("classify", use_latest_file=use_latest_file)
     ),
     Step(
         id="9",
         name="Surplus Reporting",
         description="Report excess inventory with no local demand",
-        function=lambda use_latest_file=None: manager.run_service("report_surplus")
+        function=lambda use_latest_file=None: manager.run_service("report_surplus", use_latest_file=use_latest_file)
     ),
     Step(
         id="10",
         name="Shortage Reporting",
         description="Identify and report network-wide inventory gaps",
-        function=lambda use_latest_file=None: manager.run_service("report_shortage")
+        function=lambda use_latest_file=None: manager.run_service("report_shortage", use_latest_file=use_latest_file)
     ),
     Step(
         id="11",
         name="Consolidated Reporting",
         description="Merge transfers and surplus into final logistics files",
-        function=lambda use_latest_file=None: manager.run_service("consolidate")
+        function=lambda use_latest_file=None: manager.run_service("consolidate", use_latest_file=use_latest_file)
     )
 ]
