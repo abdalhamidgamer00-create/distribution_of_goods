@@ -100,3 +100,22 @@ Analytics files include:
 ### Transfer Columns
 Transfer files include:
 - `code`, `product_name`, `quantity_to_transfer`, `target_branch`
+
+## GUI Architecture
+
+### Service-View Pattern
+The GUI follows a strict strict Service-View separation:
+
+- **Services**: Pure business logic, no UI code.
+    - `FileService` (package `src/app/gui/services/file/`): Handles all file operations.
+    - `PipelineService` (`src/app/gui/services/pipeline_service.py`): Orchestrates pipeline steps.
+- **Views**: Pure UI rendering, no business logic.
+    - `transfers_view.py`: Transfers browser.
+    - `merged_view.py`: Merged transfers browser.
+    - `separate_view.py`: Separate transfers browser.
+- **Components**: Shared UI widgets in `src/app/gui/components/`.
+
+### Strict Rules for GUI
+1. **Modules < 100 lines**: Split files if they grow larger (e.g., `FileService` was split into a package).
+2. **Shared Components**: Extract common logic to `browser_shared.py` or `components/`.
+3. **Facade Imports**: Use package `__init__.py` to expose public APIs cleanly.

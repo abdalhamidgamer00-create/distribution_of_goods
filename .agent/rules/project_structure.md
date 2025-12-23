@@ -14,7 +14,12 @@ project_root/
 ├── src/
 │   ├── app/                     # Application layer (CLI + pipeline orchestration)
 │   │   ├── cli/                 # Command-line interface and menus
-│   │   └── pipeline/            # Step handlers (step_1 .. step_11, steps.py)
+│   │   ├── pipeline/            # Step handlers (step_1 .. step_11, steps.py)
+│   │   └── gui/                 # Graphical User Interface (Streamlit)
+│   │       ├── components/      # Reusable UI widgets
+│   │       ├── services/        # Business logic & data handling (FileService, PipelineService)
+│   │       ├── views/           # UI Rendering logic (Browsers, Pages)
+│   │       └── pages/           # Streamlit entry points
 │   ├── core/                    # Core domain logic and validation
 │   │   ├── domain/
 │   │   │   ├── analysis/        # Data analysis modules
