@@ -8,17 +8,25 @@ import pandas as pd
 
 import pytest
 
-from src.app.pipeline.step_11.handler import (
-    _convert_and_count,
-    _generate_merged_output,
-    _generate_separate_output,
-    _get_combined_data,
-    _process_single_branch,
-    _process_all_branches,
+from src.app.pipeline.step_11.runner.generators import (
+    convert_and_count as _convert_and_count,
+    generate_merged_output as _generate_merged_output,
+    generate_separate_output as _generate_separate_output,
+)
+from src.app.pipeline.step_11.runner.processing import (
+    get_combined_data as _get_combined_data,
+    process_single_branch as _process_single_branch,
+    process_all_branches as _process_all_branches,
+)
+from src.app.pipeline.step_11.runner.orchestrator import (
     step_11_generate_combined_transfers,
-    _validate_input_directories,
-    _create_output_directories,
-    _log_summary,
+    log_summary as _log_summary,
+)
+from src.app.pipeline.step_11.runner.validation import (
+    validate_input_directories as _validate_input_directories,
+    create_output_directories as _create_output_directories,
+)
+from src.app.pipeline.step_11.runner.constants import (
     TRANSFERS_DIR,
     REMAINING_SURPLUS_DIR,
 )
@@ -52,7 +60,7 @@ class TestStep11Constants:
 class TestConvertAndCount:
     """Tests for _convert_and_count function."""
     
-    @patch('src.app.pipeline.step_11.handler.convert_to_excel_with_formatting')
+    @patch('src.app.pipeline.step_11.runner.generators.convert_to_excel_with_formatting')
     def test_converts_files_and_returns_count(self, mock_convert, tmp_path):
         """
         WHAT: Convert files and return count
@@ -103,8 +111,8 @@ class TestValidateInputDirectories:
         transfers.mkdir(parents=True)
         surplus.mkdir(parents=True)
         
-        with patch('src.app.pipeline.step_11.handler.TRANSFERS_DIR', str(transfers)):
-            with patch('src.app.pipeline.step_11.handler.REMAINING_SURPLUS_DIR', str(surplus)):
+        with patch('src.app.pipeline.step_11.runner.validation.TRANSFERS_DIR', str(transfers)):
+            with patch('src.app.pipeline.step_11.runner.validation.REMAINING_SURPLUS_DIR', str(surplus)):
                 result = _validate_input_directories()
         
         assert result is True
@@ -115,7 +123,7 @@ class TestValidateInputDirectories:
         WHY: Can't proceed without input
         BREAKS: FileNotFoundError
         """
-        with patch('src.app.pipeline.step_11.handler.TRANSFERS_DIR', '/nonexistent/path'):
+        with patch('src.app.pipeline.step_11.runner.validation.TRANSFERS_DIR', '/nonexistent/path'):
             result = _validate_input_directories()
         
         assert result is False
@@ -137,10 +145,10 @@ class TestCreateOutputDirectories:
         separate_csv = tmp_path / "separate" / "csv"
         separate_excel = tmp_path / "separate" / "excel"
         
-        with patch('src.app.pipeline.step_11.handler.OUTPUT_MERGED_CSV', str(merged_csv)):
-            with patch('src.app.pipeline.step_11.handler.OUTPUT_MERGED_EXCEL', str(merged_excel)):
-                with patch('src.app.pipeline.step_11.handler.OUTPUT_SEPARATE_CSV', str(separate_csv)):
-                    with patch('src.app.pipeline.step_11.handler.OUTPUT_SEPARATE_EXCEL', str(separate_excel)):
+        with patch('src.app.pipeline.step_11.runner.validation.OUTPUT_MERGED_CSV', str(merged_csv)):
+            with patch('src.app.pipeline.step_11.runner.validation.OUTPUT_MERGED_EXCEL', str(merged_excel)):
+                with patch('src.app.pipeline.step_11.runner.validation.OUTPUT_SEPARATE_CSV', str(separate_csv)):
+                    with patch('src.app.pipeline.step_11.runner.validation.OUTPUT_SEPARATE_EXCEL', str(separate_excel)):
                         _create_output_directories()
         
         assert merged_csv.exists()
@@ -172,9 +180,9 @@ class TestLogSummary:
 class TestProcessSingleBranch:
     """Tests for _process_single_branch function."""
     
-    @patch('src.app.pipeline.step_11.handler._generate_separate_output')
-    @patch('src.app.pipeline.step_11.handler._generate_merged_output')
-    @patch('src.app.pipeline.step_11.handler._get_combined_data')
+    @patch('src.app.pipeline.step_11.runner.processing.generators.generate_separate_output')
+    @patch('src.app.pipeline.step_11.runner.processing.generators.generate_merged_output')
+    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
     def test_returns_counts_on_success(self, mock_data, mock_merged, mock_separate):
         """
         WHAT: Return (merged_count, separate_count) tuple
@@ -190,7 +198,7 @@ class TestProcessSingleBranch:
         assert merged == 5
         assert separate == 10
     
-    @patch('src.app.pipeline.step_11.handler._get_combined_data')
+    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
     def test_returns_zeros_for_empty_data(self, mock_data):
         """
         WHAT: Return (0, 0) when no data
@@ -204,7 +212,7 @@ class TestProcessSingleBranch:
         assert merged == 0
         assert separate == 0
     
-    @patch('src.app.pipeline.step_11.handler._get_combined_data')
+    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
     def test_handles_none_data(self, mock_data):
         """
         WHAT: Handle None combined data
@@ -224,8 +232,8 @@ class TestProcessSingleBranch:
 class TestProcessAllBranches:
     """Tests for _process_all_branches function."""
     
-    @patch('src.app.pipeline.step_11.handler._process_single_branch')
-    @patch('src.app.pipeline.step_11.handler.get_branches')
+    @patch('src.app.pipeline.step_11.runner.processing.process_single_branch')
+    @patch('src.app.pipeline.step_11.runner.processing.get_branches')
     def test_sums_all_branch_counts(self, mock_branches, mock_process):
         """
         WHAT: Sum counts from all branches
@@ -240,8 +248,8 @@ class TestProcessAllBranches:
         assert total_merged == 6  # 2+3+1
         assert total_separate == 12  # 4+6+2
     
-    @patch('src.app.pipeline.step_11.handler._process_single_branch')
-    @patch('src.app.pipeline.step_11.handler.get_branches')
+    @patch('src.app.pipeline.step_11.runner.processing.process_single_branch')
+    @patch('src.app.pipeline.step_11.runner.processing.get_branches')
     def test_handles_empty_branches(self, mock_branches, mock_process):
         """
         WHAT: Handle empty branches list
@@ -261,10 +269,10 @@ class TestProcessAllBranches:
 class TestStep11GenerateCombinedTransfers:
     """Tests for step_11_generate_combined_transfers main function."""
     
-    @patch('src.app.pipeline.step_11.handler._log_summary')
-    @patch('src.app.pipeline.step_11.handler._process_all_branches')
-    @patch('src.app.pipeline.step_11.handler._create_output_directories')
-    @patch('src.app.pipeline.step_11.handler._validate_input_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.log_summary')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.processing.process_all_branches')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.create_output_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.validate_input_directories')
     def test_returns_true_on_success(self, mock_validate, mock_create, mock_process, mock_log):
         """
         WHAT: Return True when files generated
@@ -278,7 +286,7 @@ class TestStep11GenerateCombinedTransfers:
         
         assert result is True
     
-    @patch('src.app.pipeline.step_11.handler._validate_input_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.validate_input_directories')
     def test_returns_false_on_invalid_dirs(self, mock_validate):
         """
         WHAT: Return False when validation fails
@@ -291,10 +299,10 @@ class TestStep11GenerateCombinedTransfers:
         
         assert result is False
     
-    @patch('src.app.pipeline.step_11.handler._log_summary')
-    @patch('src.app.pipeline.step_11.handler._process_all_branches')
-    @patch('src.app.pipeline.step_11.handler._create_output_directories')
-    @patch('src.app.pipeline.step_11.handler._validate_input_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.log_summary')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.processing.process_all_branches')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.create_output_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.validate_input_directories')
     def test_returns_false_when_no_output(self, mock_validate, mock_create, mock_process, mock_log):
         """
         WHAT: Return False when no files generated
@@ -308,9 +316,9 @@ class TestStep11GenerateCombinedTransfers:
         
         assert result is False
     
-    @patch('src.app.pipeline.step_11.handler._process_all_branches')
-    @patch('src.app.pipeline.step_11.handler._create_output_directories')
-    @patch('src.app.pipeline.step_11.handler._validate_input_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.processing.process_all_branches')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.create_output_directories')
+    @patch('src.app.pipeline.step_11.runner.orchestrator.validation.validate_input_directories')
     def test_handles_exception(self, mock_validate, mock_create, mock_process):
         """
         WHAT: Handle exceptions gracefully

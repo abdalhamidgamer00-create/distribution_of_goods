@@ -19,13 +19,17 @@ from src.app.pipeline.step_10.shortage.loading import (
 from src.app.pipeline.step_10.shortage.processing import (
     prepare_category_dataframe,
 )
-from src.app.pipeline.step_10.shortage.writers import (
+from src.app.pipeline.step_10.shortage.writers.csv_writer import (
     write_csv_file,
     process_single_category,
     generate_category_files,
-    convert_all_to_excel,
-    log_summary,
     create_combined_file,
+)
+from src.app.pipeline.step_10.shortage.writers.excel_writer import (
+    convert_all_to_excel,
+)
+from src.app.pipeline.step_10.shortage.writers.logging import log_summary
+from src.app.pipeline.step_10.shortage.writers.orchestrator import (
     generate_all_files,
 )
 from src.app.pipeline.step_10.shortage.orchestrator import (
