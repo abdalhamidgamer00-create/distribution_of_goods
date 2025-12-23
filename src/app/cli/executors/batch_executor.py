@@ -60,7 +60,12 @@ def execute_all_steps_batch(use_latest_file: bool) -> tuple[int, int]:
     successful_count = 0
     
     for step_index, step in enumerate(AVAILABLE_STEPS, 1):
-        log_step_progress(step, step_index, total_steps)
+        step_id = step.id
+        step_name = step.name
+        
+        logger.info(f"[{step_index}/{total_steps}] {step_id} - {step_name}")
+        logger.info("-" * 50)
+        
         if _execute_and_track(step, use_latest_file):
             successful_count += 1
     

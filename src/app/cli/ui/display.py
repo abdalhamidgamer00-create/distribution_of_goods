@@ -20,7 +20,9 @@ def display_menu() -> None:
     logger.info(SEPARATOR + "\n" + "Available steps:")
     
     for step in AVAILABLE_STEPS:
-        _display_step_item(step)
+        print(f"   {step.id}. {step.name}")
+        print(f"      {step.description}")
     
     logger.info("\n  %s. Execute all steps\n  %s. Exit\n" + SEPARATOR, ALL_STEPS_CHOICE_OFFSET, EXIT_CHOICE)
+
 

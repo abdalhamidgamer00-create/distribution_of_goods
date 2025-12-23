@@ -14,7 +14,7 @@ def get_steps_sequence(step_id: str) -> Tuple[bool, Any]:
     
     steps = [
         step for step in AVAILABLE_STEPS 
-        if int(step['id']) <= target_step_number
+        if int(step.id) <= target_step_number
     ]
     
     if not steps:

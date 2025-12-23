@@ -10,11 +10,11 @@ def get_all_steps() -> List[Dict]:
     
     for step in AVAILABLE_STEPS:
         steps.append({
-            "id": step["id"],
-            "name": STEP_NAMES.get(step["id"], step["name"]),
+            "id": step.id,
+            "name": STEP_NAMES.get(step.id, step.name),
             "description": STEP_DESCRIPTIONS.get(
-                step["id"], 
-                step["description"]
+                step.id, 
+                step.description
             )
         })
         
@@ -24,19 +24,19 @@ def get_all_steps() -> List[Dict]:
 def get_step_info(step_id: str) -> Optional[Dict]:
     """Get information for a specific step."""
     for step in AVAILABLE_STEPS:
-        if step["id"] == step_id:
+        if step.id == step_id:
             return _build_step_info(step)
     return None
 
 
-def _build_step_info(step: dict) -> Dict:
+def _build_step_info(step: Any) -> Dict:
     """Build step info dictionary."""
     return {
-        "id": step["id"],
-        "name": STEP_NAMES.get(step["id"], step["name"]),
+        "id": step.id,
+        "name": STEP_NAMES.get(step.id, step.name),
         "description": STEP_DESCRIPTIONS.get(
-            step["id"], 
-            step["description"]
+            step.id, 
+            step.description
         ),
-        "function": step["function"]
+        "function": step.function
     }

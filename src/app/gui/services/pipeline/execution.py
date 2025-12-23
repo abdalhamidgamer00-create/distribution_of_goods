@@ -27,6 +27,6 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
 def _find_step_by_id(step_id: str) -> Optional[Dict]:
     """Find step by its ID."""
     for step in AVAILABLE_STEPS:
-        if step["id"] == step_id:
+        if step.id == step_id:
             return step
     return None

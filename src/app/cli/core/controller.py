@@ -20,7 +20,7 @@ def is_all_steps_choice(choice: str) -> bool:
 
 def is_valid_step_choice(choice: str) -> bool:
     """Check if choice is a valid step ID."""
-    return choice in [s['id'] for s in AVAILABLE_STEPS]
+    return choice in [s.id for s in AVAILABLE_STEPS]
 
 
 def _execute_choice(choice: str) -> None:
