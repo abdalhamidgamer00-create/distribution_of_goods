@@ -6,7 +6,11 @@ from src.app.gui.utils.file_manager import (
     organize_files_by_branch,
     organize_files_by_category
 )
-from src.app.gui.utils.translations import BRANCH_NAMES, CATEGORY_NAMES, MESSAGES
+from src.app.gui.utils.translations import (
+    BRANCH_NAMES, 
+    CATEGORY_NAMES, 
+    MESSAGES
+)
 from src.app.gui.components import (
     render_file_expander,
     render_download_all_button,
@@ -36,7 +40,13 @@ def render_simple_browser(
     
     for tab, directory, ext in zip(tabs, directories, extensions):
         with tab:
-            _process_directory_tab(directory, ext, step, key, show_branch)
+            _process_directory_tab(
+                directory, 
+                ext, 
+                step, 
+                key, 
+                show_branch
+            )
 
 
 # =============================================================================
@@ -103,7 +113,10 @@ def _filter_files_by_branch(files: list, key: str, ext: str) -> list:
         return files
         
     # Create sorted options list
-    opts = ["الكل"] + [BRANCH_NAMES.get(b, b) for b in sorted(by_branch)]
+    opts = ["الكل"] + [
+        BRANCH_NAMES.get(b, b) 
+        for b in sorted(by_branch)
+    ]
     
     selected = st.selectbox("الفرع:", opts, key=f"{key}_b_{ext}")
     
@@ -122,7 +135,10 @@ def _filter_files_by_category(files: list, key: str, ext: str) -> list:
         return files
 
     # Create sorted options list
-    opts = ["الكل"] + [CATEGORY_NAMES.get(c, c) for c in sorted(by_cat)]
+    opts = ["الكل"] + [
+        CATEGORY_NAMES.get(c, c) 
+        for c in sorted(by_cat)
+    ]
     
     selected = st.selectbox("الفئة:", opts, key=f"{key}_c_{ext}")
     

@@ -148,10 +148,10 @@ class TestVerifyCredentials:
             assert result is False
 
 
-# ===================== _password_entered Tests =====================
+# ===================== _handle_password_entry Tests =====================
 
 class TestPasswordEntered:
-    """Tests for _password_entered function."""
+    """Tests for _handle_password_entry function."""
     
     def test_sets_password_correct_true_on_valid(self, mock_streamlit):
         """
@@ -167,7 +167,7 @@ class TestPasswordEntered:
             from src.app.gui.utils import auth
             importlib.reload(auth)
             
-            auth._password_entered()
+            auth._handle_password_entry()
             
             assert mock_streamlit.session_state.get("password_correct") is True
     
@@ -185,7 +185,7 @@ class TestPasswordEntered:
             from src.app.gui.utils import auth
             importlib.reload(auth)
             
-            auth._password_entered()
+            auth._handle_password_entry()
             
             assert mock_streamlit.session_state.get("password_correct") is False
     
@@ -203,7 +203,7 @@ class TestPasswordEntered:
             from src.app.gui.utils import auth
             importlib.reload(auth)
             
-            auth._password_entered()
+            auth._handle_password_entry()
             
             # Password should be deleted from session
             assert "password" not in mock_streamlit.session_state

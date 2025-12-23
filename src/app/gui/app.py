@@ -1,54 +1,101 @@
 """تطبيق Streamlit الرئيسي"""
-
 import streamlit as st
 import os
 import sys
 
+# =============================================================================
+# SETUP
+# =============================================================================
+
 # Path configuration
 if __name__ == "__main__":
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+    project_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '../../..')
+    )
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 
 # Page config
-st.set_page_config(page_title="مشاريع صيدليات محروس", page_icon="💊", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="مشاريع صيدليات محروس", 
+    page_icon="💊", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
 # Auth
 from src.app.gui.utils.auth import check_password
 if not check_password():
     st.stop()
 
-# Styles
-st.markdown("""
+
+# =============================================================================
+# STYLING
+# =============================================================================
+
+STYLES = """
 <style>
     .main { direction: rtl; text-align: right; }
     .stButton>button { width: 100%; }
     h1, h2, h3 { text-align: right; }
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(STYLES, unsafe_allow_html=True)
 
-# Sidebar navigation
+
+# =============================================================================
+# SIDEBAR NAVIGATION
+# =============================================================================
+
 st.sidebar.title("💊 مشاريع صيدليات محروس")
 st.sidebar.markdown("---")
+
 st.sidebar.page_link("pages/00_الرئيسية.py", label="🏠 الرئيسية", icon="🏠")
 st.sidebar.markdown("### الأقسام")
 
+# Purchases Section
 with st.sidebar.expander("🛒 قسم المشتريات", expanded=False):
     st.page_link("pages/01_مشتريات.py", label="⚙️ الخطوات", icon="⚙️")
-    st.page_link("pages/06_ملفات_التحويل.py", label="📤 ملفات التحويل", icon="📤")
-    st.page_link("pages/07_الفائض_المتبقي.py", label="📦 الفائض المتبقي", icon="📦")
+    st.page_link(
+        "pages/06_ملفات_التحويل.py", 
+        label="📤 ملفات التحويل", 
+        icon="📤"
+    )
+    st.page_link(
+        "pages/07_الفائض_المتبقي.py", 
+        label="📦 الفائض المتبقي", 
+        icon="📦"
+    )
     st.page_link("pages/08_النقص.py", label="⚠️ النقص", icon="⚠️")
-    st.page_link("pages/09_التحويلات_المجمعة.py", label="📋 التحويلات المجمعة", icon="📋")
-    st.page_link("pages/10_التحويلات_المنفصلة.py", label="📂 التحويلات المنفصلة", icon="📂")
+    st.page_link(
+        "pages/09_التحويلات_المجمعة.py", 
+        label="📋 التحويلات المجمعة", 
+        icon="📋"
+    )
+    st.page_link(
+        "pages/10_التحويلات_المنفصلة.py", 
+        label="📂 التحويلات المنفصلة", 
+        icon="📂"
+    )
 
-st.sidebar.page_link("pages/02_مبيعات.py", label="💰 قسم المبيعات", icon="💰")
-st.sidebar.page_link("pages/03_حسابات.py", label="📊 قسم الحسابات", icon="📊")
-st.sidebar.page_link("pages/04_تسويق.py", label="📈 قسم التسويق", icon="📈")
-st.sidebar.page_link("pages/05_اتش_ار.py", label="👥 قسم اتش ار", icon="👥")
+# Other Sections
+st.sidebar.page_link(
+    "pages/02_مبيعات.py", label="💰 قسم المبيعات", icon="💰"
+)
+st.sidebar.page_link(
+    "pages/03_حسابات.py", label="📊 قسم الحسابات", icon="📊"
+)
+st.sidebar.page_link(
+    "pages/04_تسويق.py", label="📈 قسم التسويق", icon="📈"
+)
+st.sidebar.page_link(
+    "pages/05_اتش_ار.py", label="👥 قسم اتش ار", icon="👥"
+)
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### معلومات")
-st.sidebar.info("""
+
+INFO_TEXT = """
 **مشاريع صيدليات محروس**
 
 نظام شامل لإدارة صيدليات محروس
@@ -59,8 +106,13 @@ st.sidebar.info("""
 - 📊 الحسابات
 - 📈 التسويق
 - 👥 اتش ار
-""")
+"""
+st.sidebar.info(INFO_TEXT)
 
-# Session state
+
+# =============================================================================
+# STATE MANAGEMENT
+# =============================================================================
+
 if "page" not in st.session_state:
     st.session_state.page = "home"

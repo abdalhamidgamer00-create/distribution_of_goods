@@ -1,22 +1,17 @@
-"""الصفحة الرئيسية - اختيار الأقسام"""
-
+"""الصفحة الرئيسية - اختيار الأقسام."""
 import streamlit as st
 import sys
 import os
 
-
 # =============================================================================
-# PATH CONFIGURATION
+# SETUP
 # =============================================================================
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '../../..')
+)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-
-
-# =============================================================================
-# PAGE CONFIGURATION
-# =============================================================================
 
 st.set_page_config(
     page_title="الرئيسية",
@@ -24,71 +19,71 @@ st.set_page_config(
     layout="wide"
 )
 
-
-# =============================================================================
-# AUTHENTICATION
-# =============================================================================
-
+# Auth
 from src.app.gui.utils.auth import check_password
 if not check_password():
     st.stop()
 
 
 # =============================================================================
-# PAGE HEADER
+# MAIN UI
 # =============================================================================
 
 st.title("💊 مشاريع صيدليات محروس")
 st.markdown("---")
-
 st.subheader("الأقسام المتاحة")
 
+col1, col2, col3, col4, col5 = st.columns(5)
+columns = [col1, col2, col3, col4, col5]
 
-# =============================================================================
-# DEPARTMENT NAVIGATION
-# =============================================================================
+departments = [
+    {
+        "name": "قسم المشتريات",
+        "icon": "🛒", 
+        "desc": "إدارة المشتريات والطلبات",
+        "page": "pages/01_مشتريات.py",
+        "key": "purchases"
+    },
+    {
+        "name": "قسم المبيعات",
+        "icon": "💰", 
+        "desc": "إدارة المبيعات والتوزيع",
+        "page": "pages/02_مبيعات.py", 
+        "key": "sales"
+    },
+    {
+        "name": "قسم الحسابات",
+        "icon": "📊", 
+        "desc": "إدارة الحسابات والمالية",
+        "page": "pages/03_حسابات.py", 
+        "key": "accounts"
+    },
+    {
+        "name": "قسم التسويق",
+        "icon": "📈", 
+        "desc": "إدارة التسويق والعروض",
+        "page": "pages/04_تسويق.py", 
+        "key": "marketing"
+    },
+    {
+        "name": "قسم اتش ار",
+        "icon": "👥", 
+        "desc": "إدارة الموارد البشرية",
+        "page": "pages/05_اتش_ار.py", 
+        "key": "hr"
+    },
+]
 
-purchases_column, sales_column, accounts_column, marketing_column, hr_column = st.columns(5)
-
-# قسم المشتريات
-with purchases_column:
-    st.markdown("### 🛒 قسم المشتريات")
-    st.markdown("إدارة المشتريات والطلبات")
-    if st.button("الدخول إلى القسم", key="purchases", use_container_width=True):
-        st.switch_page("pages/01_مشتريات.py")
-
-# قسم المبيعات
-with sales_column:
-    st.markdown("### 💰 قسم المبيعات")
-    st.markdown("إدارة المبيعات والتوزيع")
-    if st.button("الدخول إلى القسم", key="sales", use_container_width=True):
-        st.switch_page("pages/02_مبيعات.py")
-
-# قسم الحسابات
-with accounts_column:
-    st.markdown("### 📊 قسم الحسابات")
-    st.markdown("إدارة الحسابات والمالية")
-    if st.button("الدخول إلى القسم", key="accounts", use_container_width=True):
-        st.switch_page("pages/03_حسابات.py")
-
-# قسم التسويق
-with marketing_column:
-    st.markdown("### 📈 قسم التسويق")
-    st.markdown("إدارة التسويق والعروض")
-    if st.button("الدخول إلى القسم", key="marketing", use_container_width=True):
-        st.switch_page("pages/04_تسويق.py")
-
-# قسم اتش ار
-with hr_column:
-    st.markdown("### 👥 قسم اتش ار")
-    st.markdown("إدارة الموارد البشرية")
-    if st.button("الدخول إلى القسم", key="hr", use_container_width=True):
-        st.switch_page("pages/05_اتش_ار.py")
-
-
-# =============================================================================
-# FOOTER
-# =============================================================================
+for col, dept in zip(columns, departments):
+    with col:
+        st.markdown(f"### {dept['icon']} {dept['name']}")
+        st.markdown(dept['desc'])
+        if st.button(
+            "الدخول إلى القسم", 
+            key=dept['key'], 
+            use_container_width=True
+        ):
+            st.switch_page(dept['page'])
 
 st.markdown("---")
 

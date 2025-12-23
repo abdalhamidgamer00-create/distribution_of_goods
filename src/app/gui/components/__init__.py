@@ -1,5 +1,4 @@
-"""GUI components package - Re-exports all components for backward compatibility."""
-
+"""GUI components package."""
 from src.app.gui.components.branch_selection import (
     BRANCH_LABELS,
     get_branch_key_from_label,

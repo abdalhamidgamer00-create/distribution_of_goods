@@ -1,8 +1,10 @@
 """File display UI components."""
-
 import streamlit as st
-
-from src.app.gui.utils.file_manager import read_file_for_display, create_download_zip, get_file_size_str
+from src.app.gui.utils.file_manager import (
+    read_file_for_display,
+    create_download_zip,
+    get_file_size_str
+)
 
 
 # =============================================================================
@@ -16,25 +18,20 @@ def render_file_expander(
     max_rows: int = 50
 ) -> None:
     """Render file expander with dataframe preview and download button."""
-    with st.expander(f"📄 {file_info['name']} ({get_file_size_str(file_info['size'])})"):
+    size_str = get_file_size_str(file_info['size'])
+    expander_label = f"📄 {file_info['name']} ({size_str})"
+    
+    with st.expander(expander_label):
         content_column, download_column = st.columns([3, 1])
         
         with content_column:
-            dataframe = read_file_for_display(file_info['path'], max_rows=max_rows)
-            if dataframe is not None:
-                st.dataframe(dataframe, use_container_width=True)
-                st.caption(f"عرض أول {max_rows} صف")
+            _render_file_preview(file_info, max_rows)
         
         with download_column:
-            with open(file_info['path'], 'rb') as file_handle:
-                file_data = file_handle.read()
-            
-            st.download_button(
-                label="⬇️ تحميل",
-                data=file_data,
-                file_name=file_info['name'],
-                mime="application/octet-stream",
-                key=f"{key_prefix}_{file_info['name']}_{file_ext}"
+            _render_download_button(
+                file_info,
+                file_ext,
+                key_prefix
             )
 
 
@@ -49,6 +46,7 @@ def render_download_all_button(
         return
     
     zip_data = create_download_zip(files, zip_name)
+    
     st.download_button(
         label=label_template.format(count=len(files)),
         data=zip_data,
@@ -59,3 +57,39 @@ def render_download_all_button(
     
     if add_separator:
         st.markdown("---")
+
+
+# =============================================================================
+# PRIVATE HELPERS
+# =============================================================================
+
+def _render_file_preview(file_info: dict, max_rows: int) -> None:
+    """Render dataframe preview in the expander."""
+    dataframe = read_file_for_display(
+        file_info['path'], 
+        max_rows=max_rows
+    )
+    
+    if dataframe is not None:
+        st.dataframe(dataframe, use_container_width=True)
+        st.caption(f"عرض أول {max_rows} صف")
+
+
+def _render_download_button(
+    file_info: dict,
+    file_ext: str, 
+    key_prefix: str
+) -> None:
+    """Render the individual file download button."""
+    with open(file_info['path'], 'rb') as file_handle:
+        file_data = file_handle.read()
+    
+    key = f"{key_prefix}_{file_info['name']}_{file_ext}"
+    
+    st.download_button(
+        label="⬇️ تحميل",
+        data=file_data,
+        file_name=file_info['name'],
+        mime="application/octet-stream",
+        key=key
+    )
