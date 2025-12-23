@@ -1,7 +1,4 @@
-"""Generate transfer CSV files between branches.
-
-This module is a facade for the core transfer generator logic.
-"""
+"""Transfer generator core package."""
 
 from src.services.transfers.generators.core.orchestrator import (
     generate_transfer_files,
