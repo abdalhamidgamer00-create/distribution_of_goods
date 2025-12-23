@@ -1,7 +1,11 @@
 """Menu display functions"""
 
 from src.app.pipeline.steps import AVAILABLE_STEPS
-from src.app.cli.core.constants import SEPARATOR, EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
+from src.app.cli.core.constants import (
+    SEPARATOR, 
+    EXIT_CHOICE, 
+    ALL_STEPS_CHOICE_OFFSET
+)
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -23,6 +27,9 @@ def display_menu() -> None:
         print(f"   {step.id}. {step.name}")
         print(f"      {step.description}")
     
-    logger.info("\n  %s. Execute all steps\n  %s. Exit\n" + SEPARATOR, ALL_STEPS_CHOICE_OFFSET, EXIT_CHOICE)
-
-
+    msg = (
+        f"\n  {ALL_STEPS_CHOICE_OFFSET}. Execute all steps\n"
+        f"  {EXIT_CHOICE}. Exit\n"
+        + SEPARATOR
+    )
+    logger.info(msg)

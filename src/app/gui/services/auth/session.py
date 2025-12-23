@@ -45,7 +45,9 @@ def handle_password_entry() -> None:
 
 
 def check_password_session() -> bool:
-    """Returns `True` if the user had a correct password (session check only)."""
+    """
+    Returns `True` if the user had a correct password (session check only).
+    """
     return st.session_state.get("password_correct", False)
 
 

@@ -3,8 +3,12 @@
 import os
 import re
 from datetime import datetime
-from src.shared.utils.file_handler import get_file_path, get_csv_files, ensure_directory_exists
-from src.services.conversion.converters.csv_column_renamer import rename_csv_columns
+from src.shared.utils.file_handler import (
+    get_file_path, get_csv_files, ensure_directory_exists
+)
+from src.services.conversion.converters.csv_column_renamer import (
+    rename_csv_columns
+)
 from src.shared.utils.logging_utils import get_logger
 from src.app.pipeline.utils.file_selector import select_csv_file
 
@@ -64,15 +68,21 @@ def _execute_rename(csv_path: str, csv_file: str, renamed_dir: str) -> bool:
     output_path = get_file_path(output_file, renamed_dir)
     logger.info("Renaming columns in %s...\n" + "-" * 50, csv_file)
     rename_csv_columns(csv_path, output_path)
-    logger.info("Columns renamed successfully!\nOutput file: %s\nSaved to: %s", output_file, renamed_dir)
+    logger.info(
+        "Columns renamed successfully!\nOutput file: %s\nSaved to: %s", 
+        output_file, renamed_dir
+    )
     return True
 
 
-def _process_rename(output_dir: str, csv_files: list, renamed_dir: str, use_latest_file: bool) -> bool:
+def _process_rename(
+    output_dir: str, csv_files: list, renamed_dir: str, use_latest: bool
+) -> bool:
     """Process the rename operation with error handling."""
     try:
-        csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
-        return _execute_rename(get_file_path(csv_file, output_dir), csv_file, renamed_dir)
+        csv_file = select_csv_file(output_dir, csv_files, use_latest)
+        input_path = get_file_path(csv_file, output_dir)
+        return _execute_rename(input_path, csv_file, renamed_dir)
     except ValueError as error:
         logger.error("Error: %s", error)
         return False

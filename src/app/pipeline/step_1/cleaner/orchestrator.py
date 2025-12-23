@@ -23,7 +23,9 @@ def step_1_archive_output(use_latest_file: bool = None) -> bool:
 
 def _execute_archive(archive_base_dir: str, output_dir: str) -> bool:
     """Execute archive and clear output."""
-    result = archive_all_output(archive_base_dir=archive_base_dir, create_zip=True)
+    result = archive_all_output(
+        archive_base_dir=archive_base_dir, create_zip=True
+    )
     log_archive_summary(result, result['archive_dir'])
     
     clear_success = clear_output_directory(output_dir)

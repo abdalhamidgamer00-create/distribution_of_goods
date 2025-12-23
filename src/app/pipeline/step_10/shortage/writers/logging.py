@@ -17,7 +17,9 @@ def log_summary(
     for category in categories:
         if category in generated_files:
             logger.info(
-                "  - %s: %d products", category, generated_files[category]['count']
+                "  - %s: %d products", 
+                category, 
+                generated_files[category]['count']
             )
             
     logger.info(

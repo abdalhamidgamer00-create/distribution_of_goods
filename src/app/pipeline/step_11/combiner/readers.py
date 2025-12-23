@@ -12,33 +12,50 @@ from .processors import (
 
 logger = get_logger(__name__)
 
-def read_transfer_files(branch: str, transfers_dir: str, analytics_dir: str) -> Optional[pd.DataFrame]:
+def read_transfer_files(
+    branch: str, transfers_dir: str, analytics_dir: str
+) -> Optional[pd.DataFrame]:
     """Read all transfer files for a branch."""
-    branch_transfers_dir = os.path.join(transfers_dir, f"transfers_from_{branch}_to_other_branches")
+    dirname = f"transfers_from_{branch}_to_other_branches"
+    branch_transfers_dir = os.path.join(transfers_dir, dirname)
     
     if not os.path.exists(branch_transfers_dir):
-        logger.debug(f"No transfers directory for {branch}: {branch_transfers_dir}")
+        logger.debug(f"No transfers directory for {branch}")
         return None
     
     sender_balances = get_branch_balances(analytics_dir, branch)
-    all_transfers = _collect_transfer_files(branch_transfers_dir, sender_balances, analytics_dir)
-    return pd.concat(all_transfers, ignore_index=True) if all_transfers else None
+    all_transfers = _collect_transfer_files(
+        branch_transfers_dir, sender_balances, analytics_dir
+    )
+    if not all_transfers:
+        return None
+        
+    return pd.concat(all_transfers, ignore_index=True)
 
 
-def _collect_transfer_files(branch_transfers_dir: str, sender_balances: Dict, analytics_dir: str) -> list:
+def _collect_transfer_files(
+    branch_transfers_dir: str, sender_balances: Dict, analytics_dir: str
+) -> list:
     """Collect all transfer DataFrames from directory."""
     all_transfers = []
     for filename in os.listdir(branch_transfers_dir):
         if not filename.endswith('.csv'):
             continue
         filepath = os.path.join(branch_transfers_dir, filename)
-        df = _process_single_transfer_file(filepath, filename, sender_balances, analytics_dir)
+        df = _process_single_transfer_file(
+            filepath, filename, sender_balances, analytics_dir
+        )
         if df is not None:
             all_transfers.append(df)
     return all_transfers
 
 
-def _process_single_transfer_file(filepath: str, filename: str, sender_balances: Dict, analytics_dir: str) -> Optional[pd.DataFrame]:
+def _process_single_transfer_file(
+    filepath: str, 
+    filename: str, 
+    sender_balances: Dict, 
+    analytics_dir: str
+) -> Optional[pd.DataFrame]:
     """Process a single transfer file and add required columns."""
     try:
         df = pd.read_csv(filepath)
@@ -55,7 +72,9 @@ def _process_single_transfer_file(filepath: str, filename: str, sender_balances:
         return None
 
 
-def read_surplus_as_admin_transfer(branch: str, surplus_dir: str, analytics_dir: str) -> Optional[pd.DataFrame]:
+def read_surplus_as_admin_transfer(
+    branch: str, surplus_dir: str, analytics_dir: str
+) -> Optional[pd.DataFrame]:
     """Read remaining surplus and format as transfer to admin."""
     if branch == 'admin':
         return None
@@ -66,11 +85,18 @@ def read_surplus_as_admin_transfer(branch: str, surplus_dir: str, analytics_dir:
     
     sender_balances = get_branch_balances(analytics_dir, branch)
     admin_balances = get_branch_balances(analytics_dir, 'admin')
-    all_surplus = _collect_surplus_files(branch_surplus_dir, sender_balances, admin_balances)
-    return pd.concat(all_surplus, ignore_index=True) if all_surplus else None
+    all_surplus = _collect_surplus_files(
+        branch_surplus_dir, sender_balances, admin_balances
+    )
+    if not all_surplus:
+        return None
+        
+    return pd.concat(all_surplus, ignore_index=True)
 
 
-def _collect_surplus_files(branch_surplus_dir: str, sender_balances: Dict, admin_balances: Dict) -> list:
+def _collect_surplus_files(
+    branch_surplus_dir: str, sender_balances: Dict, admin_balances: Dict
+) -> list:
     """Collect all surplus DataFrames from directory."""
     all_surplus = []
     for filename in os.listdir(branch_surplus_dir):

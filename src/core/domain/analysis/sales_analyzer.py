@@ -1,7 +1,6 @@
 """Sales data analyzer"""
 
 import pandas as pd
-
 from src.core.validation import extract_dates_from_header
 
 
@@ -32,8 +31,9 @@ def _read_csv_with_header(csv_path: str) -> tuple:
     start_date, end_date = extract_dates_from_header(first_line)
     date_range = _build_date_range(start_date, end_date)
     
-    dataframe = pd.read_csv(csv_path, skiprows=1 if date_range else 0, encoding='utf-8-sig')
-    return dataframe, date_range
+    skip = 1 if date_range else 0
+    df = pd.read_csv(csv_path, skiprows=skip, encoding='utf-8-sig')
+    return df, date_range
 
 
 # =============================================================================
@@ -56,20 +56,24 @@ def _build_date_range(start_date, end_date) -> dict:
 
 def _calculate_empty_percentage(empty_cells: int, total_cells: int) -> float:
     """Calculate empty cells percentage."""
-    return round((empty_cells / total_cells * 100) if total_cells > 0 else 0, 2)
+    if total_cells == 0:
+        return 0.0
+    return round((empty_cells / total_cells * 100), 2)
 
 
 def _calculate_cell_stats(dataframe) -> dict:
     """Calculate cell statistics from DataFrame."""
-    total_rows, total_columns = len(dataframe), len(dataframe.columns)
-    total_cells = total_rows * total_columns
+    rows, cols = len(dataframe), len(dataframe.columns)
+    total_cells = rows * cols
     empty_cells = int(dataframe.isna().sum().sum())
     
+    pct = _calculate_empty_percentage(empty_cells, total_cells)
+    
     return {
-        'total_rows': total_rows, 
-        'total_columns': total_columns, 
+        'total_rows': rows, 
+        'total_columns': cols, 
         'total_cells': total_cells,
         'empty_cells': empty_cells, 
-        'empty_cells_percentage': _calculate_empty_percentage(empty_cells, total_cells),
+        'empty_cells_percentage': pct,
         'filled_cells': total_cells - empty_cells
     }

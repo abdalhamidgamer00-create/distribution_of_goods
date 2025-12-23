@@ -16,7 +16,9 @@ def log_zip_info(zip_file: str, archive_size: int) -> None:
             (1 - zip_size / archive_size) * 100 if archive_size > 0 else 0
         )
         logger.info(
-            "ZIP: %s (%.1f%% compression)", format_size(zip_size), compression_ratio
+            "ZIP: %s (%.1f%% compression)", 
+            format_size(zip_size), 
+            compression_ratio
         )
 
 

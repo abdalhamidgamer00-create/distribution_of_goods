@@ -56,12 +56,10 @@ def run_shortage_generation() -> bool:
         load_result = loading.prepare_shortage_data(ANALYTICS_DIR)
         
         if load_result[0] is None:
-            # Check if it was purely empty or error? 
-            # Original code: return None -> "No shortage products found"
-            # But prepare_shortage_data returns None, None, None if empty
-            
-            # Need to distinguish between 'no analytics' (error) and 'no shortage' (success)
-            # In loading.py, prepare_shortage_data calls calculate_shortage_products
+            # Need to distinguish between 'no analytics' (error) and
+            # 'no shortage' (success).
+            # In loading.py, prepare_shortage_data calls
+            # calculate_shortage_products.
             # calculate_shortage_products returns empty DF if no shortage.
             # loading.prepare_shortage_data returns None if empty.
             

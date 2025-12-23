@@ -6,6 +6,7 @@ from src.app.pipeline.utils.file_selector import select_excel_file
 
 logger = get_logger(__name__)
 
+
 def get_excel_file_from_streamlit(excel_files: list) -> str:
     """Try to get Excel file from Streamlit session state."""
     try:
@@ -19,7 +20,11 @@ def get_excel_file_from_streamlit(excel_files: list) -> str:
     return None
 
 
-def select_excel_file_source(excel_files: list, input_dir: str, use_latest_file: bool):
+def select_excel_file_source(
+    excel_files: list,
+    input_dir: str,
+    use_latest_file: bool
+):
     """Select Excel file from Streamlit or selector."""
     excel_file = get_excel_file_from_streamlit(excel_files)
     if not excel_file:
@@ -34,7 +39,9 @@ def validate_and_select(input_dir: str, use_latest_file: bool) -> str:
         logger.error("No Excel files found in %s", input_dir)
         return None
     
-    excel_file = select_excel_file_source(excel_files, input_dir, use_latest_file)
+    excel_file = select_excel_file_source(
+        excel_files, input_dir, use_latest_file
+    )
     if not excel_file:
         logger.error("No Excel file selected!")
     return excel_file

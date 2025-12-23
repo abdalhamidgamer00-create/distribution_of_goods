@@ -17,7 +17,9 @@ DEFAULT_LOG_FILE = os.path.join(os.getcwd(), "data", "logs", "log.txt")
 # PUBLIC API
 # =============================================================================
 
-def setup_logging(level: int = logging.INFO, log_file: Optional[str] = None) -> None:
+def setup_logging(
+    level: int = logging.INFO, log_file: Optional[str] = None
+) -> None:
     """Configure root logger with console + file handlers."""
     log_path = log_file or DEFAULT_LOG_FILE
     root_logger = logging.getLogger()
@@ -31,14 +33,7 @@ def setup_logging(level: int = logging.INFO, log_file: Optional[str] = None) -> 
 
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:
-    """Convenience helper to fetch module-level loggers.
-
-    Args:
-        name: Logger name. Defaults to module name via __name__ when None.
-
-    Returns:
-        Configured Logger instance.
-    """
+    """Convenience helper to fetch module-level loggers."""
     return logging.getLogger(name or __name__)
 
 
@@ -59,7 +54,9 @@ def _create_console_handler(formatter: logging.Formatter) -> logging.Handler:
     return stream_handler
 
 
-def _create_file_handler(log_path: str, formatter: logging.Formatter) -> logging.Handler:
+def _create_file_handler(
+    log_path: str, formatter: logging.Formatter
+) -> logging.Handler:
     """Create and configure file handler."""
     log_dir = os.path.dirname(log_path)
     if log_dir and not os.path.exists(log_dir):

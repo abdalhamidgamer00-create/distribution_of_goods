@@ -1,8 +1,9 @@
 """File collection service for specific browser views."""
 import os
-import re
-from typing import List, Dict, Any, Tuple
-from src.app.gui.services.file.lister import list_files_in_folder, list_output_files
+from typing import List, Dict, Any
+from src.app.gui.services.file.lister import (
+    list_files_in_folder, list_output_files
+)
 
 # =============================================================================
 # SEPARATE TRANSFERS COLLECTORS
@@ -18,16 +19,20 @@ def collect_separate_files(
     files = []
     for src in sources:
         for tgt_name in os.listdir(src['path']):
-            tp = os.path.join(src['path'], tgt_name)
+            target_path = os.path.join(src['path'], tgt_name)
             
-            if not _is_valid_target_folder(tp, tgt_name):
+            if not _is_valid_target_folder(target_path, tgt_name):
                 continue
                 
             tgt = tgt_name.replace('to_', '')
             if filter_target and tgt != filter_target:
                 continue
                 
-            files.extend(_get_folder_files(src, tp, tgt, tgt_name, ext, filter_category))
+            files.extend(
+                _get_folder_files(
+                    src, target_path, tgt, tgt_name, ext, filter_category
+                )
+            )
             
     return files
 
@@ -78,7 +83,10 @@ def collect_transfer_files(
     )
     files = []
     
-    target_branches = branches if selected_branch == 'all' else [selected_branch]
+    target_branches = (
+        branches if selected_branch == 'all' 
+        else [selected_branch]
+    )
     
     for b in target_branches:
         p = os.path.join(directory, f"{prefix}{b}_to_other_branches")

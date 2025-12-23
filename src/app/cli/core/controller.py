@@ -2,7 +2,11 @@
 
 from src.app.pipeline.steps import AVAILABLE_STEPS
 from src.app.cli.core.constants import EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
-from src.app.cli.executors import execute_step, execute_all_steps, execute_step_with_dependencies
+from src.app.cli.executors import (
+    execute_step, 
+    execute_all_steps, 
+    execute_step_with_dependencies
+)
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -41,4 +45,3 @@ def handle_user_choice(choice: str) -> bool:
     
     _execute_choice(choice)
     return True
-

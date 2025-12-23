@@ -17,16 +17,30 @@ def log_conversion_result(success: bool, converted_dir: str) -> None:
         logger.error("Conversion failed!")
 
 
-def perform_conversion(excel_file: str, input_dir: str, converted_dir: str) -> bool:
+def perform_conversion(
+    excel_file: str,
+    input_dir: str,
+    converted_dir: str
+) -> bool:
     """Perform the CSV conversion."""
     csv_file = generate_output_filename(excel_file)
     logger.info("Converting %s to %s...", excel_file, csv_file)
-    success = convert_excel_to_csv(get_file_path(excel_file, input_dir), get_file_path(csv_file, converted_dir))
+    
+    input_path = get_file_path(excel_file, input_dir)
+    output_path = get_file_path(csv_file, converted_dir)
+    
+    success = convert_excel_to_csv(input_path, output_path)
     log_conversion_result(success, converted_dir)
     return success
 
 
-def try_convert_excel(input_dir: str, converted_dir: str, use_latest_file: bool) -> bool:
+def try_convert_excel(
+    input_dir: str,
+    converted_dir: str,
+    use_latest_file: bool
+) -> bool:
     """Try to convert Excel with error handling."""
     excel_file = validate_and_select(input_dir, use_latest_file)
-    return perform_conversion(excel_file, input_dir, converted_dir) if excel_file else False
+    if not excel_file:
+        return False
+    return perform_conversion(excel_file, input_dir, converted_dir)

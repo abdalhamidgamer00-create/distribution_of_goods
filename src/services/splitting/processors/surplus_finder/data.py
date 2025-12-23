@@ -1,12 +1,15 @@
 """Product data retrieval helpers."""
 
 
-def get_product_data(branch_data: dict, branch: str, product_index: int) -> tuple:
+def get_product_data(
+    branch_data: dict, branch: str, product_index: int
+) -> tuple:
     """Get needed and balance for a product."""
-    branch_dataframe = branch_data[branch]
+    df = branch_data[branch]
+    row = df.iloc[product_index]
     return (
-        branch_dataframe.iloc[product_index]['needed_quantity'], 
-        branch_dataframe.iloc[product_index]['balance']
+        row['needed_quantity'], 
+        row['balance']
     )
 
 

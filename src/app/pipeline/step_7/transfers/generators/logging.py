@@ -2,8 +2,12 @@
 
 import os
 from src.shared.utils.logging_utils import get_logger
-from src.app.pipeline.step_7.transfers.generators.formatting import format_file_size
-from src.app.pipeline.step_7.transfers.generators.grouping import group_files_by_source
+from src.app.pipeline.step_7.transfers.generators.formatting import (
+    format_file_size
+)
+from src.app.pipeline.step_7.transfers.generators.grouping import (
+    group_files_by_source
+)
 
 logger = get_logger(__name__)
 

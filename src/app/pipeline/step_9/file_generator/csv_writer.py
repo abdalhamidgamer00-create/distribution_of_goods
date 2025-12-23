@@ -2,8 +2,12 @@
 
 import os
 import pandas as pd
-from src.core.domain.classification.product_classifier import get_product_categories
-from src.app.pipeline.step_9.file_generator.processing import process_category_dataframe
+from src.core.domain.classification.product_classifier import (
+    get_product_categories
+)
+from src.app.pipeline.step_9.file_generator.processing import (
+    process_category_dataframe
+)
 
 
 def generate_csv_files(
@@ -40,9 +44,13 @@ def _save_category_file(
     first_line: str
 ) -> dict:
     """Save category DataFrame and return file info."""
-    filename = f"{base_name}_{branch}_remaining_surplus_{timestamp}_{category}.csv"
+    name_parts = [base_name, branch, "remaining_surplus", timestamp, category]
+    filename = f"{'_'.join(name_parts)}.csv"
     file_path = os.path.join(branch_dir, filename)
-    _write_category_csv(category_dataframe, file_path, has_date_header, first_line)
+    
+    _write_category_csv(
+        category_dataframe, file_path, has_date_header, first_line
+    )
     return {
         'csv_path': file_path, 
         'df': category_dataframe, 
@@ -61,4 +69,6 @@ def _write_category_csv(
     with open(file_path, 'w', encoding='utf-8-sig', newline='') as file_handle:
         if has_date_header:
             file_handle.write(first_line + '\n')
-        category_dataframe.to_csv(file_handle, index=False, lineterminator='\n')
+        category_dataframe.to_csv(
+            file_handle, index=False, lineterminator='\n'
+        )

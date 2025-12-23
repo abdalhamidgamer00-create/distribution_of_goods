@@ -41,10 +41,12 @@ def _execute_analysis(csv_path: str, csv_file: str) -> bool:
     return True
 
 
-def _process_analysis(output_dir: str, csv_files: list, use_latest_file: bool) -> bool:
+def _process_analysis(
+    output_dir: str, csv_files: list, use_latest: bool
+) -> bool:
     """Process analysis with error handling."""
     try:
-        csv_file = select_csv_file(output_dir, csv_files, use_latest_file)
+        csv_file = select_csv_file(output_dir, csv_files, use_latest)
         return _execute_analysis(get_file_path(csv_file, output_dir), csv_file)
     except ValueError as error:
         logger.error("Error: %s", error)

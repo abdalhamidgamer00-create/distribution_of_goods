@@ -7,7 +7,9 @@ def extract_dates_from_header(header_text: str) -> tuple:
     """Extract start and end dates from header text."""
     date_pattern = r'(\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2})'
     dates = re.findall(date_pattern, header_text)
-    return _parse_date_strings(dates) if len(dates) >= 2 else (None, None)
+    if len(dates) < 2:
+        return None, None
+    return _parse_date_strings(dates)
 
 
 def calculate_days_between(start_date: datetime, end_date: datetime) -> int:
@@ -17,7 +19,9 @@ def calculate_days_between(start_date: datetime, end_date: datetime) -> int:
     return max(1, (end_date - start_date).days)
 
 
-def validate_date_range_months(start_date: datetime, end_date: datetime, min_months: int = 3) -> bool:
+def validate_date_range_months(
+    start_date: datetime, end_date: datetime, min_months: int = 3
+) -> bool:
     """Validate that date range is at least min_months months."""
     if not _validate_date_pair(start_date, end_date):
         return False
@@ -60,14 +64,21 @@ def _extract_and_validate_dates(csv_path: str) -> tuple:
         return False, None, None, "Could not extract dates from header"
     
     is_valid = validate_date_range_months(start_date, end_date, 3)
-    return is_valid, start_date, end_date, _build_date_message(start_date, end_date, is_valid)
+    msg = _build_date_message(start_date, end_date, is_valid)
+    return is_valid, start_date, end_date, msg
 
 
 def _build_date_message(start_date, end_date, is_valid: bool) -> str:
     """Build validation message for date range."""
+    start_str = start_date.strftime('%d/%m/%Y %H:%M')
+    end_str = end_date.strftime('%d/%m/%Y %H:%M')
+    
     if is_valid:
-        return f"Date range valid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} (>= 3 months)"
+        return f"Date range valid: {start_str} to {end_str} (>= 3 months)"
     
     delta = relativedelta(end_date, start_date)
     total_months = delta.years * 12 + delta.months
-    return f"Date range invalid: {start_date.strftime('%d/%m/%Y %H:%M')} to {end_date.strftime('%d/%m/%Y %H:%M')} ({total_months} months, required: >= 3 months)"
+    return (
+        f"Date range invalid: {start_str} to {end_str} "
+        f"({total_months} months, required: >= 3 months)"
+    )

@@ -17,7 +17,10 @@ AVAILABLE_STEPS = [
     Step(
         id="1",
         name="Archive Previous Output",
-        description="Archive previous output files before starting new process (skips if no files exist)",
+        description=(
+            "Archive previous output files before starting new process "
+            "(skips if no files exist)"
+        ),
         function=step_1_archive_output
     ),
     Step(
@@ -29,13 +32,19 @@ AVAILABLE_STEPS = [
     Step(
         id="3",
         name="Validate Data",
-        description="Validate CSV data, check date range (>= 3 months) and Column Headers Validation",
+        description=(
+            "Validate CSV data, check date range (>= 3 months) "
+            "and Column Headers Validation"
+        ),
         function=step_3_validate_data
     ),
     Step(
         id="4",
         name="Sales Analysis",
-        description="Generate comprehensive sales analysis report with statistics and improvement suggestions",
+        description=(
+            "Generate comprehensive sales analysis report with statistics "
+            "and improvement suggestions"
+        ),
         function=step_4_sales_analysis
     ),
     Step(
@@ -53,32 +62,45 @@ AVAILABLE_STEPS = [
     Step(
         id="7",
         name="Generate Transfer Files",
-        description="Generate transfer CSV files for each branch to all other branches",
+        description=(
+            "Generate transfer CSV files for each branch to all other branches"
+        ),
         function=step_7_generate_transfers
     ),
     Step(
         id="8",
         name="Split Transfer Files by Product Type & Convert to Excel",
-        description="Split transfer files into 6 categories and convert them to Excel format",
+        description=(
+            "Split transfer files into 6 categories and convert them to "
+            "Excel format"
+        ),
         function=step_8_split_by_product_type
     ),
     Step(
         id="9",
         name="Generate Remaining Surplus Files",
-        description="Generate files for products with remaining surplus after distribution (CSV and Excel)",
+        description=(
+            "Generate files for products with remaining surplus after "
+            "distribution (CSV and Excel)"
+        ),
         function=step_9_generate_remaining_surplus
     ),
     Step(
         id="10",
         name="Generate Shortage Files",
-        description="Generate files for products where total needed exceeds total surplus (unfulfilled demand)",
+        description=(
+            "Generate files for products where total needed exceeds "
+            "total surplus"
+        ),
         function=step_10_generate_shortage_files
     ),
     Step(
         id="11",
         name="Generate Combined Transfer Files",
-        description="Combine transfers with remaining surplus (to admin) in merged/separate formats with balance coloring",
+        description=(
+            "Combine transfers with remaining surplus in merged/separate "
+            "formats with balance coloring"
+        ),
         function=step_11_generate_combined_transfers
     )
 ]
-

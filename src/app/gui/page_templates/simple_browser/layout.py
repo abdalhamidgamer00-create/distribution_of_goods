@@ -31,9 +31,13 @@ def process_directory_tab(
 
     filtered_files = files
     if show_branch:
-        filtered_files = filters.filter_files_by_branch(filtered_files, key, ext)
+        filtered_files = filters.filter_files_by_branch(
+            filtered_files, key, ext
+        )
     
-    filtered_files = filters.filter_files_by_category(filtered_files, key, ext)
+    filtered_files = filters.filter_files_by_category(
+        filtered_files, key, ext
+    )
     
     rendering.render_files_list(filtered_files, ext, key)
 

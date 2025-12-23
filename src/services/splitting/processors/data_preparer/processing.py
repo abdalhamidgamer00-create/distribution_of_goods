@@ -1,7 +1,9 @@
 """Processing dataframe helpers."""
 
 import pandas as pd
-from src.core.domain.calculations.quantity_calculator import calculate_basic_quantities
+from src.core.domain.calculations.quantity_calculator import (
+    calculate_basic_quantities
+)
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -33,10 +35,12 @@ def build_branch_data_dict(
         branch_data[branch] = create_branch_dataframe(
             dataframe, branch, base_columns, num_days
         )
-        logger.info(f"✅ Calculated avg_sales for {branch}: sales / {num_days} days")
+        msg = f"✅ Calculated avg_sales for {branch}: sales / {num_days} days"
+        logger.info(msg)
     
+    num_prods = len(branch_data[branches[0]])
     logger.info(
         "Prepared data for %d branches, %d products", 
-        len(branches), len(branch_data[branches[0]])
+        len(branches), num_prods
     )
     return branch_data

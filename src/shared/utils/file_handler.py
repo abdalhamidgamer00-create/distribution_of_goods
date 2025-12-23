@@ -1,4 +1,4 @@
-"""File and directory handling"""
+"""File and directory handling."""
 
 import os
 from pathlib import Path
@@ -47,9 +47,16 @@ def _collect_files_by_extension(directory: str, extensions: list) -> list:
     files = []
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path) and os.path.splitext(filename)[1].lower() in extensions:
+        if _is_file_with_extension(file_path, filename, extensions):
             files.append(filename)
     return sorted(files)
+
+
+def _is_file_with_extension(path: str, name: str, extensions: list) -> bool:
+    """Check if file matches extensions."""
+    if not os.path.isfile(path):
+        return False
+    return os.path.splitext(name)[1].lower() in extensions
 
 
 # =============================================================================
@@ -58,7 +65,11 @@ def _collect_files_by_extension(directory: str, extensions: list) -> list:
 
 def _is_matching_file(file_path: str, filename: str, extension: str) -> bool:
     """Check if file matches criteria."""
-    return os.path.isfile(file_path) and (extension is None or filename.lower().endswith(extension.lower()))
+    if not os.path.isfile(file_path):
+        return False
+    if extension is None:
+        return True
+    return filename.lower().endswith(extension.lower())
 
 
 def _find_latest_in_directory(directory: str, extension: str) -> str:

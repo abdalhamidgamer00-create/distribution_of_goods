@@ -1,6 +1,9 @@
 """Date resolution and validation."""
 
-from src.core.validation import extract_dates_from_header, calculate_days_between
+from src.core.validation import (
+    extract_dates_from_header, 
+    calculate_days_between
+)
 from src.shared.utils.logging_utils import get_logger
 from src.services.splitting.processors.data_preparer.constants import (
     DEFAULT_DAYS_FOR_AVG_SALES
@@ -21,15 +24,19 @@ def resolve_date_range(first_line: str, start_date, end_date) -> tuple:
     )
 
 
-def raise_date_error_if_required(has_date_info: bool, require_dates: bool) -> None:
+def raise_date_error_if_required(
+    has_date_info: bool, require_dates: bool
+) -> None:
     """Raise error if dates are required but missing."""
     if require_dates and not has_date_info:
-        raise ValueError(
+        msg = (
             "❌ خطأ: لم يتم العثور على معلومات التاريخ!\n"
             "يجب توفير التواريخ إما:\n"
-            "1. في السطر الأول من الملف بالصيغة: من: DD/MM/YYYY HH:MM إلى: DD/MM/YYYY HH:MM\n"
+            "1. في السطر الأول من الملف بالصيغة: "
+            "من: DD/MM/YYYY HH:MM إلى: DD/MM/YYYY HH:MM\n"
             "2. أو تمريرها كمعاملات (start_date, end_date)"
         )
+        raise ValueError(msg)
 
 
 def calculate_and_validate_days(start_date, end_date) -> int:
@@ -41,7 +48,10 @@ def calculate_and_validate_days(start_date, end_date) -> int:
             f"تاريخ البداية: {start_date}\n"
             f"تاريخ النهاية: {end_date}"
         )
-    logger.info(f"✅ Date range: {num_days} days from {start_date} to {end_date}")
+    logger.info(
+        "✅ Date range: %d days from %s to %s", 
+        num_days, start_date, end_date
+    )
     return num_days
 
 
@@ -54,6 +64,7 @@ def validate_date_range(start_date, end_date, require_dates: bool) -> int:
         return calculate_and_validate_days(start_date, end_date)
     
     logger.warning(
-        f"⚠️ No date information found. Using default: {DEFAULT_DAYS_FOR_AVG_SALES} days"
+        "⚠️ No date information found. Using default: %d days",
+        DEFAULT_DAYS_FOR_AVG_SALES
     )
     return DEFAULT_DAYS_FOR_AVG_SALES

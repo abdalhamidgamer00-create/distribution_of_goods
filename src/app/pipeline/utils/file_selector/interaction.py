@@ -1,7 +1,9 @@
 """User interaction utilities."""
 
 from src.shared.utils.logging_utils import get_logger
-from src.app.pipeline.utils.file_selector.finder import get_latest_file_with_extensions
+from src.app.pipeline.utils.file_selector.finder import (
+    get_latest_file_with_extensions
+)
 
 logger = get_logger(__name__)
 

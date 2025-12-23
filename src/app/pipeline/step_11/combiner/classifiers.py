@@ -4,10 +4,10 @@ from .constants import PRODUCT_TYPE_KEYWORDS
 
 def classify_by_keywords(unit: str, product_name: str) -> str:
     """Classify product based on unit and product name keywords."""
-    for category, (unit_keywords, name_keywords) in PRODUCT_TYPE_KEYWORDS.items():
-        if any(keyword in unit for keyword in unit_keywords):
+    for category, (u_kw, n_kw) in PRODUCT_TYPE_KEYWORDS.items():
+        if any(keyword in unit for keyword in u_kw):
             return category
-        if any(keyword in product_name for keyword in name_keywords):
+        if any(keyword in product_name for keyword in n_kw):
             return category
     return 'other'
 

@@ -1,5 +1,6 @@
 """Batch step execution"""
 
+from typing import Any
 from src.app.pipeline.steps import AVAILABLE_STEPS
 from src.app.cli.core.constants import SEPARATOR
 from src.app.cli.handlers.input_handler import get_file_selection_mode
@@ -29,8 +30,6 @@ def execute_all_steps() -> bool:
 # LOGGING HELPERS
 # =============================================================================
 
-from typing import Any
-
 def log_step_progress(step: Any, current: int, total: int) -> None:
     """Log current step progress."""
     logger.info("[%d/%d] %s - %s", current, total, step.id, step.name)
@@ -41,8 +40,16 @@ def display_execution_summary(successful: int, total: int) -> None:
     """Display final execution statistics."""
     failed = total - successful
     success_rate = (successful / total * 100) if total > 0 else 0
-    logger.info(SEPARATOR + "\nExecution Summary:\n  Total steps: %d\n  Successful: %d\n  Failed: %d\n  Success rate: %.1f%%\n" + SEPARATOR, 
-                total, successful, failed, success_rate)
+    
+    summary = (
+        SEPARATOR + "\nExecution Summary:\n"
+        f"  Total steps: {total}\n"
+        f"  Successful: {successful}\n"
+        f"  Failed: {failed}\n"
+        f"  Success rate: {success_rate:.1f}%\n"
+        + SEPARATOR
+    )
+    logger.info(summary)
 
 
 # =============================================================================

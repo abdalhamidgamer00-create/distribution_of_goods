@@ -30,9 +30,14 @@ def get_branch_balances(analytics_dir: str, branch: str) -> Dict[str, float]:
     return _read_balance_file(branch_dir, latest_file, branch)
 
 
-def get_all_branches_balances(analytics_dir: str, branches: list) -> Dict[str, Dict[str, float]]:
+def get_all_branches_balances(
+    analytics_dir: str, branches: list
+) -> Dict[str, Dict[str, float]]:
     """Get balance data for all branches."""
-    return {branch: get_branch_balances(analytics_dir, branch) for branch in branches}
+    results = {}
+    for branch in branches:
+        results[branch] = get_branch_balances(analytics_dir, branch)
+    return results
 
 
 # =============================================================================
@@ -54,7 +59,9 @@ def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
     try:
         filepath = os.path.join(branch_dir, latest_file)
         skiprows = _detect_header_skiprows(filepath)
-        dataframe = pd.read_csv(filepath, skiprows=skiprows, encoding='utf-8-sig')
+        dataframe = pd.read_csv(
+            filepath, skiprows=skiprows, encoding='utf-8-sig'
+        )
         balances = _build_balance_dict(dataframe)
         logger.debug(f"Loaded {len(balances)} balance entries for {branch}")
         return balances
@@ -69,8 +76,15 @@ def _read_balance_file(branch_dir: str, latest_file: str, branch: str) -> dict:
 
 def _build_balance_dict(dataframe) -> dict:
     """Build balance dictionary from DataFrame."""
-    if 'code' not in dataframe.columns or 'balance' not in dataframe.columns:
+    cols = dataframe.columns
+    if 'code' not in cols or 'balance' not in cols:
         return {}
     
-    dataframe['balance'] = pd.to_numeric(dataframe['balance'], errors='coerce').fillna(0)
-    return {str(row['code']): float(row['balance']) for _, row in dataframe.iterrows()}
+    dataframe['balance'] = pd.to_numeric(
+        dataframe['balance'], errors='coerce'
+    ).fillna(0)
+    
+    return {
+        str(row['code']): float(row['balance']) 
+        for _, row in dataframe.iterrows()
+    }

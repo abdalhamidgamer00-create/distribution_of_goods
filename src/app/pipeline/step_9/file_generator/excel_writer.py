@@ -13,22 +13,33 @@ def generate_excel_files(files_info: dict, branch: str, output_dir: str) -> int:
     os.makedirs(branch_dir, exist_ok=True)
     success_count = 0
     for category, file_info in files_info.items():
-        excel_filename = os.path.splitext(os.path.basename(file_info['csv_path']))[0] + '.xlsx'
+        base_csv = os.path.basename(file_info['csv_path'])
+        excel_filename = os.path.splitext(base_csv)[0] + '.xlsx'
+        target_path = os.path.join(branch_dir, excel_filename)
+        
         if _convert_single_to_excel(
-            file_info, os.path.join(branch_dir, excel_filename), branch, category
+            file_info, target_path, branch, category
         ):
             success_count += 1
     return success_count
 
 
 def _convert_single_to_excel(
-    file_info: dict, excel_path: str, branch: str, category: str
+    file_info: dict, 
+    excel_path: str, 
+    branch: str, 
+    category: str
 ) -> bool:
     """Convert a single CSV file info to Excel."""
     try:
         with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
-            file_info['df'].to_excel(writer, index=False, sheet_name='Remaining Surplus')
+            file_info['df'].to_excel(
+                writer, index=False, sheet_name='Remaining Surplus'
+            )
         return True
     except Exception as error:
-        logger.error("Error creating Excel file for %s/%s: %s", branch, category, error)
+        logger.error(
+            "Error creating Excel file for %s/%s: %s", 
+            branch, category, error
+        )
         return False

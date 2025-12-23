@@ -32,8 +32,13 @@ def process_surplus_iteration(
     )
     if available_surplus > 0:
         return process_single_withdrawal(
-            other_branch, product_index, remaining_needed, target_amount, 
-            available_surplus, withdrawals, withdrawals_for_row
+            other_branch, 
+            product_index, 
+            remaining_needed, 
+            target_amount, 
+            available_surplus, 
+            withdrawals, 
+            withdrawals_for_row
         )
     return remaining_needed, target_amount
 
@@ -48,8 +53,14 @@ def execute_surplus_search(
         if remaining_needed <= 0 or target_amount <= 0:
             break
         remaining_needed, target_amount = process_surplus_iteration(
-            other_branch, product_index, remaining_needed, target_amount, 
-            branch_data, existing_withdrawals, withdrawals, withdrawals_for_row
+            other_branch, 
+            product_index, 
+            remaining_needed, 
+            target_amount, 
+            branch_data, 
+            existing_withdrawals, 
+            withdrawals, 
+            withdrawals_for_row
         )
     return remaining_needed, target_amount
 
@@ -59,9 +70,11 @@ def search_and_withdraw_surplus(
     existing_withdrawals: dict, target_amount: float, needed: float
 ) -> tuple:
     """Search for surplus in other branches and process withdrawals."""
-    remaining_needed, withdrawals_for_row, withdrawals, search_order = init_search_data(
-        branch, product_index, branch_data, branches, existing_withdrawals, needed
+    data = init_search_data(
+        branch, product_index, branch_data, branches, 
+        existing_withdrawals, needed
     )
+    remaining_needed, withdrawals_for_row, withdrawals, search_order = data
     
     remaining_needed, _ = execute_surplus_search(
         search_order, product_index, remaining_needed, target_amount, 
@@ -75,11 +88,14 @@ def search_and_finalize(
     existing_withdrawals: dict, target_amount: float, needed: float
 ) -> tuple:
     """Search for surplus and finalize withdrawals."""
-    withdrawals_for_row, withdrawals, remaining_needed = search_and_withdraw_surplus(
-        branch, product_index, branch_data, branches, existing_withdrawals, 
-        target_amount, needed
+    data = search_and_withdraw_surplus(
+        branch, product_index, branch_data, branches, 
+        existing_withdrawals, target_amount, needed
     )
+    withdrawals_for_row, withdrawals, remaining_needed = data
+    
     result_list, result_dict = records.finalize_withdrawals(
         withdrawals_for_row, remaining_needed
     )
-    return result_list, result_dict if result_dict is not None else withdrawals
+    final_dict = result_dict if result_dict is not None else withdrawals
+    return result_list, final_dict

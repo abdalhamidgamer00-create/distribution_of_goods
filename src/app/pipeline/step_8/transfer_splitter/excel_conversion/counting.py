@@ -2,7 +2,9 @@
 
 import os
 from src.shared.utils.logging_utils import get_logger
-from src.core.domain.classification.product_classifier import get_product_categories
+from src.core.domain.classification.product_classifier import (
+    get_product_categories
+)
 
 logger = get_logger(__name__)
 

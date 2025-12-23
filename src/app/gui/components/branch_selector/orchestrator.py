@@ -3,7 +3,9 @@
 import streamlit as st
 from typing import Optional
 from src.app.gui.components.branch_selector.layout import render_buttons
-from src.app.gui.components.branch_selector.display import render_selected_branch_info
+from src.app.gui.components.branch_selector.display import (
+    render_selected_branch_info
+)
 
 def render_branch_selection_section(
     session_key: str,

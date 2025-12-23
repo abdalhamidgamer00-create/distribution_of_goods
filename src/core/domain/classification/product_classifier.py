@@ -8,7 +8,10 @@ import re
 # =============================================================================
 
 CLASSIFICATION_RULES = {
-    'tablets_and_capsules': ['tab', 'tablet', 'قرص', 'tablets', 'cap', 'capsule', 'كبسولة', 'capsules'],
+    'tablets_and_capsules': [
+        'tab', 'tablet', 'قرص', 'tablets', 
+        'cap', 'capsule', 'كبسولة', 'capsules'
+    ],
     'injections': ['injection', 'inject', 'حقن', 'ampoule', 'vial', 'قارورة'],
     'syrups': ['syrup', 'شراب', 'susp', 'suspension', 'معلق'],
     'creams': ['cream', 'ointment', 'oint', 'gel', 'كريم', 'مرهم'],
@@ -27,12 +30,22 @@ def classify_product_type(product_name: str) -> str:
     
     product_lower = product_name.lower()
     special_case = _check_special_cases(product_lower)
-    return special_case if special_case else _find_matching_category(product_lower)
+    if special_case:
+        return special_case
+        
+    return _find_matching_category(product_lower)
 
 
 def get_product_categories() -> list:
     """Get list of all product categories."""
-    return ['tablets_and_capsules', 'injections', 'syrups', 'creams', 'sachets', 'other']
+    return [
+        'tablets_and_capsules', 
+        'injections', 
+        'syrups', 
+        'creams', 
+        'sachets', 
+        'other'
+    ]
 
 
 # =============================================================================

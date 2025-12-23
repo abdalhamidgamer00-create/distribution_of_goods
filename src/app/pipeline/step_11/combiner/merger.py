@@ -17,7 +17,9 @@ def combine_transfers_and_surplus(
     if transfers_df is not None and not transfers_df.empty:
         all_data.append(transfers_df)
         
-    surplus_df = read_surplus_as_admin_transfer(branch, surplus_dir, analytics_dir)
+    surplus_df = read_surplus_as_admin_transfer(
+        branch, surplus_dir, analytics_dir
+    )
     if surplus_df is not None and not surplus_df.empty:
         all_data.append(surplus_df)
         

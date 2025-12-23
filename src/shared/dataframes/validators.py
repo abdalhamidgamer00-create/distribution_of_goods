@@ -7,7 +7,12 @@ from typing import Iterable, Sequence
 import pandas as pd
 
 
-def ensure_columns(df: pd.DataFrame, required: Sequence[str], *, context: str = "") -> pd.DataFrame:
+def ensure_columns(
+    df: pd.DataFrame, 
+    required: Sequence[str], 
+    *, 
+    context: str = ""
+) -> pd.DataFrame:
     """Validate that DataFrame contains the required columns."""
     missing = [col for col in required if col not in df.columns]
     if missing:
@@ -25,8 +30,10 @@ def clean_numeric(value) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):
-        try: return float(value.strip().replace(",", ""))
-        except ValueError: pass
+        try:
+            return float(value.strip().replace(",", ""))
+        except ValueError:
+            pass
     return 0.0
 
 

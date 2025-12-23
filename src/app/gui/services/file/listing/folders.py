@@ -2,7 +2,9 @@
 
 import os
 from typing import List, Dict, Optional
-from src.app.gui.services.file.classifiers import parse_folder_info, is_branch_match
+from src.app.gui.services.file.classifiers import (
+    parse_folder_info, is_branch_match
+)
 
 def get_matching_folders(
     base_dir: str,

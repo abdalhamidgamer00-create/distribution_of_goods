@@ -1,8 +1,9 @@
 """Batch transfer processing logic."""
 
-from src.core.domain.branches.config import get_branches
 from src.services.transfers.generators.core import loading
-from src.services.transfers.generators.core.single_transfer import execute_transfer_process
+from src.services.transfers.generators.core.single_transfer import (
+    execute_transfer_process
+)
 
 
 def collect_transfer_pairs(branches: list) -> list:

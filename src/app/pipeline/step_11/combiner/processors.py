@@ -15,14 +15,22 @@ def add_balance_columns(
     receiver_balances: Dict[str, float]
 ) -> pd.DataFrame:
     """Add sender and receiver balance columns to DataFrame."""
-    df['sender_balance'] = df['code'].apply(lambda x: sender_balances.get(str(x), 0))
-    df['receiver_balance'] = df['code'].apply(lambda x: receiver_balances.get(str(x), 0))
+    df['sender_balance'] = df['code'].apply(
+        lambda x: sender_balances.get(str(x), 0)
+    )
+    df['receiver_balance'] = df['code'].apply(
+        lambda x: receiver_balances.get(str(x), 0)
+    )
     return df
 
 
 def normalize_surplus_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize surplus column names to standard quantity columns."""
-    surplus_cols = ['surplus_remaining', 'remaining_surplus', 'surplus_quantity']
+    surplus_cols = [
+        'surplus_remaining', 
+        'remaining_surplus', 
+        'surplus_quantity'
+    ]
     for col in surplus_cols:
         if col in df.columns:
             df['quantity'] = df[col]

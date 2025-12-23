@@ -7,7 +7,9 @@ from src.shared.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def ensure_branch_directories(branches: list, branches_dir: str, analytics_dir: str) -> None:
+def ensure_branch_directories(
+    branches: list, branches_dir: str, analytics_dir: str
+) -> None:
     """Ensure branch directories exist for all branches."""
     for branch in branches:
         ensure_directory_exists(os.path.join(branches_dir, branch))
@@ -20,4 +22,8 @@ def setup_and_validate(renamed_dir: str) -> tuple:
     if not csv_files:
         logger.error("No CSV files found in %s", renamed_dir)
         return None, None, None
-    return csv_files, os.path.join("data", "output", "branches", "files"), os.path.join("data", "output", "branches", "analytics")
+        
+    branches_dir = os.path.join("data", "output", "branches", "files")
+    analytics_dir = os.path.join("data", "output", "branches", "analytics")
+    
+    return csv_files, branches_dir, analytics_dir

@@ -2,9 +2,13 @@
 
 import os
 from src.shared.utils.logging_utils import get_logger
-from src.services.transfers.generators.transfer_generator import generate_transfer_files
+from src.services.transfers.generators.transfer_generator import (
+    generate_transfer_files
+)
 from src.app.pipeline.step_7.transfers import finders
-from src.app.pipeline.step_7.transfers.generators.logging import log_transfer_summary
+from src.app.pipeline.step_7.transfers.generators.logging import (
+    log_transfer_summary
+)
 
 logger = get_logger(__name__)
 

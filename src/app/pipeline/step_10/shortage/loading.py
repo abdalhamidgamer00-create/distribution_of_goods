@@ -25,14 +25,13 @@ def validate_analytics_directories(branches: list, base_dir: str) -> bool:
 
 def prepare_shortage_data(analytics_dir: str) -> tuple:
     """Prepare shortage data and classify products."""
-    shortage_dataframe, has_date_header, first_line = calculate_shortage_products(
-        analytics_dir
-    )
+    result = calculate_shortage_products(analytics_dir)
+    shortage_dataframe, has_date_header, first_line = result
     
     if shortage_dataframe.empty:
         return None, None, None
     
-    shortage_dataframe['product_type'] = shortage_dataframe['product_name'].apply(
-        classify_product_type
+    shortage_dataframe['product_type'] = (
+        shortage_dataframe['product_name'].apply(classify_product_type)
     )
     return shortage_dataframe, has_date_header, first_line

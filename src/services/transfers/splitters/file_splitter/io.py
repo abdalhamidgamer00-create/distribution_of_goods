@@ -9,7 +9,10 @@ from src.core.domain.classification.product_classifier import (
 
 
 def write_csv_to_file(
-    dataframe: pd.DataFrame, filepath: str, has_date_header: bool, first_line: str
+    dataframe: pd.DataFrame, 
+    filepath: str, 
+    has_date_header: bool, 
+    first_line: str
 ) -> None:
     """Write DataFrame to CSV with optional date header."""
     with open(filepath, 'w', encoding='utf-8-sig', newline='') as file_handle:
@@ -19,12 +22,17 @@ def write_csv_to_file(
 
 
 def save_category_file(
-    category_dataframe: pd.DataFrame, file_folder: str, base_folder_name: str,
-    category: str, timestamp: str, has_date_header: bool, first_line: str
+    category_df: pd.DataFrame, 
+    file_folder: str, 
+    base_folder_name: str,
+    category: str, 
+    timestamp: str, 
+    has_date_header: bool, 
+    first_line: str
 ) -> str:
     """Save a category DataFrame to CSV file."""
-    category_dataframe = category_dataframe.drop('product_type', axis=1)
-    category_dataframe = category_dataframe.sort_values(
+    category_df = category_df.drop('product_type', axis=1)
+    category_df = category_df.sort_values(
         'product_name', ascending=True, key=lambda column: column.str.lower()
     )
     
@@ -32,7 +40,7 @@ def save_category_file(
     category_path = os.path.join(file_folder, category_file)
     
     write_csv_to_file(
-        category_dataframe, category_path, has_date_header, first_line
+        category_df, category_path, has_date_header, first_line
     )
     return category_path
 
@@ -41,7 +49,8 @@ def prepare_transfer_dataframe(transfer_file_path: str) -> pd.DataFrame:
     """Load and prepare transfer DataFrame with product types."""
     dataframe = pd.read_csv(transfer_file_path, encoding='utf-8-sig')
     ensure_columns(
-        dataframe, ["code", "product_name", "quantity_to_transfer"], 
+        dataframe, 
+        ["code", "product_name", "quantity_to_transfer"], 
         context=f"transfer file {transfer_file_path}"
     )
     dataframe['product_type'] = dataframe['product_name'].apply(

@@ -2,9 +2,16 @@
 
 import os
 from src.shared.utils.logging_utils import get_logger
-from src.services.transfers.converters.excel_converter import convert_all_split_files_to_excel
-from src.app.pipeline.step_8.transfer_splitter.validators import find_split_csv_files, extract_date_header
-from src.app.pipeline.step_8.transfer_splitter.excel_conversion.counting import log_excel_summary
+from src.services.transfers.converters.excel_converter import (
+    convert_all_split_files_to_excel
+)
+from src.app.pipeline.step_8.transfer_splitter.validators import (
+    find_split_csv_files, 
+    extract_date_header
+)
+from .counting import (
+    log_excel_summary
+)
 
 logger = get_logger(__name__)
 

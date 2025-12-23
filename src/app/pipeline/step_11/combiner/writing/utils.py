@@ -9,8 +9,15 @@ def get_timestamp() -> str:
 
 def prepare_and_sort(df: pd.DataFrame) -> pd.DataFrame:
     """Prepare columns and sort DataFrame."""
-    required_cols = ['code', 'product_name', 'quantity_to_transfer', 'target_branch', 
-                     'transfer_type', 'sender_balance', 'receiver_balance']
+    required_cols = [
+        'code', 
+        'product_name', 
+        'quantity_to_transfer', 
+        'target_branch', 
+        'transfer_type', 
+        'sender_balance', 
+        'receiver_balance'
+    ]
     optional_cols = ['unit', 'selling_price', 'company']
     
     final_cols = [c for c in required_cols if c in df.columns]
@@ -18,5 +25,9 @@ def prepare_and_sort(df: pd.DataFrame) -> pd.DataFrame:
     
     out = df[final_cols].copy()
     if 'product_name' in out.columns:
-        return out.sort_values('product_name', ascending=True, key=lambda x: x.str.lower())
+        return out.sort_values(
+            'product_name', 
+            ascending=True, 
+            key=lambda x: x.str.lower()
+        )
     return out

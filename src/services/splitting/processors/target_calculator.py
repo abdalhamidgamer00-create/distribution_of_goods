@@ -7,8 +7,7 @@ import math
 # CONSTANTS
 # =============================================================================
 
-# Maximum allowed balance for a branch (no transfers if balance >= this value)
-# This is the threshold above which a branch is considered "full" and won't receive transfers
+# Maximum allowed balance for a branch (no transfers if balance >= threshold)
 MAXIMUM_BRANCH_BALANCE_THRESHOLD = 30
 
 
@@ -16,10 +15,14 @@ MAXIMUM_BRANCH_BALANCE_THRESHOLD = 30
 # PUBLIC API
 # =============================================================================
 
-def calculate_target_amount(needed: float, balance: float, proportional_allocation: float = None) -> float:
+def calculate_target_amount(
+    needed: float, balance: float, proportional_allocation: float = None
+) -> float:
     """Calculate target transfer amount based on balance rules."""
     target_amount = _calculate_base_target(needed, balance)
-    return _apply_proportional_limit(target_amount, proportional_allocation, balance)
+    return _apply_proportional_limit(
+        target_amount, proportional_allocation, balance
+    )
 
 
 def should_skip_transfer(balance: float) -> bool:
@@ -55,13 +58,18 @@ def _calculate_max_transfer(balance: float) -> float:
 # PROPORTIONAL ALLOCATION HELPERS
 # =============================================================================
 
-def _apply_proportional_limit(target_amount: float, proportional_allocation: float, balance: float) -> float:
+def _apply_proportional_limit(
+    target_amount: float, proportional_allocation: float, balance: float
+) -> float:
     """Apply proportional allocation limits to target amount."""
     if proportional_allocation is None or proportional_allocation <= 0:
         return target_amount
+        
     if balance >= MAXIMUM_BRANCH_BALANCE_THRESHOLD:
         return 0.0
+        
     allocated_ceil = math.ceil(proportional_allocation)
     if allocated_ceil + balance > MAXIMUM_BRANCH_BALANCE_THRESHOLD:
         return min(target_amount, _calculate_max_transfer(balance))
+        
     return min(target_amount, allocated_ceil)

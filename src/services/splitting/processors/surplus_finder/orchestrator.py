@@ -4,7 +4,9 @@ from src.services.splitting.processors.target_calculator import (
     calculate_target_amount,
     should_skip_transfer,
 )
-from src.services.splitting.processors.surplus_finder import records, data, search
+from src.services.splitting.processors.surplus_finder import (
+    records, data, search
+)
 
 
 def check_early_returns(needed: float, balance: float) -> tuple:
@@ -33,14 +35,23 @@ def handle_target_and_search(
         return [records.create_empty_withdrawal_record(needed)], {}
     
     return search.search_and_finalize(
-        branch, product_index, branch_data, branches, existing_withdrawals, 
-        target_amount, needed
+        branch, 
+        product_index, 
+        branch_data, 
+        branches, 
+        existing_withdrawals, 
+        target_amount, 
+        needed
     )
 
 
 def find_surplus_sources_for_single_product(
-    branch: str, product_index: int, branch_data: dict, branches: list,
-    existing_withdrawals: dict = None, proportional_allocation: dict = None
+    branch: str, 
+    product_index: int, 
+    branch_data: dict, 
+    branches: list,
+    existing_withdrawals: dict = None, 
+    proportional_allocation: dict = None
 ) -> tuple:
     """Find surplus sources for a single product for a specific branch."""
     existing_withdrawals = existing_withdrawals or {}
@@ -48,11 +59,18 @@ def find_surplus_sources_for_single_product(
     
     needed, balance = data.get_product_data(branch_data, branch, product_index)
     
-    should_return, result_list, result_dict = check_early_returns(needed, balance)
+    res = check_early_returns(needed, balance)
+    should_return, result_list, result_dict = res
     if should_return:
         return result_list, result_dict
     
     return handle_target_and_search(
-        branch, product_index, branch_data, branches, existing_withdrawals, 
-        proportional_allocation, needed, balance
+        branch, 
+        product_index, 
+        branch_data, 
+        branches, 
+        existing_withdrawals, 
+        proportional_allocation, 
+        needed, 
+        balance
     )
