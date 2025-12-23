@@ -22,10 +22,8 @@ class TestAllocationCalculatorEdgeCases:
         WHY: Cover line 50 - fallback to needed-based proportions
         BREAKS: Division by zero in allocation
         """
-        from src.core.domain.calculations.allocation_calculator import (
-            _build_branch_matrices,
-            _calculate_proportions,
-        )
+        from src.core.domain.calculations.allocation_calculator.matrices import build_branch_matrices
+        from src.core.domain.calculations.allocation_calculator.proportions import calculate_proportions
         
         # Create branch data where weighted scores sum to zero
         branches = ['branch1', 'branch2']
@@ -44,13 +42,13 @@ class TestAllocationCalculatorEdgeCases:
             })
         }
         
-        matrices = _build_branch_matrices(branch_data, branches)
+        matrices = build_branch_matrices(branch_data, branches)
         
         # Create zero total_scores
         total_scores = pd.Series([0.0, 0.0], index=branches)
         
         # This should trigger line 50 (fallback path)
-        result = _calculate_proportions(matrices, 0, total_scores, 20.0, branches)
+        result = calculate_proportions(matrices, 0, total_scores, 20.0, branches)
         
         # Should return some proportions
         assert isinstance(result, pd.Series)
@@ -62,10 +60,8 @@ class TestAllocationCalculatorEdgeCases:
         WHY: Cover line 98 - return None for products with no need
         BREAKS: Unnecessary processing of fully-stocked products
         """
-        from src.core.domain.calculations.allocation_calculator import (
-            _build_branch_matrices,
-            _process_single_product_allocation,
-        )
+        from src.core.domain.calculations.allocation_calculator.matrices import build_branch_matrices
+        from src.core.domain.calculations.allocation_calculator.orchestrator import process_single_product_allocation
         
         # Create branch data where needed_quantity is 0
         branches = ['branch1', 'branch2']
@@ -84,12 +80,12 @@ class TestAllocationCalculatorEdgeCases:
             })
         }
         
-        matrices = _build_branch_matrices(branch_data, branches)
+        matrices = build_branch_matrices(branch_data, branches)
         total_surplus = pd.Series([100.0])
         total_needed = pd.Series([0.0])  # Zero total needed
         
         # This should return None (line 98)
-        result = _process_single_product_allocation(
+        result = process_single_product_allocation(
             0, matrices, total_surplus, total_needed, branches, branch_data
         )
         
@@ -156,14 +152,12 @@ class TestDataValidatorEdgeCases:
         WHY: Cover path when optional_warning is None
         BREAKS: Incorrect warning messages
         """
-        from src.core.validation.headers import (
-            _check_optional_present,
-            _get_optional_headers,
-        )
+        from src.core.validation.header_validator.checks import _check_optional_present
+        from src.core.validation.header_validator.constants import get_optional_headers
         
         # Headers with no optional columns
         actual_headers = ["كود", "إسم الصنف"]
-        optional_headers = _get_optional_headers()
+        optional_headers = get_optional_headers()
         
         result = _check_optional_present(actual_headers, optional_headers)
         
@@ -207,12 +201,12 @@ class TestAllocationBoundaryConditions:
         WHY: Edge case where max - min = 0
         BREAKS: Division by zero
         """
-        from src.core.domain.calculations.allocation_calculator import _normalize_scores
+        from src.core.domain.calculations.allocation_calculator.scoring import normalize_scores
         
         # All identical values
         series = pd.Series([5.0, 5.0, 5.0])
         
-        result = _normalize_scores(series)
+        result = normalize_scores(series)
         
         # Should return all 1.0 when values are identical
         assert all(result == 1.0)

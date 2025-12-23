@@ -71,7 +71,7 @@ def _render_file_preview(file_info: dict, max_rows: int) -> None:
     )
     
     if dataframe is not None:
-        st.dataframe(dataframe, use_container_width=True)
+        st.dataframe(dataframe, width="stretch")
         st.caption(f"عرض أول {max_rows} صف")
 
 
