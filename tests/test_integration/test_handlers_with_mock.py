@@ -181,7 +181,7 @@ class TestStep3HandlerWithMock:
     
     def test_step_3_with_use_latest(self, sample_csv_file, setup_test_environment, monkeypatch):
         """Test step_3_validate_data with use_latest_file=True"""
-        from src.app.pipeline.step_3.handler import step_3_validate_data
+        from src.app.pipeline.step_3.validator import step_3_validate_data
         
         env = setup_test_environment
         monkeypatch.chdir(env['root'])
