@@ -13,6 +13,19 @@ def ensure_directory_exists(path: str) -> None:
     Path(path).mkdir(parents=True, exist_ok=True)
 
 
+def has_files_in_directory(directory: str) -> bool:
+    """Check if directory exists and has any files."""
+    if not os.path.exists(directory):
+        return False
+    try:
+        for _, _, files in os.walk(directory):
+            if files:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def get_file_path(filename: str, directory: str) -> str:
     """Get full file path."""
     return os.path.join(directory, filename)

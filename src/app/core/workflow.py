@@ -3,48 +3,57 @@
 from src.shared.utils.logging_utils import get_logger
 from src.infrastructure.persistence.pandas_repository import PandasDataRepository
 
-# Import domain services
-from src.app.services.distribution.archivator import ArchivatorService
-from src.app.services.distribution.ingestion import IngestionService
-from src.app.services.distribution.validation import ValidationService
-from src.app.services.distribution.analytics import AnalyticsService
-from src.app.services.distribution.normalization import NormalizationService
-from src.app.services.distribution.segmentation import SegmentationService
-from src.app.services.distribution.engine import TransferOptimizer
-from src.app.services.distribution.classification import TransferClassifier
-from src.app.services.distribution.surplus import SurplusReporter
-from src.app.services.distribution.shortage import ShortageReporter
-from src.app.services.distribution.consolidation import ConsolidationService
+# Import domain services (Use Cases)
+from src.application.use_cases.archive_data import ArchiveData
+from src.application.use_cases.ingest_data import IngestData
+from src.application.use_cases.validate_inventory import ValidateInventory
+from src.application.use_cases.analyze_sales import AnalyzeSales
+from src.application.use_cases.normalize_schema import NormalizeSchema
+from src.application.use_cases.segment_branches import SegmentBranches
+from src.application.use_cases.optimize_transfers import OptimizeTransfers
+from src.application.use_cases.classify_transfers import ClassifyTransfers
+from src.application.use_cases.report_surplus import ReportSurplus
+from src.application.use_cases.report_shortage import ReportShortage
+from src.application.use_cases.consolidate_transfers import ConsolidateTransfers
 
 logger = get_logger(__name__)
 
 class PipelineManager:
-    """Orchestrates the execution of domain services in the distribution pipeline."""
+    """Orchestrates the execution of application use cases in the distribution pipeline."""
 
     def __init__(self, repository=None):
         import os
-        # Use default repository if none provided
+        
+        # Standardized directories
+        input_directory = os.path.join("data", "output", "converted", "renamed")
+        output_directory = os.path.join("data", "output", "branches", "analytics")
+        
+        # Initialize the shared repository with all required paths
         self._repository = repository or PandasDataRepository(
-            input_dir=os.path.join("data", "output", "converted", "renamed"),
-            output_dir=os.path.join("data", "output", "branches", "analytics")
+            input_dir=input_directory,
+            output_dir=output_directory,
+            analytics_dir=output_directory,
+            surplus_dir=os.path.join("data", "output", "remaining_surplus"),
+            shortage_dir=os.path.join("data", "output", "shortage"),
+            transfers_dir=os.path.join("data", "output", "transfers", "csv")
         )
         
-        # Initialize services
+        # Initialize use cases
         self._services = {
-            "archive": ArchivatorService(self._repository),
-            "ingest": IngestionService(self._repository),
-            "validate": ValidationService(self._repository),
-            "analyze": AnalyticsService(self._repository),
-            "normalize": NormalizationService(self._repository),
-            "segment": SegmentationService(self._repository),
-            "optimize": TransferOptimizer(self._repository),
-            "classify": TransferClassifier(self._repository),
-            "report_surplus": SurplusReporter(self._repository),
-            "report_shortage": ShortageReporter(self._repository),
-            "consolidate": ConsolidationService(self._repository)
+            "archive": ArchiveData(),
+            "ingest": IngestData(),
+            "validate": ValidateInventory(),
+            "analyze": AnalyzeSales(),
+            "normalize": NormalizeSchema(),
+            "segment": SegmentBranches(self._repository),
+            "optimize": OptimizeTransfers(self._repository),
+            "classify": ClassifyTransfers(self._repository),
+            "report_surplus": ReportSurplus(self._repository),
+            "report_shortage": ReportShortage(self._repository),
+            "consolidate": ConsolidateTransfers(self._repository)
         }
 
-        # Define service dependencies
+        # Define service (use case) dependencies
         self._deps = {
             "validate": ["ingest"],
             "analyze": ["ingest"],
