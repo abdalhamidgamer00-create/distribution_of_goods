@@ -19,5 +19,6 @@ render_simple_browser(
     cfg['excel'],
     cfg['step'],
     cfg['session_key'],
-    show_branch=False
+    show_branch=False,
+    category='shortage'
 )

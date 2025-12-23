@@ -2,6 +2,7 @@
 
 import streamlit as st
 import os
+import typing
 from src.app.gui.services.file_service import list_output_files
 from src.app.gui.utils.translations import MESSAGES
 from src.app.gui.page_templates.simple_browser import (
@@ -10,22 +11,33 @@ from src.app.gui.page_templates.simple_browser import (
 
 
 def process_directory_tab(
-    directory: str, 
+    category: str,
     ext: str, 
     step_num: int, 
     key: str, 
     show_branch: bool
 ) -> None:
-    """Process and render content for a single directory tab."""
-    if not os.path.exists(directory):
-        st.warning(f"يرجى تشغيل الخطوة {step_num} أولاً.")
-        return
-
-    files = list_output_files(directory, [ext])
+    """Process and render content using QueryOutputs use case."""
+    from src.app.gui.services.pipeline_service import get_repository
+    from src.application.use_cases.query_outputs import QueryOutputs
+    
+    repository = get_repository()
+    use_case = QueryOutputs(repository)
+    
+    # Get all outputs for category
+    files = use_case.execute(category)
+    
+    # Filter by extension
+    files = [f for f in files if f['name'].endswith(ext)]
     
     if not files:
         st.info(MESSAGES["no_files"])
         return
+
+    # Add relative_path key early for filters compatibility
+    for f in files:
+        if 'relative_path' not in f:
+            f['relative_path'] = f['path']
 
     st.success(f"تم العثور على {len(files)} ملف")
 
@@ -49,15 +61,19 @@ def render_simple_browser(
     excel_dir: str, 
     step: int, 
     key: str, 
-    show_branch: bool = True
+    show_branch: bool = True,
+    category: "typing.Optional[str]" = None
 ) -> None:
-    """Render the main simple file browser page structure."""
+    """Render the main simple file browser using domain use cases."""
+    if category is None:
+        # Fallback to key if category not provided
+        category = key.lower()
+
     setup.setup_page_config(title, icon)
     
     tabs = st.tabs(["📊 Excel", "📄 CSV"])
-    directories = [excel_dir, csv_dir]
     extensions = [".xlsx", ".csv"]
     
-    for tab, directory, ext in zip(tabs, directories, extensions):
+    for tab, ext in zip(tabs, extensions):
         with tab:
-            process_directory_tab(directory, ext, step, key, show_branch)
+            process_directory_tab(category, ext, step, key, show_branch)

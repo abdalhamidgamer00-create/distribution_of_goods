@@ -22,6 +22,7 @@ from src.app.pipeline.step_11.runner.orchestrator import (
     step_11_generate_combined_transfers,
     log_summary as _log_summary,
 )
+from src.application.use_cases.combine_transfers import GenerateCombinedTransfers
 from src.app.pipeline.step_11.runner.validation import (
     validate_input_directories as _validate_input_directories,
     create_output_directories as _create_output_directories,
@@ -180,46 +181,42 @@ class TestLogSummary:
 class TestProcessSingleBranch:
     """Tests for _process_single_branch function."""
     
-    @patch('src.app.pipeline.step_11.runner.processing.generators.generate_separate_output')
-    @patch('src.app.pipeline.step_11.runner.processing.generators.generate_merged_output')
-    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
-    def test_returns_counts_on_success(self, mock_data, mock_merged, mock_separate):
+    @patch('src.application.use_cases.combine_transfers.GenerateCombinedTransfers.execute_for_branch')
+    def test_returns_counts_on_success(self, mock_execute):
         """
         WHAT: Return (merged_count, separate_count) tuple
         WHY: Track output per branch
         BREAKS: Wrong counts
         """
-        mock_data.return_value = pd.DataFrame({"col": [1, 2, 3]})
-        mock_merged.return_value = 5
-        mock_separate.return_value = 10
+        mock_execute.return_value = (5, 10)
         
         merged, separate = _process_single_branch("admin", "20231222")
         
         assert merged == 5
         assert separate == 10
     
-    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
-    def test_returns_zeros_for_empty_data(self, mock_data):
+    @patch('src.application.use_cases.combine_transfers.GenerateCombinedTransfers.execute_for_branch')
+    def test_returns_zeros_for_empty_data(self, mock_execute):
         """
         WHAT: Return (0, 0) when no data
         WHY: Handle branches without transfers
         BREAKS: Error on empty branch
         """
-        mock_data.return_value = pd.DataFrame()
+        mock_execute.return_value = (0, 0)
         
         merged, separate = _process_single_branch("empty_branch", "20231222")
         
         assert merged == 0
         assert separate == 0
     
-    @patch('src.app.pipeline.step_11.runner.processing.get_combined_data')
-    def test_handles_none_data(self, mock_data):
+    @patch('src.application.use_cases.combine_transfers.GenerateCombinedTransfers.execute_for_branch')
+    def test_handles_none_data(self, mock_execute):
         """
         WHAT: Handle None combined data
         WHY: Some branches may have no data
         BREAKS: NoneType error
         """
-        mock_data.return_value = None
+        mock_execute.return_value = (0, 0)
         
         merged, separate = _process_single_branch("none_branch", "20231222")
         

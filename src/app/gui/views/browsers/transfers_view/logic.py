@@ -14,16 +14,27 @@ def process_transfer_tab(
     sel: str,
     branches: list
 ) -> None:
-    """Process single tab logic for transfers."""
-    if not os.path.exists(directory):
-        st.warning(f"يرجى تشغيل الخطوة {step} أولاً.")
-        return
-
-    files = collect_transfer_files(directory, ext, sel, branches)
+    """Process single tab logic using QueryOutputs use case."""
+    from src.app.gui.services.pipeline_service import get_repository
+    from src.application.use_cases.query_outputs import QueryOutputs
+    
+    repository = get_repository()
+    use_case = QueryOutputs(repository)
+    
+    # Get standard transfer outputs for current source branch
+    files = use_case.execute('transfers', sel)
+    
+    # Filter by extension
+    files = [f for f in files if f['name'].endswith(ext)]
     
     if not files:
         st.warning("لا توجد ملفات")
         return
+
+    # Add relative_path key for compatibility with display
+    for f in files:
+        if 'relative_path' not in f:
+            f['relative_path'] = f['path']
 
     files = filters.filter_transfers(files, sel, branches, kp, ext)
     

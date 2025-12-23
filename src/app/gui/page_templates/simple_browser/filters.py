@@ -16,7 +16,7 @@ def filter_files_by_branch(files: list, key: str, ext: str) -> list:
     """Filter files based on selected branch."""
     by_branch = group_files_by_branch(files)
     
-    if not by_branch:
+    if not by_branch or len(by_branch) <= 1:
         return files
         
     opts = ["الكل"] + [
@@ -37,7 +37,8 @@ def filter_files_by_category(files: list, key: str, ext: str) -> list:
     """Filter files based on selected category."""
     by_cat = group_files_by_category(files)
     
-    if not by_cat:
+    # Skip filter if only one category (e.g. 'other' for shortage)
+    if not by_cat or len(by_cat) <= 1:
         return files
 
     opts = ["الكل"] + [
@@ -51,4 +52,13 @@ def filter_files_by_category(files: list, key: str, ext: str) -> list:
         return files
         
     cat_key = get_key_from_label(selected, CATEGORY_NAMES)
+    
+    # For 'other', we want files that DON'T match known categories
+    if cat_key == 'other':
+        known_cats = [k for k in CATEGORY_NAMES.keys() if k != 'other']
+        return [
+            f for f in files 
+            if not any(k in f['name'].lower() for k in known_cats)
+        ]
+        
     return [f for f in files if cat_key in f['name'].lower()]

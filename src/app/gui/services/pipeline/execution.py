@@ -30,3 +30,15 @@ def _find_step_by_id(step_id: str) -> Any:
         if step.id == step_id:
             return step
     return None
+
+
+def get_repository() -> Any:
+    """Get a pre-configured repository instance for the GUI."""
+    from src.infrastructure.persistence.pandas_repository import PandasDataRepository
+    return PandasDataRepository(
+        input_dir="data/output/converted/renamed",
+        output_dir="data/output/transfers",
+        surplus_dir="data/output/remaining_surplus",
+        shortage_dir="data/output/shortage",
+        analytics_dir="data/output/branches/analytics"
+    )

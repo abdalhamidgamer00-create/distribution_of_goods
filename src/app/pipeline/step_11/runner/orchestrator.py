@@ -1,38 +1,36 @@
-"""Main orchestrator for Step 11."""
+"""Refactored Handler for Step 11: Generate Combined Transfer Files."""
 
+import os
+from datetime import datetime
 from src.shared.utils.logging_utils import get_logger
-from src.app.pipeline.step_11.combiner import get_timestamp
-from src.app.pipeline.step_11.runner import validation, processing
-from src.app.pipeline.step_11.runner.constants import (
-    OUTPUT_MERGED_EXCEL,
-    OUTPUT_SEPARATE_EXCEL,
-)
+from src.app.pipeline.step_11.runner import processing, validation
 
 logger = get_logger(__name__)
 
-
-def log_summary(total_merged: int, total_separate: int) -> None:
-    """Log summary of generated files."""
-    logger.info(
-        "=" * 50 + 
-        f"\nGenerated {total_merged} merged files (CSV + Excel)\n"
-        f"Generated {total_separate} separate files (CSV + Excel)\n"
-        f"Merged output: {OUTPUT_MERGED_EXCEL}\n"
-        f"Separate output: {OUTPUT_SEPARATE_EXCEL}"
-    )
-
-
-def step_11_generate_combined_transfers(use_latest_file: bool = None) -> bool:
-    """Step 11: Generate combined transfer files with remaining surplus."""
+def step_11_generate_combined_transfers(use_latest_file: bool = None, **kwargs) -> bool:
+    """
+    Step 11: Generate combined transfer files with remaining surplus.
+    Utilizes Clean Architecture components and enhanced repository support.
+    """
     if not validation.validate_input_directories():
         return False
+        
     validation.create_output_directories()
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     try:
-        total_merged, total_separate = processing.process_all_branches(
-            get_timestamp()
-        )
+        total_merged, total_separate = processing.process_all_branches(timestamp)
         log_summary(total_merged, total_separate)
-        return total_merged > 0 or total_separate > 0
-    except Exception as error:
-        logger.exception(f"Error generating combined transfer files: {error}")
+        return (total_merged + total_separate) > 0
+    except Exception as e:
+        logger.exception(f"Error in Step 11: {e}")
         return False
+
+def log_summary(merged_count: int, separate_count: int) -> None:
+    """Logs a summary of generated files."""
+    logger.info("=" * 50)
+    logger.info(f"Generated {merged_count} merged files (CSV + Excel)")
+    logger.info(f"Generated {separate_count} separate files (CSV + Excel)")
+    logger.info("Merged output: data/output/combined_transfers/merged/excel")
+    logger.info("Separate output: data/output/combined_transfers/separate/excel")
