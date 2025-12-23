@@ -6,8 +6,8 @@ description: Guidelines for when and how to refactor code in this project
 
 ## When to Refactor
 
-- Files exceed 200-300 lines
-- Functions exceed 50 lines
+- Files exceed 100-400 lines
+- Functions exceed 20 lines
 - Code duplication detected
 - Complex nested logic (3+ levels)
 - Multiple responsibilities in one module

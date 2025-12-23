@@ -9,7 +9,7 @@ description: Python coding standards including formatting, documentation, and na
 ### Code Formatting
 - Follow PEP 8 style guide
 - Use 4 spaces for indentation (no tabs)
-- Maximum line length: 100 characters
+- Maximum line length: 80 characters
 - Use type hints for function parameters and return values
 
 ### Function Definitions
