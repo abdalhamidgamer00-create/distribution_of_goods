@@ -1,106 +1,75 @@
 from src.core.domain.pipeline.step import Step
-from src.app.pipeline.step_1 import step_1_archive_output
-from src.app.pipeline.step_2 import step_2_convert_excel_to_csv
-from src.app.pipeline.step_3 import step_3_validate_data
-from src.app.pipeline.step_4 import step_4_sales_analysis
-from src.app.pipeline.step_5 import step_5_rename_columns
-from src.app.pipeline.step_6 import step_6_split_by_branches
-from src.app.pipeline.step_7 import step_7_generate_transfers
-from src.app.pipeline.step_8 import step_8_split_by_product_type
-from src.app.pipeline.step_9 import step_9_generate_remaining_surplus
-from src.app.pipeline.step_10 import step_10_generate_shortage_files
-from src.app.pipeline.step_11 import step_11_generate_combined_transfers
+from src.app.core.workflow import PipelineManager
 
+# Initialize the manager once
+manager = PipelineManager()
 
-# Available steps definition
+# Available steps definition, now mapped to Domain Services
 AVAILABLE_STEPS = [
     Step(
         id="1",
-        name="Archive Previous Output",
-        description=(
-            "Archive previous output files before starting new process "
-            "(skips if no files exist)"
-        ),
-        function=step_1_archive_output
+        name="Data Archiving",
+        description="Archive and clear previous output data",
+        function=lambda use_latest_file=None: manager.run_service("archive")
     ),
     Step(
         id="2",
-        name="Convert Excel to CSV",
-        description="Convert selected Excel file from input folder to CSV",
-        function=step_2_convert_excel_to_csv
+        name="Source Ingestion",
+        description="Convert raw Excel input to CSV format",
+        function=lambda use_latest_file=None: manager.run_service("ingest", use_latest_file=use_latest_file)
     ),
     Step(
         id="3",
-        name="Validate Data",
-        description=(
-            "Validate CSV data, check date range (>= 3 months) "
-            "and Column Headers Validation"
-        ),
-        function=step_3_validate_data
+        name="Inventory Validation",
+        description="Validate data integrity and business rules",
+        function=lambda use_latest_file=None: manager.run_service("validate", use_latest_file=use_latest_file)
     ),
     Step(
         id="4",
-        name="Sales Analysis",
-        description=(
-            "Generate comprehensive sales analysis report with statistics "
-            "and improvement suggestions"
-        ),
-        function=step_4_sales_analysis
+        name="Sales Analytics",
+        description="Generate sales intelligence and performance reports",
+        function=lambda use_latest_file=None: manager.run_service("analyze", use_latest_file=use_latest_file)
     ),
     Step(
         id="5",
-        name="Rename Columns",
-        description="Rename CSV columns from Arabic to English",
-        function=step_5_rename_columns
+        name="Schema Normalization",
+        description="Standardize column headers and data formats",
+        function=lambda use_latest_file=None: manager.run_service("normalize", use_latest_file=use_latest_file)
     ),
     Step(
         id="6",
-        name="Split by Branches",
-        description="Split CSV file into 6 separate files, one for each branch",
-        function=step_6_split_by_branches
+        name="Branch Segmentation",
+        description="Partition global data into branch-specific datasets",
+        function=lambda use_latest_file=None: manager.run_service("segment")
     ),
     Step(
         id="7",
-        name="Generate Transfer Files",
-        description=(
-            "Generate transfer CSV files for each branch to all other branches"
-        ),
-        function=step_7_generate_transfers
+        name="Transfer Optimization",
+        description="Calculate optimal stock movements between branches",
+        function=lambda use_latest_file=None: manager.run_service("optimize")
     ),
     Step(
         id="8",
-        name="Split Transfer Files by Product Type & Convert to Excel",
-        description=(
-            "Split transfer files into 6 categories and convert them to "
-            "Excel format"
-        ),
-        function=step_8_split_by_product_type
+        name="Transfer Classification",
+        description="Group transfers by category and convert to Excel",
+        function=lambda use_latest_file=None: manager.run_service("classify")
     ),
     Step(
         id="9",
-        name="Generate Remaining Surplus Files",
-        description=(
-            "Generate files for products with remaining surplus after "
-            "distribution (CSV and Excel)"
-        ),
-        function=step_9_generate_remaining_surplus
+        name="Surplus Reporting",
+        description="Report excess inventory with no local demand",
+        function=lambda use_latest_file=None: manager.run_service("report_surplus")
     ),
     Step(
         id="10",
-        name="Generate Shortage Files",
-        description=(
-            "Generate files for products where total needed exceeds "
-            "total surplus"
-        ),
-        function=step_10_generate_shortage_files
+        name="Shortage Reporting",
+        description="Identify and report network-wide inventory gaps",
+        function=lambda use_latest_file=None: manager.run_service("report_shortage")
     ),
     Step(
         id="11",
-        name="Generate Combined Transfer Files",
-        description=(
-            "Combine transfers with remaining surplus in merged/separate "
-            "formats with balance coloring"
-        ),
-        function=step_11_generate_combined_transfers
+        name="Consolidated Reporting",
+        description="Merge transfers and surplus into final logistics files",
+        function=lambda use_latest_file=None: manager.run_service("consolidate")
     )
 ]
