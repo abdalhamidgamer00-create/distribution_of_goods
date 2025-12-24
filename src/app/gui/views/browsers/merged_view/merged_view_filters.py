@@ -1,17 +1,36 @@
 """Filtering logic for merged view."""
 
+from typing import List, Dict
 import streamlit as st
 from src.app.gui.utils.translations import CATEGORY_NAMES
 from src.app.gui.components import get_key_from_label
 
 
-def filter_merged_files(files: list, kp: str, ext: str) -> list:
-    """Filter merged files by category."""
-    cat_opts = ["الكل"] + list(CATEGORY_NAMES.values())
-    cat = st.selectbox("الفئة:", cat_opts, key=f"{kp}_c_{ext}")
-    ck = get_key_from_label(cat, CATEGORY_NAMES)
+def filter_merged_files(
+    files: List[Dict], 
+    key_prefix: str, 
+    extension: str
+) -> List[Dict]:
+    """
+    Filter merged files by category.
     
-    if not ck:
+    Args:
+        files: List of file metadata dictionaries
+        key_prefix: Unique prefix for UI element keys
+        extension: File extension (.csv or .xlsx)
+        
+    Returns:
+        Filtered list of files
+    """
+    category_options = ["الكل"] + list(CATEGORY_NAMES.values())
+    selected_category = st.selectbox(
+        "الفئة:", 
+        category_options, 
+        key=f"{key_prefix}_category_{extension}"
+    )
+    category_key = get_key_from_label(selected_category, CATEGORY_NAMES)
+    
+    if not category_key:
         return files
         
-    return [f for f in files if ck in f['name'].lower()]
+    return [f for f in files if category_key in f['name'].lower()]

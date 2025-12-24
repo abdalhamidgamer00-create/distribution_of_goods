@@ -11,18 +11,29 @@ from src.app.gui.views.browsers.separate_view import separate_view_logic as logi
 def render_separate_browser(
     title: str,
     icon: str,
-    csv: str,
-    excel: str,
-    step: int,
-    sk: str,
-    kp: str
+    csv_directory: str,
+    excel_directory: str,
+    step_number: int,
+    session_key: str,
+    key_prefix: str
 ) -> None:
-    """Render separate transfers browser."""
+    """
+    Render separate transfers browser.
+    
+    Args:
+        title: Page title
+        icon: Page icon
+        csv_directory: Directory for CSV files
+        excel_directory: Directory for Excel files
+        step_number: Pipeline step number
+        session_key: Streamlit session state key for branch selection
+        key_prefix: Unique prefix for UI element keys
+    """
     if not setup_browser_page(title, icon):
         return
 
     selected_branch = render_branch_selection_section(
-        session_key=sk,
+        session_key=session_key,
         subheader_label="📍 اختر الفرع المرسل",
         info_message_template="📂 من: **{branch_name}**"
     )
@@ -31,7 +42,13 @@ def render_separate_browser(
         return
 
     render_browser_tabs(
-        csv, 
-        excel, 
-        lambda d, e: logic.process_separate_tab(d, e, step, kp, selected_branch)
+        csv_directory, 
+        excel_directory, 
+        lambda dir_path, ext: logic.process_separate_tab(
+            dir_path, 
+            ext, 
+            step_number, 
+            key_prefix, 
+            selected_branch
+        )
     )

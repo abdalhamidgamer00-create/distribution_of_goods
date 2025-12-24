@@ -1,5 +1,6 @@
 """Filter rendering for separate transfers view."""
 
+from typing import Tuple, Optional
 import streamlit as st
 from src.core.domain.branches.config import get_branches
 from src.app.gui.utils.translations import CATEGORY_NAMES
@@ -9,17 +10,34 @@ from src.app.gui.components import (
 )
 
 
-def render_filters(kp: str, ext: str) -> tuple:
-    """Render filters for separate files and return keys."""
-    branches = get_branches()
+def render_filters(key_prefix: str, extension: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Render filters for separate files and return keys.
     
-    tgl_opts = ["الكل"] + [BRANCH_LABELS.get(b, b) for b in branches]
-    tl = st.selectbox("إلى:", tgl_opts, key=f"{kp}_t_{ext}")
+    Args:
+        key_prefix: Unique prefix for UI element keys
+        extension: File extension (.csv or .xlsx)
+        
+    Returns:
+        Tuple of (target_branch_key, category_key)
+    """
+    branches_list = get_branches()
     
-    cat_opts = ["الكل"] + list(CATEGORY_NAMES.values())
-    cl = st.selectbox("الفئة:", cat_opts, key=f"{kp}_c_{ext}")
+    target_options = ["الكل"] + [BRANCH_LABELS.get(branch, branch) for branch in branches_list]
+    selected_target = st.selectbox(
+        "إلى:", 
+        target_options, 
+        key=f"{key_prefix}_target_{extension}"
+    )
     
-    tk = get_key_from_label(tl, BRANCH_LABELS)
-    ck = get_key_from_label(cl, CATEGORY_NAMES)
+    category_options = ["الكل"] + list(CATEGORY_NAMES.values())
+    selected_category = st.selectbox(
+        "الفئة:", 
+        category_options, 
+        key=f"{key_prefix}_category_{extension}"
+    )
     
-    return tk, ck
+    target_branch_key = get_key_from_label(selected_target, BRANCH_LABELS)
+    category_key = get_key_from_label(selected_category, CATEGORY_NAMES)
+    
+    return target_branch_key, category_key
