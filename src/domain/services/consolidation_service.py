@@ -64,6 +64,10 @@ class ConsolidationEngine:
         network_state: NetworkStockState
     ) -> None:
         """Processes surplus entries and adds them to records."""
+        # Fix: Administration does not send surplus to itself
+        if branch.name == 'administration':
+            return
+
         for surplus in surplus_entries:
             sender_balance = network_state.get_balance(
                 branch.name, surplus.product.code
