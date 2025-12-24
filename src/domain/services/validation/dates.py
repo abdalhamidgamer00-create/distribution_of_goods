@@ -37,6 +37,20 @@ def validate_csv_header(csv_path: str) -> tuple:
         return False, None, None, f"Error reading file: {error}"
 
 
+def get_sheet_duration_days(csv_path: str) -> int:
+    """Extract dates from sheet header and calculate total days."""
+    try:
+        with open(csv_path, 'r', encoding='utf-8-sig') as file_handle:
+            first_line = file_handle.readline().strip()
+        
+        start_date, end_date = extract_dates_from_header(first_line)
+        if start_date and end_date:
+            return calculate_days_between(start_date, end_date)
+        return 0
+    except Exception:
+        return 0
+
+
 def _parse_date_strings(dates: list) -> tuple:
     """Parse date strings and return datetime objects."""
     try:
