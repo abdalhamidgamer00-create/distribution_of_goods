@@ -116,6 +116,13 @@ The AI model **MUST**:
 - Keep imports minimal: only import what you directly use.
 - Limit file-to-file coupling to enable easier testing and maintenance.
 
+## ⚙️ CONFIGURATION EXTRACTION
+
+- Move all **magic numbers** and **hardcoded strings** to configuration files or classes.
+- Use **configuration classes/functions** to centralize settings.
+- Centralize: branch names, column names, thresholds, weights, file paths.
+- Keep logic separate from configuration for easier maintenance and testing.
+
 ---
 
 ## 📏 LINE LENGTH RULE

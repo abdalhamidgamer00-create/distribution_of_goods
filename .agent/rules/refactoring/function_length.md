@@ -44,7 +44,14 @@
 
    * Use early exits (`if (!isValid) return;`) to reduce nesting. 🔄
 
-9. **Apply Command-Query Separation (CQS)**
+9. **Reduce nested logic complexity** 🎯
+
+   * **Maximum nesting depth: 2 levels**.
+   * Extract nested blocks (3+ levels) into separate functions.
+   * Use guards/early returns to flatten structure.
+   * Example: Instead of `if A: if B: if C:` → Use `if not A: return` then `if B: if C:`
+
+10. **Apply Command-Query Separation (CQS)**
 
    * **Command** (→ None): Change state, don't return data.
    * **Query** (→ data): Return data, don't change state.
@@ -52,14 +59,14 @@
 
 ## Golden Rules / Guidelines ✨
 
-10. **Step-down reading** 📖
+11. **Step-down reading** 📖
 
    * Code should read top-to-bottom like a story; higher-level functions delegate to lower-level ones.
 
-11. **Explicit is better than implicit** 💎
+12. **Explicit is better than implicit** 💎
 
     * Always aim for clarity over clever tricks or hidden behavior.
 
-12. **Readable for others** 🚀🏆
+13. **Readable for others** 🚀🏆
 
     * Anyone reading your code should understand the logic without digging into technical details.
