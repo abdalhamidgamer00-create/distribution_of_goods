@@ -87,3 +87,76 @@ def test_get_sheet_duration_integration(tmp_path):
     
     days = get_sheet_duration_days(str(f))
     assert days == 10
+
+def test_extract_dates_from_header_formats():
+    """Verify that dates can be extracted from various Arabic header formats."""
+    from src.domain.services.validation.dates import extract_dates_from_header
+    
+    # Format 1: Standard
+    h1 = "الفترة من 01/01/2025 00:00 إلى 01/02/2025 00:00"
+    s1, e1 = extract_dates_from_header(h1)
+    assert s1.day == 1 and s1.month == 1
+    assert e1.day == 1 and e1.month == 2
+    
+    # Format 2: No prefix
+    h2 = "01/01/2025 10:00 05/01/2025 12:00"
+    s2, e2 = extract_dates_from_header(h2)
+    assert s2.hour == 10
+    assert e2.day == 5
+    
+    # Format 3: Invalid
+    h3 = "no dates here"
+    s3, e3 = extract_dates_from_header(h3)
+    assert s3 is None and e3 is None
+
+def test_stock_mapper_consolidated_mapping():
+    """Verify that StockMapper passes num_days to branch stocks."""
+    row = pd.Series({
+        'code': '123',
+        'product_name': 'Test Product',
+        'administration_sales': 100.0,
+        'administration_balance': 50.0
+    })
+    
+    # 10 days duration -> avg_sales should be 100/10 = 10.0
+    consolidated = StockMapper.to_consolidated_stock(row, num_days=10)
+    assert consolidated.branch_stocks['administration'].avg_sales == 10.0
+
+def test_transfer_reader_parsing():
+    """Verify that TransferReader correctly parses balances from CSV rows."""
+    from src.infrastructure.repositories.io.transfer_reader import TransferReader
+    
+    reader = TransferReader("dummy")
+    df = pd.DataFrame([{
+        'code': '73396',
+        'product_name': 'AVIL 6 AMP',
+        'quantity_to_transfer': 1,
+        'sender_balance': 1.0,
+        'receiver_balance': 3.67
+    }])
+    
+    transfers = reader._map_rows_to_transfers(df, "source", "target")
+    assert len(transfers) == 1
+    assert transfers[0].sender_balance == 1.0
+    assert transfers[0].receiver_balance == 3.67
+    assert transfers[0].from_branch.name == "source"
+
+def test_stock_reader_fallback(tmp_path):
+    """Verify that StockReader falls back to 90 days when header is missing."""
+    from src.infrastructure.repositories.io.stock_reader import StockReader
+    
+    d = tmp_path / "analytics"
+    d.mkdir()
+    f = d / "no_header.csv"
+    
+    # Simple CSV without date header
+    content = "code,sales,balance\n123,10,20\n"
+    f.write_text(content, encoding='utf-8-sig')
+    
+    reader = StockReader(str(d))
+    df, days = reader._read_csv_and_extract_days(str(f))
+    
+    # Should fallback to 90 days
+    assert days == 90
+    assert len(df) == 1
+    assert str(df.iloc[0]['code']) == '123'
