@@ -4,6 +4,7 @@
 
 ```
 docs/
+├── ARCHITECTURE.md     # المعمارية والقواعد (Clean Architecture)
 ├── algorithm/          # خوارزمية التوزيع
 ├── verification/       # تقارير التحقق
 ├── tracking/           # تتبع المنتجات
