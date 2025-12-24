@@ -17,7 +17,7 @@ class TestControllerFunctions:
     def test_is_exit_choice_with_exit(self):
         """Test is_exit_choice returns True for exit choice"""
         from src.app.cli.core.controller import is_exit_choice
-        from src.app.cli.core.constants import EXIT_CHOICE
+        from src.app.cli.core.cli_constants import EXIT_CHOICE
         
         assert is_exit_choice(EXIT_CHOICE) is True
     
@@ -32,7 +32,7 @@ class TestControllerFunctions:
     def test_is_all_steps_choice_with_all(self):
         """Test is_all_steps_choice returns True for all steps choice"""
         from src.app.cli.core.controller import is_all_steps_choice
-        from src.app.cli.core.constants import ALL_STEPS_CHOICE_OFFSET
+        from src.app.cli.core.cli_constants import ALL_STEPS_CHOICE_OFFSET
         
         assert is_all_steps_choice(str(ALL_STEPS_CHOICE_OFFSET)) is True
     
@@ -68,7 +68,7 @@ class TestHandleUserChoice:
     def test_handle_exit_choice(self):
         """Test handle_user_choice returns False for exit"""
         from src.app.cli.core.controller import handle_user_choice
-        from src.app.cli.core.constants import EXIT_CHOICE
+        from src.app.cli.core.cli_constants import EXIT_CHOICE
         
         result = handle_user_choice(EXIT_CHOICE)
         
@@ -98,7 +98,7 @@ class TestHandleUserChoice:
     def test_handle_all_steps_choice(self):
         """Test handle_user_choice with all steps"""
         from src.app.cli.core.controller import handle_user_choice
-        from src.app.cli.core.constants import ALL_STEPS_CHOICE_OFFSET
+        from src.app.cli.core.cli_constants import ALL_STEPS_CHOICE_OFFSET
         
         with patch('src.app.cli.core.controller.execute_all_steps') as mock_exec:
             mock_exec.return_value = True

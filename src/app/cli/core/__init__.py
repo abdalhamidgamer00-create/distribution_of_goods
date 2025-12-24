@@ -1,6 +1,6 @@
 """Core CLI components"""
 
-from src.app.cli.core.constants import (
+from src.app.cli.core.cli_constants import (
     SEPARATOR, 
     EXIT_CHOICE, 
     ALL_STEPS_CHOICE_OFFSET

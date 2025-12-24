@@ -6,7 +6,7 @@ from src.app.gui.components import (
     setup_browser_page,
     render_browser_tabs
 )
-from src.app.gui.views.browsers.transfers_view import logic
+from src.app.gui.views.browsers.transfers_view import transfers_view_logic as logic
 
 
 def render_transfers_browser(

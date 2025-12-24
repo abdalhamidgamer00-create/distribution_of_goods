@@ -1,5 +1,5 @@
 import streamlit as st
-from src.app.gui.views.browsers.separate_view import filters, display
+from src.app.gui.views.browsers.separate_view import separate_view_filters as filters, separate_view_display as display
 
 
 def process_separate_tab(

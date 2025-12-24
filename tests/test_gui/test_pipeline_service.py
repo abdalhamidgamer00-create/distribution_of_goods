@@ -7,7 +7,7 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.app.gui.services.pipeline.execution import (
+from src.app.gui.services.pipeline.pipeline_execution import (
     _find_step_by_id
 )
 from src.app.gui.services.pipeline.info import (
@@ -90,7 +90,7 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(return_value=True)
 
-        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
+        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is True
@@ -106,7 +106,7 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(return_value=False)
 
-        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
+        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False
@@ -121,7 +121,7 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(side_effect=Exception("Test error"))
 
-        with patch('src.app.gui.services.pipeline.execution._find_step_by_id', return_value=mock_step):
+        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False

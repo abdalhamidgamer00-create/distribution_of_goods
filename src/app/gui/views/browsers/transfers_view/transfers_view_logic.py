@@ -3,7 +3,7 @@
 import os
 import streamlit as st
 from src.app.gui.services.file_service import collect_transfer_files
-from src.app.gui.views.browsers.transfers_view import filters, display
+from src.app.gui.views.browsers.transfers_view import transfers_view_filters as filters, transfers_view_display as display
 
 
 def process_transfer_tab(

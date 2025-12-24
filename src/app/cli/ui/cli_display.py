@@ -1,10 +1,12 @@
 """Menu display functions"""
 
 from src.app.pipeline.steps import AVAILABLE_STEPS
-from src.app.cli.core.constants import (
-    SEPARATOR, 
-    EXIT_CHOICE, 
-    ALL_STEPS_CHOICE_OFFSET
+from src.app.cli.core.cli_constants import (
+    MENU_OPTIONS,
+    WELCOME_MESSAGE,
+    SEPARATOR,
+    ALL_STEPS_CHOICE_OFFSET,
+    EXIT_CHOICE
 )
 from src.shared.utils.logging_utils import get_logger
 

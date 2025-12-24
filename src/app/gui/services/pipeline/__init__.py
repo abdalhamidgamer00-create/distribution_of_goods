@@ -1,5 +1,5 @@
 from src.app.gui.services.pipeline.info import get_all_steps, get_step_info
-from src.app.gui.services.pipeline.execution import run_single_step, get_repository
+from src.app.gui.services.pipeline.pipeline_execution import run_single_step, get_repository
 from src.app.gui.services.pipeline.sequences import get_steps_sequence
 
 __all__ = [

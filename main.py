@@ -16,7 +16,7 @@ def run_gui():
 def run_cli():
     """تشغيل واجهة سطر الأوامر"""
     from src.app.cli.menu import run_menu
-    from src.app.cli.executors.step_executor.orchestrator import (
+    from src.app.cli.executors.step_executor.step_executor_orchestrator import (
         execute_step, execute_step_with_dependencies
     )
     from src.app.cli.executors.step_executor.lookup import find_step_by_id

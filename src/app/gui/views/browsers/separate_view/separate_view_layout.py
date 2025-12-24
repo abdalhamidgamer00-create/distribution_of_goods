@@ -5,7 +5,7 @@ from src.app.gui.components import (
     setup_browser_page,
     render_browser_tabs
 )
-from src.app.gui.views.browsers.separate_view import logic
+from src.app.gui.views.browsers.separate_view import separate_view_logic as logic
 
 
 def render_separate_browser(

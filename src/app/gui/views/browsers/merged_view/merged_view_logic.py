@@ -1,5 +1,5 @@
 import streamlit as st
-from src.app.gui.views.browsers.merged_view import filters, display
+from src.app.gui.views.browsers.merged_view import merged_view_filters as filters, merged_view_display as display
 
 
 def process_merged_tab(

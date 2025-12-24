@@ -1,6 +1,6 @@
 """CLI interface and interactive menu - Main entry point"""
 
-from src.app.cli.ui.display import display_menu
+from src.app.cli.ui.cli_display import display_menu
 from src.app.cli.handlers.input_handler import get_user_choice
 from src.app.cli.core.controller import handle_user_choice
 

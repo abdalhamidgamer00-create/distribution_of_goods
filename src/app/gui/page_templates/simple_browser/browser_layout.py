@@ -5,9 +5,9 @@ import os
 import typing
 from src.app.gui.services.file_service import list_output_files
 from src.app.gui.utils.translations import MESSAGES
-from src.app.gui.page_templates.simple_browser import (
-    setup, filters, rendering
-)
+from src.app.gui.page_templates.simple_browser import browser_setup as setup
+from src.app.gui.page_templates.simple_browser import browser_filters as filters
+from src.app.gui.page_templates.simple_browser import browser_rendering as rendering
 
 
 def process_directory_tab(

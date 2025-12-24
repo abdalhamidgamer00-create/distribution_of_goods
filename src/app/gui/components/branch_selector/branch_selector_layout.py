@@ -2,7 +2,7 @@
 
 import streamlit as st
 from src.core.domain.branches.config import get_branches
-from src.app.gui.components.branch_selector.constants import BRANCH_LABELS
+from src.app.gui.components.branch_selector.branch_selector_constants import BRANCH_LABELS
 
 def render_grid_buttons(session_key: str, key_prefix: str) -> None:
     """Render the grid of branch buttons."""

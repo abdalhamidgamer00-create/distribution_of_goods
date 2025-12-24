@@ -61,7 +61,7 @@ class TestAllocationCalculatorEdgeCases:
         BREAKS: Unnecessary processing of fully-stocked products
         """
         from src.core.domain.calculations.allocation_calculator.matrices import build_branch_matrices
-        from src.core.domain.calculations.allocation_calculator.orchestrator import process_single_product_allocation
+        from src.core.domain.calculations.allocation_calculator.allocation_orchestrator import process_single_product_allocation
         
         # Create branch data where needed_quantity is 0
         branches = ['branch1', 'branch2']
@@ -153,7 +153,7 @@ class TestDataValidatorEdgeCases:
         BREAKS: Incorrect warning messages
         """
         from src.core.validation.header_validator.checks import _check_optional_present
-        from src.core.validation.header_validator.constants import get_optional_headers
+        from src.core.validation.header_validator.header_validation_constants import get_optional_headers
         
         # Headers with no optional columns
         actual_headers = ["كود", "إسم الصنف"]

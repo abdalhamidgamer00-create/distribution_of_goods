@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.app.cli.ui.display import display_menu, _display_step_item
-from src.app.cli.core.constants import SEPARATOR, EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
+from src.app.cli.ui.cli_display import display_menu, _display_step_item
+from src.app.cli.core.cli_constants import SEPARATOR, EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
 
 
 # ===================== _display_step_item Tests =====================

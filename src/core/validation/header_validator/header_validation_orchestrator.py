@@ -1,9 +1,9 @@
 """Main header validation orchestrator."""
 
-from src.core.validation.header_validator.constants import (
+from src.core.validation.header_validator.header_validation_constants import (
     get_required_headers, get_optional_headers
 )
-from src.core.validation.header_validator.reader import read_header_line
+from src.core.validation.header_validator.header_reader import read_header_line
 from src.core.validation.header_validator.checks import check_all_headers
 
 

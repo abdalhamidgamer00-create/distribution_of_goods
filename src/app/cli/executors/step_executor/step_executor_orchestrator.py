@@ -1,9 +1,10 @@
 """Main orchestration for step execution."""
 
 from src.shared.utils.logging_utils import get_logger
-from src.app.cli.executors.step_executor import (
-    lookup, execution, sequence, logging
-)
+from src.app.cli.executors.step_executor import lookup
+from src.app.cli.executors.step_executor import step_execution as execution
+from src.app.cli.executors.step_executor import sequence
+from src.app.cli.executors.step_executor import logging
 
 logger = get_logger(__name__)
 

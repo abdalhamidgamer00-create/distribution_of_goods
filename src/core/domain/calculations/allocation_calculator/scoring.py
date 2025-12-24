@@ -1,7 +1,7 @@
 """Score calculation helpers."""
 
 import pandas as pd
-from src.core.domain.calculations.allocation_calculator.constants import (
+from src.core.domain.calculations.allocation_calculator.allocation_constants import (
     AVG_SALES_WEIGHT, NEEDED_WEIGHT, BALANCE_WEIGHT
 )
 

@@ -1,7 +1,7 @@
 """Branch resolution logic."""
 
 from typing import Optional
-from src.app.gui.components.branch_selector.constants import BRANCH_LABELS
+from src.app.gui.components.branch_selector.branch_selector_constants import BRANCH_LABELS
 
 def get_branch_key_from_label(selected_label: str) -> Optional[str]:
     """Get branch key from selected label."""

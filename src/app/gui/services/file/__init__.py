@@ -1,5 +1,5 @@
 """File Service package."""
-from .reader import read_file_content
+from src.app.gui.services.file.file_service_reader import read_file_content
 from .writer import create_zip_archive, save_uploaded_file
 from .lister import (
     list_output_files, 
