@@ -23,18 +23,20 @@ class StockReader:
             return []
             
         try:
-            dataframe = self._read_csv_with_header(csv_path)
+            dataframe, days = self._read_csv_and_extract_days(csv_path)
             dataframe.columns = [
                 column.strip().replace('\ufeff', '') 
                 for column in dataframe.columns
             ]
             
-            return self._map_dataframe_to_entities(dataframe)
+            return self._map_dataframe_to_entities(dataframe, days)
         except Exception as error:
             logger.error(f"Error loading stock from {csv_path}: {error}")
             return []
 
-    def load_stock_levels(self, branch_name: str) -> Dict[str, StockLevel]:
+    def load_stock_levels(
+        self, branch_name: str, days: int = 90
+    ) -> Dict[str, StockLevel]:
         """Reads branch-specific stock levels from disk."""
         path = os.path.join(
             self._analytics_directory, 
@@ -46,47 +48,61 @@ class StockReader:
             
         try:
             dataframe = pd.read_csv(path, encoding='utf-8-sig')
-            return self._parse_stocks_dataframe(dataframe)
+            return self._parse_stocks_dataframe(dataframe, days)
         except Exception as error:
             logger.error(f"Error loading levels for {branch_name}: {error}")
             return {}
 
-    def _read_csv_with_header(self, path: str) -> pd.DataFrame:
-        """Reads CSV and handles optional 1-line date header."""
+    def _read_csv_and_extract_days(self, path: str) -> tuple[pd.DataFrame, int]:
+        """Reads CSV and extracts total days from date header."""
+        from src.domain.services.validation.dates import (
+            extract_dates_from_header, calculate_days_between
+        )
+        
         with open(path, 'r', encoding='utf-8-sig') as file:
             first_line = file.readline().strip()
         
         start_date, end_date = extract_dates_from_header(first_line)
-        if start_date and end_date:
-            return pd.read_csv(path, skiprows=1, encoding='utf-8-sig')
+        days = 90 # Default fallback
+        skip = 0
         
-        dataframe_head = pd.read_csv(path, encoding='utf-8-sig', nrows=5)
-        first_column = dataframe_head.columns[0]
-        if first_column.startswith('Unnamed') or 'الفترة من' in first_column:
-            return pd.read_csv(path, skiprows=1, encoding='utf-8-sig')
+        if start_date and end_date:
+            days = calculate_days_between(start_date, end_date)
+            skip = 1
+        else:
+            # Fallback check for unnamed columns or Arabic headers
+            dataframe_head = pd.read_csv(path, encoding='utf-8-sig', nrows=5)
+            first_column = dataframe_head.columns[0]
+            if first_column.startswith('Unnamed') or 'الفترة من' in first_column:
+                skip = 1
 
-        return pd.read_csv(path, encoding='utf-8-sig')
+        dataframe = pd.read_csv(path, skiprows=skip, encoding='utf-8-sig')
+        return dataframe, days
 
     def _map_dataframe_to_entities(
         self, 
-        dataframe: pd.DataFrame
+        dataframe: pd.DataFrame,
+        days: int
     ) -> List[ConsolidatedStock]:
         """Maps pandas dataframe rows to domain entities."""
         results = []
         for _, row in dataframe.iterrows():
-            object_instance = StockMapper.to_consolidated_stock(row, 90)
+            object_instance = StockMapper.to_consolidated_stock(row, days)
             if object_instance:
                 results.append(object_instance)
         return results
 
     def _parse_stocks_dataframe(
         self, 
-        dataframe: pd.DataFrame
+        dataframe: pd.DataFrame,
+        days: int
     ) -> Dict[str, StockLevel]:
         """Parses a dataframe into a dictionary of StockLevel objects."""
         stocks = {}
         for _, row in dataframe.iterrows():
             code_column = 'code' if 'code' in row else 'كود'
             if code_column in row:
-                stocks[str(row[code_column])] = StockMapper.to_stock_level(row)
+                stocks[str(row[code_column])] = StockMapper.to_stock_level(
+                    row, days
+                )
         return stocks

@@ -58,8 +58,27 @@ class PandasDataRepository(DataRepository):
     def load_stock_levels(self, branch: Branch) -> Dict[str, StockLevel]:
         key = f"stock_levels_{branch.name}"
         if not self._cache.has(key):
-            self._cache.set(key, self._reader.load_stock_levels(branch.name))
+            days = self._get_current_duration()
+            self._cache.set(
+                key, self._reader.load_stock_levels(branch.name, days)
+            )
         return self._cache.get(key)
+
+    def _get_current_duration(self) -> int:
+        """Extracts total days from the latest renamed CSV file."""
+        from src.domain.services.validation.dates import (
+            get_sheet_duration_days
+        )
+        from src.shared.utility.file_handler import get_latest_file
+        import os
+        
+        name = get_latest_file(self._input_dir, ".csv")
+        if not name:
+            return 90
+            
+        path = os.path.join(self._input_dir, name)
+        duration = get_sheet_duration_days(path)
+        return duration if duration > 0 else 90
 
     def load_transfers(self) -> List[Transfer]:
         if not self._cache.has("step7"):

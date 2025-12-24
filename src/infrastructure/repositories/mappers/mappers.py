@@ -62,14 +62,16 @@ class StockMapper:
         return 0.0
 
     @staticmethod
-    def to_stock_level(row: pd.Series) -> StockLevel:
-        """Maps a analysis row to a StockLevel domain object."""
-        return StockLevel(
-            needed=int(row['needed_quantity']),
-            surplus=int(row['surplus_quantity']),
-            balance=float(row['balance']),
-            avg_sales=float(row['avg_sales']),
-            sales=float(row.get('sales', 0.0))
+    def to_stock_level(row: pd.Series, days: int = 90) -> StockLevel:
+        """Maps a analysis row to a StockLevel domain object, recalculating avg_sales."""
+        sales = float(row.get('sales', 0.0))
+        balance = float(row.get('balance', 0.0))
+        
+        # We use StockCalculator to ensure business logic consistency
+        return StockCalculator.calculate_stock_level(
+            sales_quantity=sales,
+            balance_quantity=balance,
+            days_covered=days
         )
 
     @staticmethod
