@@ -34,11 +34,11 @@ def _get_empty_cell_suggestions(empty_percentage: float) -> list:
     """Get suggestions based on empty cell percentage."""
     suggestions = []
     if empty_percentage > 10:
-        msg = (
+        message = (
             "High percentage of empty cells detected. "
             "Consider data validation before processing."
         )
-        suggestions.append(msg)
+        suggestions.append(message)
     if empty_percentage > 5:
         suggestions.append("Review data sources to ensure complete data entry.")
         suggestions.append(
@@ -100,7 +100,7 @@ def _generate_statistics(analysis: dict) -> list:
 def _format_suggestions(suggestions: list) -> list:
     """Format suggestions section."""
     lines = ["\n" + "-" * 60, "IMPROVEMENT SUGGESTIONS", "-" * 60]
-    for idx, suggestion in enumerate(suggestions, 1):
-        lines.append(f"{idx}. {suggestion}")
+    for index, suggestion in enumerate(suggestions, 1):
+        lines.append(f"{index}. {suggestion}")
     lines.append("\n" + "=" * 60)
     return lines

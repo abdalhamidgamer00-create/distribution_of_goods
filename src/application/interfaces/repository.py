@@ -55,7 +55,7 @@ class DataRepository(ABC):
         pass
 
     @abstractmethod
-    def save_split_transfers(self, transfers: List[Transfer], excel_dir: str) -> None:
+    def save_split_transfers(self, transfers_list: List[Transfer], excel_directory: str) -> None:
         """Save transfers split by category into CSV and Excel."""
         pass
 
@@ -68,14 +68,14 @@ class DataRepository(ABC):
     def save_combined_transfers(
         self, 
         branch: Branch,
-        merged_data: List[Dict], 
-        separate_data: List[Dict],
-        timestamp: str
+        merged_data_list: List[Dict], 
+        separate_data_list: List[Dict],
+        timestamp_string: str
     ) -> None:
         """Save combined transfers (merged and separate) with formatting."""
         pass
 
     @abstractmethod
-    def list_outputs(self, category: str, branch_name: Optional[str] = None) -> List[Dict]:
+    def list_outputs(self, category_name: str, branch_name_filter: Optional[str] = None) -> List[Dict]:
         """Lists available output artifacts for a given category and optional branch."""
         pass
