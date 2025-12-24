@@ -70,3 +70,34 @@
 13. **Readable for others** 🚀🏆
 
     * Anyone reading your code should understand the logic without digging into technical details.
+
+## Function Arguments Rules 📊
+
+14. **Number of Parameters** (The Numbers Rule)
+
+    | Count | Type | Rating |
+    |---|---|---|
+    | **0** | Niladic | ✅ Ideal |
+    | **1** | Monadic | ✅ Good |
+    | **2** | Dyadic | ⚠️ Max limit |
+    | **3+** | Polyadic | ❌ Refactor |
+
+15. **Reduce Parameters via** 🛠️
+
+    * **Parameter Object**: Group related data (dates → DateRange)
+    * **Principle of Least Privilege**: Pass only what's needed, not whole objects
+    * **Dependency Injection**: Let container resolve dependencies
+    * **Factories**: Consolidate similar objects
+    * **Extract Methods**: Move parameter logic to separate functions
+
+16. **Forbidden Patterns** 🚫
+
+    * **Boolean Parameters**: Split into separate functions (`process()` vs `process_with_tax()`)
+    * **Pass by Reference**: Use immutability; avoid mutations
+    * **Meta-programming/Reflection**: Too expensive; use type hints instead
+
+17. **Why Reduce Parameters?** ✅
+
+    * **Testing**: Fewer params = fewer test cases (0 params = 1 test; 3+ params = 20+ tests)
+    * **Clarity**: Signature tells the whole story
+    * **Maintainability**: Simple code = easier to change
