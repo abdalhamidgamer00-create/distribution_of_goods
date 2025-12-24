@@ -50,6 +50,7 @@ def display_transfer_files(
 
 def display_transfer_files_grouped(
     grouped_files: Dict[str, List[Dict]],
+    all_files: List[Dict],
     key_prefix: str,
     extension: str
 ) -> None:
@@ -58,9 +59,22 @@ def display_transfer_files_grouped(
     
     Args:
         grouped_files: Dictionary mapping branch keys to lists of files
+        all_files: Flat list of all files across all branches
         key_prefix: Unique prefix for UI element keys
         extension: File extension (.csv or .xlsx)
     """
+    st.info(f"📂 عرض كلي لجميع الفروع ({len(all_files)} ملف)")
+    
+    _prepare_zip_paths(all_files)
+    
+    global_zip_name = f"{key_prefix}_all_branches_{extension[1:]}.zip"
+    render_download_all_button(
+        all_files, 
+        global_zip_name,
+        label_template="📦 تحميل جميع ملفات الفروع ({count})",
+        key=f"{key_prefix}_global_all_btn"
+    )
+    
     branch_keys = sorted(grouped_files.keys())
     tab_labels = [BRANCH_NAMES.get(k, k) for k in branch_keys]
     

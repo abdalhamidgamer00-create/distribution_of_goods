@@ -59,6 +59,7 @@ def process_transfer_tab(
             
         display.display_transfer_files_grouped(
             grouped_files, 
+            files,
             key_prefix, 
             extension
         )
