@@ -58,7 +58,7 @@ class TestAppModuleStructure:
         WHY: App depends on auth for login
         BREAKS: Login functionality missing
         """
-        from src.app.gui.utils.auth import check_password
+        from src.presentation.gui.utils.auth import check_password
         
         assert callable(check_password)
 
@@ -194,7 +194,7 @@ class TestAuthenticationIntegration:
         if app_path.exists():
             content = app_path.read_text(encoding='utf-8')
             assert "check_password" in content
-            assert "from src.app.gui.utils.auth import check_password" in content
+            assert "from src.presentation.gui.utils.auth import check_password" in content
     
     def test_stops_on_failed_auth(self):
         """

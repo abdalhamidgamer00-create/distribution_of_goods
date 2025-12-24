@@ -1,10 +1,10 @@
 """Use case for performing sales analysis and generating reports."""
 
 import os
-from src.shared.utils.logging_utils import get_logger
+from src.shared.utility.logging_utils import get_logger
 from src.domain.services.analysis.sales_analyzer import analyze_csv_data
 from src.shared.reporting.report_generator import generate_report
-from src.infrastructure.services.file_selector import FileSelectorService
+from src.infrastructure.adapters.file_selector import FileSelectorService
 from src.shared.config.paths import INPUT_CSV_DIR
 
 logger = get_logger(__name__)

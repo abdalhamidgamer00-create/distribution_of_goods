@@ -1,11 +1,11 @@
 from datetime import datetime
 from src.domain.services.branches.config import get_branches
-from src.shared.utils.logging_utils import get_logger
+from src.shared.utility.logging_utils import get_logger
 from src.domain.models.entities import Branch
-from src.application.interfaces.repository import DataRepository
+from src.application.ports.repository import DataRepository
 from src.domain.services.model_factory import DomainModelFactory
 from src.domain.services.consolidation_service import ConsolidationEngine
-from src.infrastructure.persistence.presenters import LogisticsPresenter
+from src.infrastructure.repositories.presenters import LogisticsPresenter
 
 logger = get_logger(__name__)
 

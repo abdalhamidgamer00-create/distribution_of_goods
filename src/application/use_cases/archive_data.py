@@ -1,11 +1,11 @@
 """Use case for archiving and clearing previous output data."""
 
-from src.shared.utils.archiver import (
+from src.shared.utility.archiver import (
     archive_all_output, 
     clear_output_directory
 )
-from src.shared.utils.logging_utils import get_logger
-from src.shared.utils.file_handler import has_files_in_directory
+from src.shared.utility.logging_utils import get_logger
+from src.shared.utility.file_handler import has_files_in_directory
 from src.shared.config.paths import OUTPUT_DIR, ARCHIVE_DIR
 
 logger = get_logger(__name__)

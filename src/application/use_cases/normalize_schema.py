@@ -3,12 +3,12 @@
 import os
 import re
 from datetime import datetime
-from src.shared.utils.logging_utils import get_logger
-from src.shared.utils.file_handler import ensure_directory_exists
-from src.services.conversion.converters.csv_column_renamer import (
+from src.shared.utility.logging_utils import get_logger
+from src.shared.utility.file_handler import ensure_directory_exists
+from src.infrastructure.converters.converters.csv_column_renamer import (
     rename_csv_columns
 )
-from src.infrastructure.services.file_selector import FileSelectorService
+from src.infrastructure.adapters.file_selector import FileSelectorService
 from src.shared.config.paths import INPUT_CSV_DIR, RENAMED_CSV_DIR
 
 logger = get_logger(__name__)

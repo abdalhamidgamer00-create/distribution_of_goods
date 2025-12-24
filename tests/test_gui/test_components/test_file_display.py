@@ -9,7 +9,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import the module under test
 import streamlit
-from src.app.gui.components.file_display import (
+from src.presentation.gui.components.file_display import (
     render_file_expander,
     render_download_all_button
 )
@@ -20,8 +20,8 @@ class TestFileDisplay:
     @patch('streamlit.expander')
     @patch('streamlit.columns')
     @patch('streamlit.download_button')
-    @patch('src.app.gui.components.file_display.format_file_size', return_value="1 KB")
-    @patch('src.app.gui.components.file_display.read_file_content', return_value=MagicMock())
+    @patch('src.presentation.gui.components.file_display.format_file_size', return_value="1 KB")
+    @patch('src.presentation.gui.components.file_display.read_file_content', return_value=MagicMock())
     def test_render_file_expander(self, mock_read, mock_format, mock_download, mock_cols, mock_expander):
         """Test rendering file expander with preview"""
         file_info = {'name': 'test.csv', 'size': 1024, 'path': '/tmp/test.csv'}
@@ -44,7 +44,7 @@ class TestFileDisplay:
 
     @patch('streamlit.download_button')
     @patch('streamlit.markdown')
-    @patch('src.app.gui.components.file_display.create_zip_archive', return_value=b"zipdata")
+    @patch('src.presentation.gui.components.file_display.create_zip_archive', return_value=b"zipdata")
     def test_render_download_all_button(self, mock_zip, mock_md, mock_download):
         """Test rendering the 'Download All' button"""
         files = [{'name': 'f1.csv'}, {'name': 'f2.csv'}]

@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.app.core.workflow import PipelineManager
+from src.application.pipeline.workflow import PipelineManager
 from src.domain.exceptions.pipeline_exceptions import PrerequisiteNotFoundError
 
 

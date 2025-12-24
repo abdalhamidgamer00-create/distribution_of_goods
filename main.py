@@ -3,23 +3,23 @@
 import sys
 import os
 
-from src.shared.utils.logging_utils import setup_logging
+from src.shared.utility.logging_utils import setup_logging
 
 
 def run_gui():
     """تشغيل واجهة Streamlit"""
     import subprocess
-    app_path = os.path.join("src", "app", "gui", "app.py")
+    app_path = os.path.join("src", "presentation", "gui", "app.py")
     subprocess.run([sys.executable, "-m", "streamlit", "run", app_path])
 
 
 def run_cli():
     """تشغيل واجهة سطر الأوامر"""
-    from src.app.cli.menu import run_menu
-    from src.app.cli.executors.step_executor.step_executor_orchestrator import (
+    from src.presentation.cli.menu import run_menu
+    from src.presentation.cli.executors.step_executor.step_executor_orchestrator import (
         execute_step, execute_step_with_dependencies
     )
-    from src.app.cli.executors.step_executor.lookup import find_step_by_id
+    from src.presentation.cli.executors.step_executor.lookup import find_step_by_id
     
     setup_logging()
     
@@ -55,7 +55,7 @@ def run_cli():
 
     # CASE 3: Execute all steps via --all flag
     if "--all" in args:
-        from src.app.cli.executors.batch_executor import _run_steps_with_mode
+        from src.presentation.cli.executors.batch_executor import _run_steps_with_mode
         _run_steps_with_mode(use_latest)
         return
 

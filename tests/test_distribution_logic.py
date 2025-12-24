@@ -290,7 +290,7 @@ def main():
     import sys
     
     try:
-        from src.shared.utils.file_handler import (
+        from src.shared.utility.file_handler import (
             get_csv_files,
             get_latest_file,
             get_file_path,

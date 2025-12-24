@@ -1,8 +1,8 @@
 """Use case for reporting products with remaining surplus stock."""
 
-from src.application.interfaces.repository import DataRepository
+from src.application.ports.repository import DataRepository
 from src.application.use_cases.optimize_transfers import OptimizeTransfers
-from src.shared.utils.logging_utils import get_logger
+from src.shared.utility.logging_utils import get_logger
 
 logger = get_logger(__name__)
 

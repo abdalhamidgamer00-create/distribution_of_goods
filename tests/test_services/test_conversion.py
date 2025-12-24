@@ -8,9 +8,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.services.conversion.mappers.column_mapper import get_column_mapping
-from src.services.conversion.converters.csv_column_renamer import rename_csv_columns
-from src.services.conversion.converters.excel_to_csv import convert_excel_to_csv
+from src.infrastructure.converters.mappers.column_mapper import get_column_mapping
+from src.infrastructure.converters.converters.csv_column_renamer import rename_csv_columns
+from src.infrastructure.converters.converters.excel_to_csv import convert_excel_to_csv
 
 
 class TestGetColumnMapping:

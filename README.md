@@ -25,7 +25,7 @@
 
 3. **تشغيل البرنامج**:
    ```bash
-   streamlit run src/app/gui/app.py
+   streamlit run src/presentation/gui/app.py
    ```
    أو
    ```bash

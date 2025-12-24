@@ -6,7 +6,7 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.app.gui.components.file_grouping import (
+from src.presentation.gui.components.file_grouping import (
     get_key_from_label,
     group_files_by_branch,
     group_files_by_source_target

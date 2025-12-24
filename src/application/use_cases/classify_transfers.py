@@ -1,8 +1,8 @@
 """Use case for classifying transfers into product categories."""
 
 import os
-from src.application.interfaces.repository import DataRepository
-from src.shared.utils.logging_utils import get_logger
+from src.application.ports.repository import DataRepository
+from src.shared.utility.logging_utils import get_logger
 
 logger = get_logger(__name__)
 

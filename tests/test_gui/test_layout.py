@@ -9,7 +9,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import the module under test
 import streamlit
-from src.app.gui.layout.sidebar import render_sidebar
+from src.presentation.gui.layout.sidebar import render_sidebar
 
 class TestSidebar:
     """Tests for sidebar layout component"""

@@ -84,7 +84,7 @@ src/app/cli/
 ## Usage
 
 ```python
-from src.app.cli.menu import run_menu
+from src.presentation.cli.menu import run_menu
 
 # Start the menu
 run_menu()
@@ -93,9 +93,9 @@ run_menu()
 Or use individual components:
 
 ```python
-from src.app.cli.ui.display import display_menu
-from src.app.cli.core.controller import handle_user_choice
-from src.app.cli.executors import execute_step
+from src.presentation.cli.ui.display import display_menu
+from src.presentation.cli.core.controller import handle_user_choice
+from src.presentation.cli.executors import execute_step
 
 display_menu()
 handle_user_choice("1")
@@ -108,15 +108,15 @@ All imports use the new structure:
 
 ```python
 # Core components
-from src.app.cli.core.constants import SEPARATOR
-from src.app.cli.core.controller import handle_user_choice
+from src.presentation.cli.core.constants import SEPARATOR
+from src.presentation.cli.core.controller import handle_user_choice
 
 # UI components
-from src.app.cli.ui.display import display_menu
+from src.presentation.cli.ui.display import display_menu
 
 # Handlers
-from src.app.cli.handlers.input_handler import get_user_choice
+from src.presentation.cli.handlers.input_handler import get_user_choice
 
 # Executors
-from src.app.cli.executors import execute_step, execute_all_steps
+from src.presentation.cli.executors import execute_step, execute_all_steps
 ```

@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from pathlib import Path
 from unittest.mock import patch
-from src.app.core.workflow import PipelineManager
+from src.application.pipeline.workflow import PipelineManager
 
 
 @pytest.fixture
@@ -68,8 +68,8 @@ def test_pipeline_full_execution(e2e_data_redirect):
     manager = PipelineManager()
 
     # We patch the interactive file selection to return our test file
-    with patch('src.infrastructure.services.file_selector.FileSelectorService.select_excel_file', return_value="input_data.xlsx"), \
-         patch('src.infrastructure.services.file_selector.FileSelectorService.select_csv_file', return_value="input_data.csv"), \
+    with patch('src.infrastructure.adapters.file_selector.FileSelectorService.select_excel_file', return_value="input_data.xlsx"), \
+         patch('src.infrastructure.adapters.file_selector.FileSelectorService.select_csv_file', return_value="input_data.csv"), \
          patch('src.application.use_cases.validate_inventory.validate_csv_header', return_value=(True, "2023-01-01", "2023-03-31", "Valid")), \
          patch('src.application.use_cases.validate_inventory.validate_csv_headers', return_value=(True, [], "Headers Valid")):
         

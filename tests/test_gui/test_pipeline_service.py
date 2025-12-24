@@ -7,16 +7,16 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.app.gui.services.pipeline.pipeline_execution import (
+from src.presentation.gui.services.pipeline.pipeline_execution import (
     _find_step_by_id
 )
-from src.app.gui.services.pipeline.info import (
+from src.presentation.gui.services.pipeline.info import (
     _build_step_info
 )
-from src.app.gui.services.pipeline.sequences import (
+from src.presentation.gui.services.pipeline.sequences import (
     _validate_step_id
 )
-from src.app.gui.services.pipeline_service import (
+from src.presentation.gui.services.pipeline_service import (
     get_step_info,
     get_all_steps,
     run_single_step,
@@ -82,7 +82,7 @@ class TestRunStep:
     
     def test_run_step_success(self):
         """Test running a step successfully"""
-        from src.app.core.steps.steps import AVAILABLE_STEPS
+        from src.application.pipeline.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -90,7 +90,7 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(return_value=True)
 
-        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
+        with patch('src.presentation.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is True
@@ -98,7 +98,7 @@ class TestRunStep:
     
     def test_run_step_failure(self):
         """Test running a step that fails"""
-        from src.app.core.steps.steps import AVAILABLE_STEPS
+        from src.application.pipeline.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -106,14 +106,14 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(return_value=False)
 
-        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
+        with patch('src.presentation.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False
     
     def test_run_step_exception(self):
         """Test running a step that throws exception"""
-        from src.app.core.steps.steps import AVAILABLE_STEPS
+        from src.application.pipeline.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -121,7 +121,7 @@ class TestRunStep:
         mock_step.name = "Test Step"
         mock_step.function = MagicMock(side_effect=Exception("Test error"))
 
-        with patch('src.app.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
+        with patch('src.presentation.gui.services.pipeline.pipeline_execution._find_step_by_id', return_value=mock_step):
             success, message = run_single_step("1")
             
             assert success is False
@@ -200,7 +200,7 @@ class TestBuildStepInfo:
         WHY: UI needs all step properties
         BREAKS: Missing properties in step cards
         """
-        from src.app.core.steps.steps import AVAILABLE_STEPS
+        from src.application.pipeline.steps import AVAILABLE_STEPS
         
         step = AVAILABLE_STEPS[0]
         info = _build_step_info(step)
@@ -216,8 +216,8 @@ class TestBuildStepInfo:
         WHY: Arabic UI requires translations
         BREAKS: English text in Arabic interface
         """
-        from src.app.core.steps.steps import AVAILABLE_STEPS
-        from src.app.gui.utils.translations import STEP_NAMES
+        from src.application.pipeline.steps import AVAILABLE_STEPS
+        from src.presentation.gui.utils.translations import STEP_NAMES
         
         step = AVAILABLE_STEPS[0]
         info = _build_step_info(step)

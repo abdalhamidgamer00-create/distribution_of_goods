@@ -7,7 +7,7 @@ running all pipeline steps in sequence.
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.app.cli.executors.batch_executor import (
+from src.presentation.cli.executors.batch_executor import (
     log_step_progress,
     _execute_and_track,
     execute_all_steps_batch,
@@ -59,7 +59,7 @@ class TestLogStepProgress:
 class TestExecuteAndTrack:
     """Tests for _execute_and_track function."""
     
-    @patch('src.app.cli.executors.batch_executor.execute_single_step')
+    @patch('src.presentation.cli.executors.batch_executor.execute_single_step')
     def test_returns_success_on_successful_step(self, mock_execute):
         """
         WHAT: Return True when step succeeds
@@ -75,7 +75,7 @@ class TestExecuteAndTrack:
         
         assert result is True
     
-    @patch('src.app.cli.executors.batch_executor.execute_single_step')
+    @patch('src.presentation.cli.executors.batch_executor.execute_single_step')
     def test_returns_false_on_failed_step(self, mock_execute):
         """
         WHAT: Return False when step fails
@@ -91,7 +91,7 @@ class TestExecuteAndTrack:
         
         assert result is False
     
-    @patch('src.app.cli.executors.batch_executor.execute_single_step')
+    @patch('src.presentation.cli.executors.batch_executor.execute_single_step')
     def test_passes_file_selection_mode(self, mock_execute):
         """
         WHAT: Pass use_latest_file parameter to step executor
@@ -113,8 +113,8 @@ class TestExecuteAndTrack:
 class TestExecuteAllStepsBatch:
     """Tests for execute_all_steps_batch function."""
     
-    @patch('src.app.cli.executors.batch_executor._execute_and_track')
-    @patch('src.app.cli.executors.batch_executor.log_step_progress')
+    @patch('src.presentation.cli.executors.batch_executor._execute_and_track')
+    @patch('src.presentation.cli.executors.batch_executor.log_step_progress')
     def test_returns_counts_all_success(self, mock_log, mock_execute):
         """
         WHAT: Return correct counts when all steps succeed
@@ -130,14 +130,14 @@ class TestExecuteAllStepsBatch:
         step2.id = 'step_2'
         step2.name = 'Step 2'
         
-        with patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2]):
+        with patch('src.presentation.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2]):
             successful, total = execute_all_steps_batch(use_latest_file=True)
         
         assert successful == 2
         assert total == 2
     
-    @patch('src.app.cli.executors.batch_executor._execute_and_track')
-    @patch('src.app.cli.executors.batch_executor.log_step_progress')
+    @patch('src.presentation.cli.executors.batch_executor._execute_and_track')
+    @patch('src.presentation.cli.executors.batch_executor.log_step_progress')
     def test_returns_counts_partial_success(self, mock_log, mock_execute):
         """
         WHAT: Return correct counts when some steps fail
@@ -156,15 +156,15 @@ class TestExecuteAllStepsBatch:
         step3.id = 'step_3'
         step3.name = 'Step 3'
         
-        with patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2, step3]):
+        with patch('src.presentation.cli.executors.batch_executor.AVAILABLE_STEPS', [step1, step2, step3]):
             successful, total = execute_all_steps_batch(use_latest_file=True)
         
         assert successful == 2
         assert total == 3
     
-    @patch('src.app.cli.executors.batch_executor._execute_and_track')
-    @patch('src.app.cli.executors.batch_executor.log_step_progress')
-    @patch('src.app.cli.executors.batch_executor.AVAILABLE_STEPS', [])
+    @patch('src.presentation.cli.executors.batch_executor._execute_and_track')
+    @patch('src.presentation.cli.executors.batch_executor.log_step_progress')
+    @patch('src.presentation.cli.executors.batch_executor.AVAILABLE_STEPS', [])
     def test_handles_empty_steps_list(self, mock_log, mock_execute):
         """
         WHAT: Handle empty steps list gracefully
@@ -223,8 +223,8 @@ class TestDisplayExecutionSummary:
 class TestRunStepsWithMode:
     """Tests for _run_steps_with_mode function."""
     
-    @patch('src.app.cli.executors.batch_executor.display_execution_summary')
-    @patch('src.app.cli.executors.batch_executor.execute_all_steps_batch')
+    @patch('src.presentation.cli.executors.batch_executor.display_execution_summary')
+    @patch('src.presentation.cli.executors.batch_executor.execute_all_steps_batch')
     def test_returns_true_on_all_success(self, mock_batch, mock_display):
         """
         WHAT: Return True when all steps succeed
@@ -237,8 +237,8 @@ class TestRunStepsWithMode:
         
         assert result is True
     
-    @patch('src.app.cli.executors.batch_executor.display_execution_summary')
-    @patch('src.app.cli.executors.batch_executor.execute_all_steps_batch')
+    @patch('src.presentation.cli.executors.batch_executor.display_execution_summary')
+    @patch('src.presentation.cli.executors.batch_executor.execute_all_steps_batch')
     def test_returns_false_on_any_failure(self, mock_batch, mock_display):
         """
         WHAT: Return False when any step fails
@@ -251,7 +251,7 @@ class TestRunStepsWithMode:
         
         assert result is False
     
-    @patch('src.app.cli.executors.batch_executor.execute_all_steps_batch')
+    @patch('src.presentation.cli.executors.batch_executor.execute_all_steps_batch')
     def test_handles_exception_gracefully(self, mock_batch):
         """
         WHAT: Return False on exception
@@ -270,8 +270,8 @@ class TestRunStepsWithMode:
 class TestExecuteAllSteps:
     """Tests for execute_all_steps function."""
     
-    @patch('src.app.cli.executors.batch_executor._run_steps_with_mode')
-    @patch('src.app.cli.executors.batch_executor.get_file_selection_mode')
+    @patch('src.presentation.cli.executors.batch_executor._run_steps_with_mode')
+    @patch('src.presentation.cli.executors.batch_executor.get_file_selection_mode')
     def test_runs_with_user_selection(self, mock_get_mode, mock_run):
         """
         WHAT: Use user's file selection preference
@@ -286,8 +286,8 @@ class TestExecuteAllSteps:
         mock_run.assert_called_once_with(True)
         assert result is True
     
-    @patch('src.app.cli.executors.batch_executor._run_steps_with_mode')
-    @patch('src.app.cli.executors.batch_executor.get_file_selection_mode')
+    @patch('src.presentation.cli.executors.batch_executor._run_steps_with_mode')
+    @patch('src.presentation.cli.executors.batch_executor.get_file_selection_mode')
     def test_returns_false_on_cancelled_selection(self, mock_get_mode, mock_run):
         """
         WHAT: Return False when user cancels file selection

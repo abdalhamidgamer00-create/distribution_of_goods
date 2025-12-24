@@ -1,10 +1,10 @@
 """Use case for ingesting raw source data into the system."""
 
 import os
-from src.shared.utils.logging_utils import get_logger
-from src.shared.utils.file_handler import ensure_directory_exists
-from src.services.conversion.converters.excel_to_csv import convert_excel_to_csv
-from src.infrastructure.services.file_selector import FileSelectorService
+from src.shared.utility.logging_utils import get_logger
+from src.shared.utility.file_handler import ensure_directory_exists
+from src.infrastructure.converters.converters.excel_to_csv import convert_excel_to_csv
+from src.infrastructure.adapters.file_selector import FileSelectorService
 from src.shared.config.paths import CONVERTED_DIR, INPUT_CSV_DIR
 
 logger = get_logger(__name__)

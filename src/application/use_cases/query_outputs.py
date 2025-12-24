@@ -1,7 +1,7 @@
 """Use case for querying generated output artifacts."""
 
 from typing import List, Dict, Optional
-from src.application.interfaces.repository import DataRepository
+from src.application.ports.repository import DataRepository
 
 class QueryOutputs:
     """

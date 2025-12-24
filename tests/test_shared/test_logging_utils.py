@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from src.shared.utils.logging_utils import (
+from src.shared.utility.logging_utils import (
     LOG_FORMAT,
     DEFAULT_LOG_FILE,
     _reset_handlers,

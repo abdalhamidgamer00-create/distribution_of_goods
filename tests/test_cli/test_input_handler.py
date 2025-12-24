@@ -16,7 +16,7 @@ class TestGetUserChoice:
     
     def test_get_user_choice_returns_input(self):
         """Test that get_user_choice returns user input"""
-        from src.app.cli.handlers.input_handler import get_user_choice
+        from src.presentation.cli.handlers.input_handler import get_user_choice
         
         with patch('builtins.input', return_value='5'):
             result = get_user_choice()
@@ -25,7 +25,7 @@ class TestGetUserChoice:
     
     def test_get_user_choice_strips_whitespace(self):
         """Test that get_user_choice strips whitespace"""
-        from src.app.cli.handlers.input_handler import get_user_choice
+        from src.presentation.cli.handlers.input_handler import get_user_choice
         
         with patch('builtins.input', return_value='  3  '):
             result = get_user_choice()
@@ -38,7 +38,7 @@ class TestGetFileSelectionMode:
     
     def test_select_specific_file(self):
         """Test selecting specific file option (1)"""
-        from src.app.cli.handlers.input_handler import get_file_selection_mode
+        from src.presentation.cli.handlers.input_handler import get_file_selection_mode
         
         with patch('builtins.input', return_value='1'):
             result = get_file_selection_mode()
@@ -47,7 +47,7 @@ class TestGetFileSelectionMode:
     
     def test_use_latest_file(self):
         """Test using latest file option (2)"""
-        from src.app.cli.handlers.input_handler import get_file_selection_mode
+        from src.presentation.cli.handlers.input_handler import get_file_selection_mode
         
         with patch('builtins.input', return_value='2'):
             result = get_file_selection_mode()
@@ -56,7 +56,7 @@ class TestGetFileSelectionMode:
     
     def test_invalid_option(self):
         """Test invalid option returns None"""
-        from src.app.cli.handlers.input_handler import get_file_selection_mode
+        from src.presentation.cli.handlers.input_handler import get_file_selection_mode
         
         with patch('builtins.input', return_value='3'):
             result = get_file_selection_mode()
@@ -65,7 +65,7 @@ class TestGetFileSelectionMode:
     
     def test_empty_input(self):
         """Test empty input returns None"""
-        from src.app.cli.handlers.input_handler import get_file_selection_mode
+        from src.presentation.cli.handlers.input_handler import get_file_selection_mode
         
         with patch('builtins.input', return_value=''):
             result = get_file_selection_mode()

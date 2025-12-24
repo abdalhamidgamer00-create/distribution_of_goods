@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.app.cli.ui.cli_display import display_menu, _display_step_item
-from src.app.cli.core.cli_constants import SEPARATOR, EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
+from src.presentation.cli.ui.cli_display import display_menu, _display_step_item
+from src.presentation.cli.core.cli_constants import SEPARATOR, EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
 
 
 # ===================== _display_step_item Tests =====================
@@ -62,7 +62,7 @@ class TestDisplayMenu:
         WHY: All options should be visible
         BREAKS: Missing menu options
         """
-        from src.app.core.steps.steps import AVAILABLE_STEPS
+        from src.application.pipeline.steps import AVAILABLE_STEPS
         
         display_menu()
         
