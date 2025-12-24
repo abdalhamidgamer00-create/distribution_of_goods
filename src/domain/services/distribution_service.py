@@ -18,56 +18,85 @@ class DistributionEngine:
         needing_branches: List[Tuple[Branch, StockLevel]],
         surplus_branches: List[Tuple[Branch, StockLevel]]
     ) -> DistributionResult:
-        """
-        Distribute available surplus to needing branches based on priority.
-        """
-        # Sort needing branches by vulnerability (highest score first)
-        sorted_needs = sorted(
+        """Distribute available surplus to needing branches based on priority."""
+        sorted_needs = self._sort_needs_by_priority(needing_branches)
+        available_surplus = {branch.name: stock.surplus for branch, stock in surplus_branches}
+        transfers = []
+        
+        for consumer_branch, consumer_stock in sorted_needs:
+            branch_transfers = self._fulfill_branch_need(
+                product, consumer_branch, consumer_stock.needed, 
+                surplus_branches, available_surplus
+            )
+            transfers.extend(branch_transfers)
+
+        return self._build_distribution_result(
+            product, transfers, needing_branches, available_surplus
+        )
+
+    def _sort_needs_by_priority(
+        self, needing_branches: List[Tuple[Branch, StockLevel]]
+    ) -> List[Tuple[Branch, StockLevel]]:
+        """Sorts needing branches by vulnerability score (descending)."""
+        return sorted(
             needing_branches,
             key=lambda item: self._calculator.calculate_vulnerability_score(item[1]),
             reverse=True
         )
 
+    def _fulfill_branch_need(
+        self,
+        product: Product,
+        consumer: Branch,
+        needed_amount: int,
+        surplus_branches: List[Tuple[Branch, StockLevel]],
+        available_surplus: Dict[str, int]
+    ) -> List[Transfer]:
+        """Attempt to fulfill a single branch's need from available surplus sources."""
         transfers = []
-        # Create a mutable copy of surplus stocks
-        available_surplus = {b.name: s.surplus for b, s in surplus_branches}
-        surplus_entities = {b.name: b for b, _ in surplus_branches}
+        remaining_needed = needed_amount
         
-        total_remaining_needed = sum(s.needed for _, s in needing_branches)
-        
-        for consumer, consumer_stock in sorted_needs:
-            needed_amount = consumer_stock.needed
+        sorted_sources = sorted(
+            surplus_branches,
+            key=lambda item: available_surplus[item[0].name],
+            reverse=True
+        )
+
+        for provider_branch, _ in sorted_sources:
+            if remaining_needed <= 0:
+                break
             
-            # Find best surplus sources for this consumer
-            # Sort surplus sources: more surplus first
-            potential_sources = sorted(
-                surplus_branches,
-                key=lambda item: available_surplus[item[0].name],
-                reverse=True
+            qty = self._calculate_transfer_quantity(
+                remaining_needed, available_surplus[provider_branch.name]
             )
-
-            for provider, _ in potential_sources:
-                if needed_amount <= 0:
-                    break
-                    
-                provider_name = provider.name
-                if available_surplus[provider_name] <= 0:
-                    continue
-                    
-                # Calculate how much to transfer
-                transfer_qty = min(needed_amount, available_surplus[provider_name])
-                
+            if qty > 0:
                 transfers.append(Transfer(
-                    product=product,
-                    from_branch=provider,
-                    to_branch=consumer,
-                    quantity=transfer_qty
+                    product=product, from_branch=provider_branch, 
+                    to_branch=consumer, quantity=qty
                 ))
+                available_surplus[provider_branch.name] -= qty
+                remaining_needed -= qty
                 
-                available_surplus[provider_name] -= transfer_qty
-                needed_amount -= transfer_qty
-                total_remaining_needed -= transfer_qty
+        return transfers
 
+    def _calculate_transfer_quantity(self, needed: int, available: int) -> int:
+        """Calculates the maximum possible transfer quantity."""
+        if available <= 0:
+            return 0
+        return min(needed, available)
+
+    def _build_distribution_result(
+        self,
+        product: Product,
+        transfers: List[Transfer],
+        original_needs: List[Tuple[Branch, StockLevel]],
+        available_surplus: Dict[str, int]
+    ) -> DistributionResult:
+        """Constructs the final distribution result with summary metrics."""
+        total_remaining_needed = sum(
+            max(0, stock.needed - sum(t.quantity for t in transfers if t.to_branch.name == branch.name))
+            for branch, stock in original_needs
+        )
         total_remaining_surplus = sum(available_surplus.values())
 
         return DistributionResult(

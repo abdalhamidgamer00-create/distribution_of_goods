@@ -12,25 +12,7 @@ from src.app.gui.utils.translations import BRANCH_NAMES
 from src.app.gui.services.file_service import group_files_by_source_target
 
 
-def _extract_branch_name(branch_key: str) -> str:
-    """
-    Extract a clean branch key from potential folder names.
-    e.g. 'combined_transfers_from_admin_20251224_082047' -> 'admin'
-    """
-    match = re.search(r'from_([a-z]+)_', branch_key)
-    if match:
-        return match.group(1)
-    return branch_key
-
-
-def _prepare_zip_paths(files: List[Dict]) -> None:
-    """Helper to prepare zip paths for separate files."""
-    for file_info in files:
-        file_info['zip_path'] = os.path.join(
-            file_info.get('source_folder', 'unknown'), 
-            file_info.get('target_folder', 'unknown'), 
-            file_info['name']
-        )
+from src.app.gui.utils.display_utils import extract_clean_branch_name, prepare_zip_paths
 
 
 def display_separate_files(
@@ -39,38 +21,16 @@ def display_separate_files(
     selected_branch: str,
     extension: str
 ) -> None:
-    """
-    Display separate files grouped by source/target.
-    
-    Args:
-        files: List of file metadata dictionaries
-        key_prefix: Unique prefix for UI element keys
-        selected_branch: The selected branch key
-        extension: File extension (.csv or .xlsx)
-    """
-    _prepare_zip_paths(files)
+    """Display separate files grouped by source/target."""
+    prepare_zip_paths(files, path_strategy='nested')
         
-    zip_name = f"{key_prefix}_{selected_branch}_{extension[1:]}.zip"
+    zip_filename = f"{key_prefix}_{selected_branch}_{extension[1:]}.zip"
     render_download_all_button(
-        files, 
-        zip_name, 
+        files, zip_filename, 
         key=f"{key_prefix}_{selected_branch}_{extension}_single_download"
     )
     
-    grouped = group_files_by_source_target(files)
-    for (source, target), branch_files in grouped.items():
-        clean_source = _extract_branch_name(source)
-        clean_target = _extract_branch_name(target)
-        header = f"{BRANCH_NAMES.get(clean_source, source)} ← {BRANCH_NAMES.get(clean_target, target)}"
-        st.subheader(header)
-        
-        for file_info in branch_files:
-            render_file_expander(
-                file_info, 
-                extension, 
-                key_prefix=f"{key_prefix}_{clean_source}_{clean_target}_{extension}_expander"
-            )
-        st.markdown("---")
+    _render_grouped_separate_entries(files, key_prefix, extension)
 
 
 def display_separate_files_grouped(
@@ -79,65 +39,91 @@ def display_separate_files_grouped(
     key_prefix: str,
     extension: str
 ) -> None:
-    """
-    Display separate files organized by source branch using tabs.
+    """Display separate files organized by source branch using tabs."""
+    _render_global_separate_header(all_files, key_prefix, extension)
     
-    Args:
-        grouped_files: Dictionary mapping source branch keys to lists of files
-        all_files: Flat list of all files across all branches
-        key_prefix: Unique prefix for UI element keys
-        extension: File extension (.csv or .xlsx)
-    """
+    raw_keys = sorted(grouped_files.keys())
+    tab_labels = [BRANCH_NAMES.get(extract_clean_branch_name(k), k) for k in raw_keys]
+    tabs = st.tabs(tab_labels)
+    
+    for raw_key, tab in zip(raw_keys, tabs):
+        with tab:
+            _render_separate_tab_content(
+                raw_key, grouped_files[raw_key], 
+                key_prefix, extension
+            )
+
+
+def _render_grouped_separate_entries(
+    files: List[Dict], key_prefix: str, extension: str
+) -> None:
+    """Renders separate entries grouped by source and target branches."""
+    grouped = group_files_by_source_target(files)
+    for (source, target), branch_files in grouped.items():
+        clean_source = extract_clean_branch_name(source)
+        clean_target = extract_clean_branch_name(target)
+        header = f"{BRANCH_NAMES.get(clean_source, source)} ← {BRANCH_NAMES.get(clean_target, target)}"
+        st.subheader(header)
+        
+        for file_info in branch_files:
+            render_file_expander(
+                file_info, extension, 
+                key_prefix=f"{key_prefix}_{clean_source}_{clean_target}_{extension}_expander"
+            )
+        st.markdown("---")
+
+
+def _render_global_separate_header(
+    all_files: List[Dict], key_prefix: str, extension: str
+) -> None:
+    """Renders the global header and download all button for separate views."""
     st.info(f"📂 عرض كلي للملفات المنفصلة ({len(all_files)} ملف)")
+    prepare_zip_paths(all_files, path_strategy='nested')
     
-    _prepare_zip_paths(all_files)
-    
-    global_zip_name = f"{key_prefix}_all_separate_{extension[1:]}.zip"
+    zip_filename = f"{key_prefix}_all_separate_{extension[1:]}.zip"
     render_download_all_button(
         all_files, 
-        global_zip_name,
+        zip_filename,
         label_template="📦 تحميل جميع الملفات المنفصلة ({count})",
         key=f"{key_prefix}_global_sep_btn_{extension}_all"
     )
+
+
+def _render_separate_tab_content(
+    raw_key: str, 
+    files: List[Dict], 
+    key_prefix: str, 
+    extension: str
+) -> None:
+    """Renders the content for a single separate branch tab."""
+    clean_key = extract_clean_branch_name(raw_key)
+    branch_label = BRANCH_NAMES.get(clean_key, raw_key)
     
-    raw_branch_keys = sorted(grouped_files.keys())
-    tab_labels = []
-    clean_keys = []
+    st.subheader(f"الملفات المنفصلة من: {branch_label}")
+    st.info(f"عدد الملفات: {len(files)}")
     
-    for k in raw_branch_keys:
-        clean_k = _extract_branch_name(k)
-        tab_labels.append(BRANCH_NAMES.get(clean_k, k))
-        clean_keys.append(clean_k)
+    prepare_zip_paths(files, path_strategy='nested')
+    zip_filename = f"{key_prefix}_{clean_key}_{extension[1:]}.zip"
+    render_download_all_button(
+        files, zip_filename, 
+        key=f"{key_prefix}_tab_{clean_key}_{extension}_btn"
+    )
     
-    tabs = st.tabs(tab_labels)
-    
-    for raw_key, clean_key, tab in zip(raw_branch_keys, clean_keys, tabs):
-        with tab:
-            files = grouped_files[raw_key]
-            branch_label = BRANCH_NAMES.get(clean_key, raw_key)
-            
-            st.subheader(f"الملفات المنفصلة من: {branch_label}")
-            st.info(f"عدد الملفات: {len(files)}")
-            
-            _prepare_zip_paths(files)
-            
-            zip_name = f"{key_prefix}_{clean_key}_{extension[1:]}.zip"
-            render_download_all_button(
-                files, 
-                zip_name, 
-                key=f"{key_prefix}_tab_{clean_key}_{extension}_btn"
+    _render_subgrouped_by_target(files, clean_key, key_prefix, extension)
+
+
+def _render_subgrouped_by_target(
+    files: List[Dict], clean_source: str, key_prefix: str, extension: str
+) -> None:
+    """Re-groups by target within a tab for better readability."""
+    sub_grouped = group_files_by_source_target(files)
+    for (source, target), branch_files in sub_grouped.items():
+        clean_target = extract_clean_branch_name(target)
+        header = f"إلى: {BRANCH_NAMES.get(clean_target, target)}"
+        st.write(f"**{header}**")
+        for file_info in branch_files:
+            render_file_expander(
+                file_info, extension, 
+                key_prefix=f"{key_prefix}_tab_{clean_source}_{clean_target}_{extension}_expander"
             )
-            
-            # Re-group by target for better readability within the tab
-            sub_grouped = group_files_by_source_target(files)
-            for (source, target), branch_files in sub_grouped.items():
-                clean_target = _extract_branch_name(target)
-                header = f"إلى: {BRANCH_NAMES.get(clean_target, target)}"
-                st.write(f"**{header}**")
-                for file_info in branch_files:
-                    render_file_expander(
-                        file_info, 
-                        extension, 
-                        key_prefix=f"{key_prefix}_tab_{clean_key}_{clean_target}_{extension}_expander"
-                    )
-                st.markdown("---")
+        st.markdown("---")

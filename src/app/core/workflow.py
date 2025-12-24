@@ -102,38 +102,48 @@ class PipelineManager:
             ("report_shortage", {}), ("consolidate", {})
         ]
 
-    def _check_and_resolve_deps(self, name: str, **kwargs) -> bool:
+    def _check_and_resolve_deps(self, service_name: str, **kwargs) -> bool:
         """Ensures all prerequisites for a service are met."""
-        if name not in self._deps:
-            return True
-
-        for dep in self._deps[name]:
-            if not self._is_data_present(dep):
-                logger.warning(f"Prerequisite '{dep}' missing for '{name}'.")
-                if not self.run_service(dep, **kwargs):
+        prerequisites = self._deps.get(service_name, [])
+        for prerequisite in prerequisites:
+            if not self._is_data_present(prerequisite):
+                logger.warning(f"Prerequisite '{prerequisite}' missing for '{service_name}'.")
+                if not self.run_service(prerequisite, **kwargs):
                     return False
         return True
 
-    def _is_data_present(self, name: str) -> bool:
+    def _is_data_present(self, service_name: str) -> bool:
         """Checks if the output data of a service exists on disk."""
+        import os
+        from src.shared.config.paths import TRANSFERS_ROOT_DIR
+        
+        # Registry of paths and their check types
+        data_registry = {
+            "ingest": (INPUT_CSV_DIR, "csv"),
+            "normalize": (RENAMED_CSV_DIR, "csv"),
+            "segment": (ANALYTICS_DIR, "any"),
+            "optimize": (TRANSFERS_ROOT_DIR, "csv"),
+            "report_surplus": (SURPLUS_DIR, "csv")
+        }
+
+        if service_name not in data_registry:
+            return True
+
+        directory_path, check_type = data_registry[service_name]
+        return self._verify_path_content(directory_path, check_type)
+
+    def _verify_path_content(self, directory_path: str, check_type: str) -> bool:
+        """Verifies if the specified directory contains required data."""
         import os
         from src.shared.utils.file_handler import get_csv_files
         
-        from src.shared.config.paths import TRANSFERS_ROOT_DIR
-        paths = {
-            "ingest": INPUT_CSV_DIR, "normalize": RENAMED_CSV_DIR,
-            "segment": ANALYTICS_DIR, "optimize": TRANSFERS_ROOT_DIR,
-            "report_surplus": SURPLUS_DIR
-        }
-
-        path = paths.get(name)
-        if not path or not os.path.exists(path):
+        if not os.path.exists(directory_path):
             return False
 
-        if name in ["ingest", "normalize", "optimize", "report_surplus"]:
-            return len(get_csv_files(path)) > 0
+        if check_type == "csv":
+            return len(get_csv_files(directory_path)) > 0
         
-        if name == "segment":
-            return len(os.listdir(path)) > 0
+        if check_type == "any":
+            return len(os.listdir(directory_path)) > 0
 
-        return True
+        return False
