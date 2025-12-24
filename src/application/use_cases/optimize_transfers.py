@@ -39,15 +39,14 @@ class OptimizeTransfers:
         )
         stocks_map = self._load_all_branch_stocks(branches)
         
-        with ProcessPoolExecutor() as executor:
-            futures = [
-                executor.submit(
-                    self._process_single_product, 
-                    product, branches, stocks_map, network_state
-                ) for product in products
-            ]
-            all_results = [f.result() for f in futures if f.result()]
-            
+        all_results = []
+        for product in products:
+            result = self._process_single_product(
+                product, branches, stocks_map, network_state
+            )
+            if result:
+                all_results.append(result)
+        
         return all_results
 
     def save(self, results: List[DistributionResult]) -> None:
