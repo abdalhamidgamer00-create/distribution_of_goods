@@ -1,17 +1,16 @@
-"""الصفحة الرئيسية - اختيار الأقسام."""
-import streamlit as st
-import sys
+# =============================================================================
+# SETUP (PATH CONFIGURATION)
+# =============================================================================
+
 import os
+import sys
 
-# =============================================================================
-# SETUP
-# =============================================================================
-
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '../../..')
-)
+# Ensure project root is in sys.path for absolute imports starting with 'src'
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+
+import streamlit as st
 
 st.set_page_config(
     page_title="الرئيسية",
