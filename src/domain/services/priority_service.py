@@ -33,5 +33,5 @@ class PriorityCalculator:
         We prefer branches with more surplus and better balance.
         """
         # Secondary ranking factors: balance and avg_sales
-        # This mirrors the logic in get_surplus_branches_order_for_product
+        # This mirrors the logic in get_surplus_sources_ordered_for_product
         return stock.surplus

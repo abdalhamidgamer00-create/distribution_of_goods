@@ -14,9 +14,10 @@ from src.core.domain.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized,
 )
 from src.core.domain.calculations.order_calculator import (
-    get_needing_branches_order_for_product,
-    get_surplus_branches_order_for_product,
+    get_needing_branches_ordered_by_priority,
+    get_surplus_sources_ordered_for_product,
 )
+from src.domain.models.entities import StockLevel
 
 
 from src.core.validation import extract_dates_from_header
@@ -178,9 +179,18 @@ def analyze_product(product_idx: int, branch_data: dict, product_info: pd.DataFr
                     proportion = (needed / analysis['total_needed']) * 100 if analysis['total_needed'] > 0 else 0
                     allocated_proportion = (allocated / analysis['total_surplus']) * 100 if analysis['total_surplus'] > 0 else 0
                     
-                    # استخدام get_needing_branches_order_for_product لترتيب البحث
-                    # ثم البحث عن الفائض من جميع الفروع التي لديها فائض
-                    needing_order = get_needing_branches_order_for_product(product_idx, branch_data, branches)
+                    # Create StockLevel objects for all branches
+                    branch_stocks = {}
+                    for b_name in branches:
+                        row = branch_data[b_name].iloc[product_idx]
+                        branch_stocks[b_name] = StockLevel(
+                            needed=int(row['needed_quantity']),
+                            surplus=int(row['surplus_quantity']),
+                            balance=float(row['balance']),
+                            avg_sales=float(row['avg_sales'])
+                        )
+                    
+                    needing_order = get_needing_branches_ordered_by_priority(branch_stocks)
                     # الحصول على قائمة الفروع التي لديها فائض
                     surplus_branches = [sb['branch'] for sb in analysis['surplus_branches']]
                     # ترتيب الفروع التي لديها فائض حسب ترتيب needing_order (الأولوية للفروع التي تحتاج أكثر)

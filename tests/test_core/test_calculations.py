@@ -12,9 +12,10 @@ from src.core.domain.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized
 )
 from src.core.domain.calculations.order_calculator import (
-    get_needing_branches_order_for_product,
-    get_surplus_branches_order_for_product
+    get_needing_branches_ordered_by_priority,
+    get_surplus_sources_ordered_for_product
 )
+from src.domain.models.entities import StockLevel
 
 
 class TestCalculateBasicQuantities:
@@ -165,91 +166,68 @@ class TestCalculateProportionalAllocationsVectorized:
 
 
 class TestGetNeedingBranchesOrderForProduct:
-    """Tests for get_needing_branches_order_for_product function"""
+    """Tests for ordering needing branches by priority"""
     
-    def test_returns_list(self, sample_branch_data):
-        """Test that function returns a list"""
-        from src.core.domain.branches.config import get_branches
-        branches = get_branches()
-        
-        result = get_needing_branches_order_for_product(0, sample_branch_data, branches)
-        
+    def test_returns_list(self):
+        """Test that function returns a list of strings"""
+        branch_stocks = {
+            'branch1': StockLevel(needed=10, surplus=0, balance=1.0, avg_sales=2.0)
+        }
+        result = get_needing_branches_ordered_by_priority(branch_stocks)
         assert isinstance(result, list)
+        assert len(result) == 1
+        assert result[0] == 'branch1'
     
-    def test_only_needing_branches_returned(self, sample_branch_data):
+    def test_only_needing_branches_returned(self):
         """Test that only branches with needed > 0 are returned"""
-        from src.core.domain.branches.config import get_branches
-        branches = get_branches()
-        
-        result = get_needing_branches_order_for_product(0, sample_branch_data, branches)
-        
-        # All returned branches should have needed_quantity > 0
-        for branch in result:
-            assert sample_branch_data[branch].iloc[0]['needed_quantity'] > 0
+        branch_stocks = {
+            'needing': StockLevel(needed=5, surplus=0, balance=10.0, avg_sales=1.0),
+            'no_need': StockLevel(needed=0, surplus=10, balance=50.0, avg_sales=1.0)
+        }
+        result = get_needing_branches_ordered_by_priority(branch_stocks)
+        assert 'needing' in result
+        assert 'no_need' not in result
     
     def test_empty_when_no_need(self):
         """Test returns empty list when no branch needs the product"""
-        branches = ['branch1', 'branch2']
-        
-        # Create branch data where no branch needs anything
-        branch_data = {
-            'branch1': pd.DataFrame({
-                'needed_quantity': [0],
-                'avg_sales': [1.0],
-                'balance': [100.0]
-            }),
-            'branch2': pd.DataFrame({
-                'needed_quantity': [0],
-                'avg_sales': [1.0],
-                'balance': [100.0]
-            })
+        branch_stocks = {
+            'b1': StockLevel(needed=0, surplus=5, balance=10.0, avg_sales=1.0),
+            'b2': StockLevel(needed=0, surplus=0, balance=20.0, avg_sales=1.0)
         }
-        
-        result = get_needing_branches_order_for_product(0, branch_data, branches)
-        
+        result = get_needing_branches_ordered_by_priority(branch_stocks)
         assert result == []
 
 
 class TestGetSurplusBranchesOrderForProduct:
-    """Tests for get_surplus_branches_order_for_product function"""
+    """Tests for get_surplus_sources_ordered_for_product function"""
     
-    def test_excludes_current_branch(self, sample_branch_data):
-        """Test that current branch is excluded from results"""
-        from src.core.domain.branches.config import get_branches
-        branches = get_branches()
-        
-        current_branch = branches[0]
-        result = get_surplus_branches_order_for_product(
-            0, current_branch, sample_branch_data, branches
-        )
-        
-        assert current_branch not in result
-    
-    def test_returns_list(self, sample_branch_data):
-        """Test that function returns a list"""
-        from src.core.domain.branches.config import get_branches
-        branches = get_branches()
-        
-        result = get_surplus_branches_order_for_product(
-            0, branches[0], sample_branch_data, branches
-        )
-        
-        assert isinstance(result, list)
-    
-    def test_respects_existing_withdrawals(self, sample_branch_data):
-        """Test that existing withdrawals affect available surplus"""
-        from src.core.domain.branches.config import get_branches
-        branches = get_branches()
-        
-        # Create large withdrawal for a branch
-        existing_withdrawals = {
-            (branches[1], 0): 1000.0  # Large withdrawal
+    def test_excludes_current_branch(self):
+        """Test that source branch is excluded from results"""
+        branch_stocks = {
+            'source': StockLevel(needed=10, surplus=0, balance=1.0, avg_sales=1.0),
+            'other': StockLevel(needed=0, surplus=20, balance=5.0, avg_sales=1.0)
         }
-        
-        result = get_surplus_branches_order_for_product(
-            0, branches[0], sample_branch_data, branches, existing_withdrawals
+        result = get_surplus_sources_ordered_for_product(
+            'source', branch_stocks
         )
-        
-        # Branch with depleted surplus might not be in result
-        # or might be lower in priority
+        assert 'source' not in result
+        assert 'other' in result
+    
+    def test_returns_list(self):
+        """Test that function returns a list of strings"""
+        branch_stocks = {
+            'b1': StockLevel(needed=0, surplus=10, balance=1.0, avg_sales=1.0)
+        }
+        result = get_surplus_sources_ordered_for_product('some_other', branch_stocks)
         assert isinstance(result, list)
+        assert result[0] == 'b1'
+    
+    def test_only_surplus_branches_returned(self):
+        """Test that branches with no surplus are ignored"""
+        branch_stocks = {
+            'has_surplus': StockLevel(needed=0, surplus=10, balance=1.0, avg_sales=1.0),
+            'no_surplus': StockLevel(needed=5, surplus=0, balance=5.0, avg_sales=1.0)
+        }
+        result = get_surplus_sources_ordered_for_product('target', branch_stocks)
+        assert 'has_surplus' in result
+        assert 'no_surplus' not in result

@@ -17,70 +17,70 @@ def process_separate_tab(
     key_prefix: str,
     selected_branch: str
 ) -> None:
-    """
-    Process single tab logic using QueryOutputs use case.
+    """Processes single tab logic using QueryOutputs use case."""
+    target_branch_id, category_id = filters.render_filters(key_prefix, extension)
+    files = _load_and_filter_files(
+        selected_branch, extension, target_branch_id, category_id
+    )
     
-    Args:
-        directory: The base directory for files
-        extension: File extension to filter (.csv or .xlsx)
-        step_number: The pipeline step number
-        key_prefix: Unique prefix for UI element keys
-        selected_branch: The selected branch key (or "all")
-    """
-    repository = get_repository()
-    use_case = QueryOutputs(repository)
-    
-    target_branch_key, category_key = filters.render_filters(key_prefix, extension)
-    
-    # Handle "All Branches" selection
-    is_all_branches = selected_branch == "all"
-    branch_query = None if is_all_branches else selected_branch
-    
-    # Get all separate outputs
-    files = use_case.execute('separate', branch_query)
-    
-    # Filter by extension, target, and category
-    files = [f for f in files if f['name'].endswith(extension)]
-    
-    if target_branch_key:
-        files = [f for f in files if f.get('target_branch') == target_branch_key]
-    if category_key:
-        files = [f for f in files if category_key in f.get('product_category', '')]
-        
     if not files:
         st.info("لا توجد ملفات")
         return
 
-    # Add extra keys for compatibility with display
-    for file_info in files:
-        if 'relative_path' not in file_info:
-            file_info['relative_path'] = file_info['path']
-        if 'source_branch' not in file_info:
-            file_info['source_branch'] = file_info.get('branch', selected_branch)
-
-    if is_all_branches:
-        # Group files by source branch for the "All" view
-        grouped_files: Dict[str, List[Dict]] = {}
-        for file_info in files:
-            source_key = file_info.get('source_branch', 'عام')
-            if source_key not in grouped_files:
-                grouped_files[source_key] = []
-            grouped_files[source_key].append(file_info)
-            
-        display.display_separate_files_grouped(
-            grouped_files, 
-            files,
-            key_prefix, 
-            extension
-        )
+    if selected_branch == "all":
+        _handle_all_branches_view(files, key_prefix, extension)
     else:
-        # Specific branch view
-        st.success(f"تم العثور على {len(files)} ملف")
+        _handle_single_branch_view(files, key_prefix, selected_branch, extension)
+
+
+def _load_and_filter_files(
+    selected_branch: str, extension: str, target: str, category: str
+) -> List[Dict]:
+    """Loads and applies initial filters to separate files."""
+    repository = get_repository()
+    use_case = QueryOutputs(repository)
+    
+    branch_query = None if selected_branch == "all" else selected_branch
+    files = use_case.execute('separate', branch_query)
+    
+    # Filter by extension and add metadata
+    prepared = []
+    for file_info in files:
+        if not file_info['name'].endswith(extension):
+            continue
+        if target and file_info.get('target_branch') != target:
+            continue
+        if category and category not in file_info.get('product_category', ''):
+            continue
+            
+        file_info['relative_path'] = file_info.get('relative_path', file_info['path'])
+        file_info['source_branch'] = file_info.get('branch', selected_branch)
+        prepared.append(file_info)
         
-        if files:
-            display.display_separate_files(
-                files, 
-                key_prefix, 
-                selected_branch, 
-                extension
-            )
+    return prepared
+
+
+def _handle_all_branches_view(
+    files: List[Dict], key_prefix: str, extension: str
+) -> None:
+    """Groups files by source branch and dispatches to grouped display."""
+    grouped_files: Dict[str, List[Dict]] = {}
+    for file_info in files:
+        source_key = file_info.get('source_branch', 'عام')
+        if source_key not in grouped_files:
+            grouped_files[source_key] = []
+        grouped_files[source_key].append(file_info)
+            
+    display.display_separate_files_grouped(
+        grouped_files, files, key_prefix, extension
+    )
+
+
+def _handle_single_branch_view(
+    files: List[Dict], key_prefix: str, selected_branch: str, extension: str
+) -> None:
+    """Displays separate files for a specific branch."""
+    st.success(f"تم العثور على {len(files)} ملف")
+    display.display_separate_files(
+        files, key_prefix, selected_branch, extension
+    )

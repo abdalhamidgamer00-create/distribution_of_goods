@@ -15,68 +15,69 @@ def process_transfer_tab(
     selected_branch: str,
     branches_list: list
 ) -> None:
-    """
-    Process single tab logic using QueryOutputs use case.
-    
-    Args:
-        directory: The base directory for files
-        extension: File extension to filter (.csv or .xlsx)
-        step_number: The pipeline step number
-        key_prefix: Unique prefix for UI element keys
-        selected_branch: The selected branch label (or "الكل")
-        branches_list: List of available branches
-    """
-    repository = get_repository()
-    use_case = QueryOutputs(repository)
-    
-    # Handle "All Branches" selection
-    is_all_branches = selected_branch == "all"
-    branch_query = None if is_all_branches else selected_branch
-    
-    # Get transfer outputs
-    files = use_case.execute('transfers', branch_query)
-    
-    # Filter by extension
-    files = [f for f in files if f['name'].endswith(extension)]
+    """Processes single tab logic using QueryOutputs use case."""
+    files = _load_and_prepare_files(selected_branch, extension)
     
     if not files:
         st.warning("لا توجد ملفات")
         return
 
-    # Add relative_path key for compatibility with display
-    for file_info in files:
-        if 'relative_path' not in file_info:
-            file_info['relative_path'] = file_info['path']
-
-    if is_all_branches:
-        # Group files by branch for the "All" view
-        grouped_files: Dict[str, List[Dict]] = {}
-        for file_info in files:
-            branch_key = file_info.get('branch', 'عام')
-            if branch_key not in grouped_files:
-                grouped_files[branch_key] = []
-            grouped_files[branch_key].append(file_info)
-            
-        display.display_transfer_files_grouped(
-            grouped_files, 
-            files,
-            key_prefix, 
-            extension
-        )
+    if selected_branch == "all":
+        _handle_all_branches_view(files, key_prefix, extension)
     else:
-        # Apply filters for specific branch view
-        filtered_files = filters.filter_transfers(
-            files, 
-            selected_branch, 
-            branches_list, 
-            key_prefix, 
-            extension
+        _handle_single_branch_view(
+            files, selected_branch, branches_list, key_prefix, extension
         )
-        
-        if filtered_files:
-            display.display_transfer_files(
-                filtered_files, 
-                key_prefix, 
-                selected_branch, 
-                extension
-            )
+
+
+def _load_and_prepare_files(selected_branch: str, extension: str) -> List[Dict]:
+    """Loads and prepares transfer files for the UI."""
+    repository = get_repository()
+    use_case = QueryOutputs(repository)
+    
+    branch_query = None if selected_branch == "all" else selected_branch
+    files = use_case.execute('transfers', branch_query)
+    
+    # Filter by extension and add compatibility metadata
+    prepared_files = []
+    for file_info in files:
+        if file_info['name'].endswith(extension):
+            if 'relative_path' not in file_info:
+                file_info['relative_path'] = file_info['path']
+            prepared_files.append(file_info)
+            
+    return prepared_files
+
+
+def _handle_all_branches_view(
+    files: List[Dict], key_prefix: str, extension: str
+) -> None:
+    """Groups files by branch and dispatches to grouped display."""
+    grouped_files: Dict[str, List[Dict]] = {}
+    for file_info in files:
+        branch_key = file_info.get('branch', 'عام')
+        if branch_key not in grouped_files:
+            grouped_files[branch_key] = []
+        grouped_files[branch_key].append(file_info)
+            
+    display.display_transfer_files_grouped(
+        grouped_files, files, key_prefix, extension
+    )
+
+
+def _handle_single_branch_view(
+    files: List[Dict], 
+    selected_branch: str, 
+    branches_list: list,
+    key_prefix: str, 
+    extension: str
+) -> None:
+    """Applies branch filters and dispatches to standard display."""
+    filtered_files = filters.filter_transfers(
+        files, selected_branch, branches_list, key_prefix, extension
+    )
+    
+    if filtered_files:
+        display.display_transfer_files(
+            filtered_files, key_prefix, selected_branch, extension
+        )
