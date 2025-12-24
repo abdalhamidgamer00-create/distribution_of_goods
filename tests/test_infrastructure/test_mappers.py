@@ -33,11 +33,11 @@ class TestStockMapper:
         
         # Assert
         # asherin: 90 sales / 90 days = 1.0 avg_sales
-        # monthly_qty = ceil(1.0 * 30) = 30
-        # balance = 50. Surplus = 50 - 30 = 20. Needed = 0.
+        # coverage_qty = ceil(1.0 * 20) = 20
+        # balance = 50. Surplus = 50 - 20 = 30. Needed = 0.
         asherin_stock = result.branch_stocks['asherin']
         assert asherin_stock.avg_sales == 1.0
-        assert asherin_stock.surplus == 20
+        assert asherin_stock.surplus == 30
         assert asherin_stock.needed == 0
         
         # wardani: 0 sales. monthly_qty = 0. balance = 100. Surplus = 100. Needed = 0.
@@ -68,9 +68,9 @@ class TestStockMapper:
         
         # Assert
         # asherin: 180 sales / 90 days = 2.0 avg_sales
-        # monthly_qty = ceil(2.0 * 30) = 60
-        # balance = 20. Surplus = 0. Needed = 60 - 20 = 40.
+        # coverage_qty = ceil(2.0 * 20) = 40
+        # balance = 20. Surplus = 0. Needed = 40 - 20 = 20.
         asherin_stock = result.branch_stocks['asherin']
         assert asherin_stock.avg_sales == 2.0
         assert asherin_stock.surplus == 0
-        assert asherin_stock.needed == 40
+        assert asherin_stock.needed == 20
