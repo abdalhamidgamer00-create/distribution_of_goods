@@ -34,10 +34,7 @@ def process_directory_tab(
         st.info(MESSAGES["no_files"])
         return
 
-    # Add relative_path key early for filters compatibility
-    for f in files:
-        if 'relative_path' not in f:
-            f['relative_path'] = f['path']
+    # files now contain correct relative_path from repository metadata
 
     st.success(f"تم العثور على {len(files)} ملف")
 

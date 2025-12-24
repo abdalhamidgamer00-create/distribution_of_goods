@@ -19,10 +19,10 @@ def list_artifacts(
         prefix = patterns.get(file_format, '')
         pattern = f"{prefix}{branch_filter}" if branch_filter else prefix
         if category_name == 'shortage':
-            _collect_recursive(fmt_dir, category_name, None, results)
+            _collect_recursive(fmt_dir, category_name, None, results, fmt_dir)
         else:
             _scan_directory(
-                fmt_dir, category_name, branch_filter, pattern, results
+                fmt_dir, category_name, branch_filter, pattern, results, fmt_dir
             )
     return results
 def _resolve_format_dir(base, file_format) -> Optional[str]:
@@ -31,7 +31,7 @@ def _resolve_format_dir(base, file_format) -> Optional[str]:
     if os.path.exists(directory):
         return directory
     return base if base.endswith(file_format) and os.path.exists(base) else None
-def _scan_directory(dir_path, category, filter_val, pattern, results) -> None:
+def _scan_directory(dir_path, category, filter_val, pattern, results, root_dir) -> None:
     """Scans a directory for matching artifact subdirectories."""
     for item in os.listdir(dir_path):
         item_path = os.path.join(dir_path, item)
@@ -39,10 +39,10 @@ def _scan_directory(dir_path, category, filter_val, pattern, results) -> None:
             continue
         if _is_match(category, filter_val, item, pattern):
             if category == 'separate':
-                _scan_separate(item_path, category, filter_val, item, results)
+                _scan_separate(item_path, category, filter_val, item, results, root_dir)
             else:
                 branch = _extract_meta(category, filter_val, item)
-                _collect_recursive(item_path, category, branch, results)
+                _collect_recursive(item_path, category, branch, results, root_dir)
 def _is_match(category, branch_filter, item, pattern) -> bool:
     """Checks if a directory item matches the search pattern."""
     if pattern in item:
@@ -64,14 +64,14 @@ def _extract_meta(category, filter_val, item) -> str:
         name = match.group(1).replace('excel_from_', '').replace('from_', '')
         return name.split('_to_')[0]
     return item.split('from_')[1].split('_to_')[0] if 'from_' in item else item
-def _scan_separate(path, category, filter_val, item, results) -> None:
+def _scan_separate(path, category, filter_val, item, results, root_dir) -> None:
     """Specialized scan for separate transfers."""
     for target in os.listdir(path):
         target_path = os.path.join(path, target)
         if os.path.isdir(target_path) and target.startswith('to_'):
             branch = filter_val or _extract_meta(category, filter_val, item)
-            _collect_recursive(target_path, category, branch, results)
-def _collect_recursive(search_dir, category, branch, results) -> None:
+            _collect_recursive(target_path, category, branch, results, root_dir)
+def _collect_recursive(search_dir, category, branch, results, root_dir) -> None:
     """Recursively collects files and applies metadata enrichment."""
     if not os.path.exists(search_dir):
         return
@@ -79,9 +79,11 @@ def _collect_recursive(search_dir, category, branch, results) -> None:
     for item in os.listdir(search_dir):
         path = os.path.join(search_dir, item)
         if os.path.isdir(path):
-            _collect_recursive(path, category, branch, results)
+            _collect_recursive(path, category, branch, results, root_dir)
         elif item.endswith(('.csv', '.xlsx')):
-            meta = create_artifact_metadata(item, path, category, branch, folder)
+            meta = create_artifact_metadata(
+                item, path, category, branch, folder, root_dir
+            )
             if category == 'separate':
                 enrich_separate_metadata(meta, search_dir, item, folder)
             results.append(meta)

@@ -9,18 +9,28 @@ def create_artifact_metadata(
     path: str, 
     category: str, 
     branch: str, 
-    folder: str
+    folder: str,
+    root_dir: str = ""
 ) -> Dict:
-    """Creates the base metadata dictionary for an artifact."""
-    return {
+    """Creates the base metadata dictionary with relative path support."""
+    abspath = os.path.abspath(path)
+    metadata = {
         'name': name,
-        'path': os.path.abspath(path),
+        'path': abspath,
         'size': os.path.getsize(path),
         'mtime': os.path.getmtime(path),
         'category': category,
         'branch': branch,
         'folder_name': folder
     }
+    
+    if root_dir:
+        abs_root = os.path.abspath(root_dir)
+        metadata['relative_path'] = os.path.relpath(abspath, abs_root)
+    else:
+        metadata['relative_path'] = name
+        
+    return metadata
 
 
 def enrich_separate_metadata(
