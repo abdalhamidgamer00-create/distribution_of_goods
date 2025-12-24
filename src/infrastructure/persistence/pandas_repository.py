@@ -97,8 +97,7 @@ class PandasDataRepository(DataRepository):
 
     def save_transfers(self, transfers_list: List[Transfer]) -> None:
         """Saves transfers to CSV files (Step 7)."""
-        os.makedirs(self._transfers_dir, exist_ok=True)
-        save_step7_transfers(transfers_list, self._output_dir)
+        save_step7_transfers(transfers_list, self._transfers_dir)
 
     def save_remaining_surplus(self, results: List[DistributionResult]) -> None:
         """Saves products with remaining surplus (Step 9)."""
@@ -127,7 +126,7 @@ class PandasDataRepository(DataRepository):
         """Saves transfers split by category (Step 8)."""
         from datetime import datetime
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_step8_split_transfers(transfers_list, self._output_dir, excel_directory, ts)
+        save_step8_split_transfers(transfers_list, self._transfers_dir, excel_directory, ts)
 
     def load_remaining_surplus(self, branch: Branch) -> List[Dict]:
         """Loads remaining surplus for a branch (Step 9 output)."""
@@ -251,7 +250,10 @@ class PandasDataRepository(DataRepository):
         return {
             'transfers': {
                 'base_directory': self._output_dir,
-                'search_patterns': {'csv': '', 'excel': ''}
+                'search_patterns': {
+                    'csv': 'transfers_from_', 
+                    'excel': 'transfers_excel_from_'
+                }
             },
             'surplus': {
                 'base_directory': self._surplus_dir,

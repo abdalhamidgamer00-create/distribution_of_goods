@@ -60,9 +60,10 @@ class PipelineManager:
 
     def _create_default_repository(self) -> PandasDataRepository:
         """Creates a repository with standard paths."""
+        from src.shared.config.paths import TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR
         return PandasDataRepository(
             input_dir=RENAMED_CSV_DIR,
-            output_dir=ANALYTICS_DIR,
+            output_dir=TRANSFERS_ROOT_DIR,
             analytics_dir=ANALYTICS_DIR,
             surplus_dir=SURPLUS_DIR,
             shortage_dir=SHORTAGE_DIR,
@@ -118,9 +119,10 @@ class PipelineManager:
         import os
         from src.shared.utils.file_handler import get_csv_files
         
+        from src.shared.config.paths import TRANSFERS_ROOT_DIR
         paths = {
             "ingest": INPUT_CSV_DIR, "normalize": RENAMED_CSV_DIR,
-            "segment": ANALYTICS_DIR, "optimize": TRANSFERS_CSV_DIR,
+            "segment": ANALYTICS_DIR, "optimize": TRANSFERS_ROOT_DIR,
             "report_surplus": SURPLUS_DIR
         }
 

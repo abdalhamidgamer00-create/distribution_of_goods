@@ -60,7 +60,9 @@ def _is_branch_match(category, branch_filter, item, sub_pattern) -> bool:
         return (
             item.startswith(branch_filter) or 
             f"from_{branch_filter}" in item or
-            f"From_{branch_filter}" in item
+            f"From_{branch_filter}" in item or
+            f"transfers_from_{branch_filter}" in item or
+            f"transfers_excel_from_{branch_filter}" in item
         )
     return False
 
@@ -70,9 +72,10 @@ def _extract_branch_meta(category, branch_filter, item) -> str:
     if branch_filter:
         return branch_filter
         
-    match = re.search(r'from_([a-z]+)_', item)
+    match = re.search(r'from_([a-z_]+)_', item)
     if match:
-        return match.group(1)
+        extracted = match.group(1).replace('excel_from_', '').replace('from_', '')
+        return extracted.split('_to_')[0]
         
     if category == 'transfers' and 'from_' in item and '_to_' in item:
         return item.split('from_')[1].split('_to_')[0]

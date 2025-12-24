@@ -30,12 +30,14 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
 def get_repository() -> Any:
     """Get a pre-configured repository instance for the GUI."""
     from src.infrastructure.persistence.pandas_repository import PandasDataRepository
+    from src.shared.config.paths import TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR
     return PandasDataRepository(
         input_dir=RENAMED_CSV_DIR,
-        output_dir=TRANSFERS_CSV_DIR,
+        output_dir=TRANSFERS_ROOT_DIR,
         surplus_dir=SURPLUS_DIR,
         shortage_dir=SHORTAGE_DIR,
-        analytics_dir=ANALYTICS_DIR
+        analytics_dir=ANALYTICS_DIR,
+        transfers_dir=TRANSFERS_CSV_DIR
     )
 
 
