@@ -22,12 +22,13 @@ from src.application.use_cases.classify_transfers import ClassifyTransfers
 from src.application.use_cases.report_surplus import ReportSurplus
 from src.application.use_cases.report_shortage import ReportShortage
 from src.application.use_cases.consolidate_transfers import ConsolidateTransfers
+from src.shared.utils.telemetry import execution_timer
 
 logger = get_logger(__name__)
 
 
 class PipelineManager:
-    """Orchestrates the execution of use cases with formal data contracts."""
+    """Orchestrates the execution of use cases with performance tracking."""
 
     def __init__(self, repository=None):
         self._repository = repository or self._create_default_repository()
@@ -45,11 +46,13 @@ class PipelineManager:
         return True
 
     def run_service(self, service_name: str, **kwargs) -> bool:
-        """Runs a service, resolving prerequisites with recursion guards."""
+        """Runs a service with formal contracts and execution timing."""
         try:
             self._resolve_prerequisites(service_name, **kwargs)
-            success = self._services[service_name].execute(**kwargs)
-            self._record_result(service_name, success, "Success" if success else "Fail")
+            with execution_timer(service_name):
+                success = self._services[service_name].execute(**kwargs)
+            
+            self._record_result(service_name, success, "Success")
             return success
         except PrerequisiteNotFoundError as error:
             logger.warning(f"Rescuing: {error}")

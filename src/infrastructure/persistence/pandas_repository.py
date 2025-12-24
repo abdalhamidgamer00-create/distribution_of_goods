@@ -24,6 +24,7 @@ from src.infrastructure.persistence.combined_transfers_persistence import (
     save_step11_combined_transfers
 )
 from src.infrastructure.persistence.output_manager import list_artifacts
+from src.infrastructure.cache.data_cache import DataSnapshotCache
 
 logger = get_logger(__name__)
 
@@ -38,6 +39,7 @@ class PandasDataRepository(DataRepository):
         self._shortage_dir = kwargs.get('shortage_dir', output_dir)
         self._analytics_dir = kwargs.get('analytics_dir', output_dir)
         self._transfers_dir = kwargs.get('transfers_dir', output_dir)
+        self._cache = DataSnapshotCache()
 
     def load_branches(self) -> List[Branch]:
         """Loads available branches from constants."""
@@ -78,11 +80,21 @@ class PandasDataRepository(DataRepository):
         df.to_csv(path, index=False, encoding='utf-8-sig')
 
     def load_stock_levels(self, branch: Branch) -> Dict[str, StockLevel]:
-        """Loads stock levels for a specific branch."""
+        """Loads stock levels for a specific branch, using cache if available."""
+        cache_key = f"stock_levels_{branch.name}"
+        if self._cache.has(cache_key):
+            return self._cache.get(cache_key)
+            
         path = os.path.join(self._analytics_dir, branch.name, f"main_analysis_{branch.name}.csv")
         if not os.path.exists(path):
             return {}
             
+        stocks = self._load_stocks_from_disk(path, branch.name)
+        self._cache.set(cache_key, stocks)
+        return stocks
+
+    def _load_stocks_from_disk(self, path: str, branch_name: str) -> Dict[str, StockLevel]:
+        """Helper to read stock levels from disk."""
         try:
             df = pd.read_csv(path, encoding='utf-8-sig')
             stocks = {}
@@ -92,7 +104,7 @@ class PandasDataRepository(DataRepository):
                     stocks[str(row[code_col])] = StockMapper.to_stock_level(row)
             return stocks
         except Exception as error:
-            logger.error(f"Error loading levels for {branch.name}: {error}")
+            logger.error(f"Error loading levels for {branch_name}: {error}")
             return {}
 
     def save_transfers(self, transfers_list: List[Transfer]) -> None:
@@ -108,19 +120,32 @@ class PandasDataRepository(DataRepository):
         save_shortage_reports(results, self._shortage_dir)
 
     def load_transfers(self) -> List[Transfer]:
-        """Loads transfers from the Step 7 output directory."""
-        all_transfers = []
-        if not os.path.exists(self._output_dir):
-            return []
+        """Loads transfers from Step 7 output, using cache if available."""
+        if self._cache.has("step7_transfers"):
+            return self._cache.get("step7_transfers")
             
+        all_transfers = []
+        if os.path.exists(self._output_dir):
+            all_transfers = self._walk_output_for_transfers()
+            
+        self._cache.set("step7_transfers", all_transfers)
+        return all_transfers
+
+    def _walk_output_for_transfers(self) -> List[Transfer]:
+        """Recursive walk to find and parse transfer files."""
+        transfers = []
         for root, _, files in os.walk(self._output_dir):
             for filename in files:
-                if filename.endswith('.csv') and '_to_' in filename:
-                    if self._is_step8_split_file(filename):
-                        continue
+                if self._is_transfer_file(filename):
                     path = os.path.join(root, filename)
-                    all_transfers.extend(self._parse_transfer_file(path, filename))
-        return all_transfers
+                    transfers.extend(self._parse_transfer_file(path, filename))
+        return transfers
+
+    def _is_transfer_file(self, filename: str) -> bool:
+        """Determines if a file is a valid Step 7 transfer CSV."""
+        return (filename.endswith('.csv') and 
+                '_to_' in filename and 
+                not self._is_step8_split_file(filename))
 
     def save_split_transfers(self, transfers_list: List[Transfer], excel_directory: str) -> None:
         """Saves transfers split by category (Step 8)."""

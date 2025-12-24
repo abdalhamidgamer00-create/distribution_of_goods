@@ -51,13 +51,21 @@ class ConsolidateTransfers:
         return len(merged), len(separate)
 
     def _process_all_branches(self, timestamp: str) -> tuple:
-        """Iterates through all branches and consolidates their data."""
+        """Iterates through all branches in parallel to consolidate data."""
+        from concurrent.futures import ThreadPoolExecutor
         merged_total = 0
         separate_total = 0
-        for name in get_branches():
-            m_count, s_count = self.execute_for_branch(Branch(name), timestamp)
-            merged_total += m_count
-            separate_total += s_count
+        
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self.execute_for_branch, Branch(name), timestamp)
+                for name in get_branches()
+            ]
+            for future in futures:
+                merged_count, separate_count = future.result()
+                merged_total += merged_count
+                separate_total += separate_count
+                
         return merged_total, separate_total
 
     def _load_branch_input_data(self, branch: Branch) -> tuple:

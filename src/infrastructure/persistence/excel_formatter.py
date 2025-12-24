@@ -56,22 +56,19 @@ def _apply_column_widths(worksheet, columns) -> None:
 
 
 def _apply_borders(worksheet, row_count: int, col_count: int) -> None:
-    """Applies thin borders to all data cells."""
-    thin_side = Side(style='thin')
-    standard_border = Border(
-        left=thin_side, 
-        right=thin_side, 
-        top=thin_side, 
-        bottom=thin_side
-    )
+    """Applies thin borders to data cells efficiently."""
+    if row_count <= 0 or col_count <= 0:
+        return
+        
+    thin = Side(style='thin')
+    std_border = Border(left=thin, right=thin, top=thin, bottom=thin)
     
-    for row in worksheet.iter_rows(
-        min_row=1, 
-        max_row=row_count + 1, 
-        max_col=col_count
-    ):
+    rows = worksheet.iter_rows(
+        min_row=1, max_row=row_count + 1, max_col=col_count
+    )
+    for row in rows:
         for cell in row:
-            cell.border = standard_border
+            cell.border = std_border
 
 
 def _apply_conditional_formatting(worksheet, row_count: int, columns) -> None:

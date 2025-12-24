@@ -30,23 +30,24 @@ class OptimizeTransfers:
             return []
 
     def calculate(self) -> List[DistributionResult]:
-        """Performs calculation for all products across all branches."""
+        """Performs parallel calculation for all products across all branches."""
+        from concurrent.futures import ProcessPoolExecutor
         branches = self._repository.load_branches()
         products = self._repository.load_products()
-        
         network_state = self._factory.create_network_state(
             branches, self._repository.load_stock_levels
         )
         stocks_map = self._load_all_branch_stocks(branches)
         
-        all_results = []
-        for product in products:
-            result = self._process_single_product(
-                product, branches, stocks_map, network_state
-            )
-            if result:
-                all_results.append(result)
-        
+        with ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(
+                    self._process_single_product, 
+                    product, branches, stocks_map, network_state
+                ) for product in products
+            ]
+            all_results = [f.result() for f in futures if f.result()]
+            
         return all_results
 
     def save(self, results: List[DistributionResult]) -> None:
