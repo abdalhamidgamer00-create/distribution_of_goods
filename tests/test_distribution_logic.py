@@ -137,7 +137,7 @@ def analyze_product(product_idx: int, branch_data: dict, product_info: pd.DataFr
         surplus = branch_data[branch].iloc[product_idx]['surplus_quantity']
         avg_sales = branch_data[branch].iloc[product_idx]['avg_sales']
         balance = branch_data[branch].iloc[product_idx]['balance']
-        monthly_qty = branch_data[branch].iloc[product_idx]['monthly_quantity']
+        coverage_qty = branch_data[branch].iloc[product_idx]['coverage_quantity']
         
         if needed > 0:
             analysis['needing_branches'].append({
@@ -145,7 +145,7 @@ def analyze_product(product_idx: int, branch_data: dict, product_info: pd.DataFr
                 'needed': needed,
                 'avg_sales': avg_sales,
                 'balance': balance,
-                'monthly_quantity': monthly_qty
+                'coverage_quantity': coverage_qty
             })
             analysis['total_needed'] += needed
         
@@ -248,7 +248,7 @@ def generate_report(analyses: list):
         
         report_lines.append(f"\n[NEEDING BRANCHES] ({len(analysis['needing_branches'])})")
         for nb in analysis['needing_branches']:
-            report_lines.append(f"  - {nb['branch']:10s}: Needed={nb['needed']:8.2f}, Avg_Sales={nb['avg_sales']:6.2f}, Balance={nb['balance']:8.2f}, Monthly={nb['monthly_quantity']:8.2f}")
+            report_lines.append(f"  - {nb['branch']:10s}: Needed={nb['needed']:8.2f}, Avg_Sales={nb['avg_sales']:6.2f}, Balance={nb['balance']:8.2f}, Coverage={nb['coverage_quantity']:8.2f}")
         
         report_lines.append(f"\n[SURPLUS BRANCHES] ({len(analysis['surplus_branches'])})")
         for sb in analysis['surplus_branches']:

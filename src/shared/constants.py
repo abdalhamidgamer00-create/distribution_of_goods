@@ -19,6 +19,9 @@ PRIORITY_WEIGHTS = {
     "avg_sales": 0.10
 }
 
+# Inventory Constraints
+STOCK_COVERAGE_DAYS = 20
+
 # Product Types/Categories
 PRODUCT_CATEGORIES = [
     "tablets_and_capsules",

@@ -2,34 +2,35 @@
 
 import math
 import pandas as pd
+from src.shared.constants import STOCK_COVERAGE_DAYS
 
 
-def _calculate_monthly(avg_sales: pd.Series) -> pd.Series:
-    """Calculate monthly quantity using ceiling."""
-    return (avg_sales * 30).apply(lambda x: math.ceil(x))
+def _calculate_coverage_quantity(avg_sales: pd.Series) -> pd.Series:
+    """Calculate target coverage quantity using ceiling."""
+    return (avg_sales * STOCK_COVERAGE_DAYS).apply(lambda x: math.ceil(x))
 
 
-def _calculate_surplus(balance: pd.Series, monthly: pd.Series) -> pd.Series:
+def _calculate_surplus(balance: pd.Series, coverage: pd.Series) -> pd.Series:
     """Calculate surplus quantity using floor."""
-    return (balance - monthly).apply(lambda x: max(0, math.floor(x)))
+    return (balance - coverage).apply(lambda x: max(0, math.floor(x)))
 
 
-def _calculate_needed(monthly: pd.Series, balance: pd.Series) -> pd.Series:
+def _calculate_needed(coverage: pd.Series, balance: pd.Series) -> pd.Series:
     """Calculate needed quantity using ceiling."""
-    return (monthly - balance).apply(lambda x: max(0, math.ceil(x)))
+    return (coverage - balance).apply(lambda x: max(0, math.ceil(x)))
 
 
 def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate monthly, surplus, and needed quantities."""
+    """Calculate coverage, surplus, and needed quantities."""
     dataframe = branch_df.copy()
-    monthly = _calculate_monthly(dataframe['avg_sales'])
+    coverage = _calculate_coverage_quantity(dataframe['avg_sales'])
     
-    dataframe['monthly_quantity'] = monthly
+    dataframe['coverage_quantity'] = coverage
     dataframe['surplus_quantity'] = _calculate_surplus(
-        dataframe['balance'], monthly
+        dataframe['balance'], coverage
     )
     dataframe['needed_quantity'] = _calculate_needed(
-        monthly, dataframe['balance']
+        coverage, dataframe['balance']
     )
     
     return dataframe

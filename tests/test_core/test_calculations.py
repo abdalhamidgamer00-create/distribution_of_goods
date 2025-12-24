@@ -8,6 +8,7 @@ from src.domain.services.calculations.quantity_calculator import (
     calculate_basic_quantities,
     calculate_surplus_remaining
 )
+from src.shared.constants import STOCK_COVERAGE_DAYS
 from src.domain.services.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized
 )
@@ -21,50 +22,50 @@ from src.domain.models.entities import StockLevel
 class TestCalculateBasicQuantities:
     """Tests for calculate_basic_quantities function"""
     
-    def test_monthly_quantity_calculation(self):
-        """Test that monthly_quantity is calculated correctly (avg_sales * 30, ceiling)"""
+    def test_coverage_quantity_calculation(self):
+        """Test that coverage_quantity is calculated correctly (avg_sales * 20, ceiling)"""
         df = pd.DataFrame({
             'avg_sales': [1.0, 2.5, 0.5],
             'balance': [10.0, 50.0, 20.0]
         })
         result = calculate_basic_quantities(df)
         
-        # avg_sales * 30, rounded up
-        assert result['monthly_quantity'].iloc[0] == math.ceil(1.0 * 30)  # 30
-        assert result['monthly_quantity'].iloc[1] == math.ceil(2.5 * 30)  # 75
-        assert result['monthly_quantity'].iloc[2] == math.ceil(0.5 * 30)  # 15
+        # avg_sales * STOCK_COVERAGE_DAYS, rounded up
+        assert result['coverage_quantity'].iloc[0] == math.ceil(1.0 * STOCK_COVERAGE_DAYS)
+        assert result['coverage_quantity'].iloc[1] == math.ceil(2.5 * STOCK_COVERAGE_DAYS)
+        assert result['coverage_quantity'].iloc[2] == math.ceil(0.5 * STOCK_COVERAGE_DAYS)
     
     def test_surplus_quantity_calculation(self):
-        """Test that surplus_quantity is calculated correctly (balance - monthly, floor, min 0)"""
+        """Test that surplus_quantity is calculated correctly (balance - coverage, floor, min 0)"""
         df = pd.DataFrame({
             'avg_sales': [1.0, 0.5, 2.0],
             'balance': [50.0, 10.0, 30.0]
         })
         result = calculate_basic_quantities(df)
         
-        # balance - monthly_quantity, floor, min 0
-        # Product 0: 50 - 30 = 20 (surplus)
-        assert result['surplus_quantity'].iloc[0] == 20
-        # Product 1: 10 - 15 = -5 -> 0 (no surplus)
+        # balance - coverage_quantity, floor, min 0
+        # Product 0: 50 - 20 = 30 (surplus)
+        assert result['surplus_quantity'].iloc[0] == 30
+        # Product 1: 10 - 10 = 0 (no surplus)
         assert result['surplus_quantity'].iloc[1] == 0
-        # Product 2: 30 - 60 = -30 -> 0 (no surplus)
+        # Product 2: 30 - 40 = -10 -> 0 (no surplus)
         assert result['surplus_quantity'].iloc[2] == 0
     
     def test_needed_quantity_calculation(self):
-        """Test that needed_quantity is calculated correctly (monthly - balance, ceiling, min 0)"""
+        """Test that needed_quantity is calculated correctly (coverage - balance, ceiling, min 0)"""
         df = pd.DataFrame({
             'avg_sales': [1.0, 0.5, 2.0],
             'balance': [50.0, 10.0, 30.0]
         })
         result = calculate_basic_quantities(df)
         
-        # monthly_quantity - balance, ceiling, min 0
-        # Product 0: 30 - 50 = -20 -> 0 (no need)
+        # coverage_quantity - balance, ceiling, min 0
+        # Product 0: 20 - 50 = -30 -> 0 (no need)
         assert result['needed_quantity'].iloc[0] == 0
-        # Product 1: 15 - 10 = 5 (needed)
-        assert result['needed_quantity'].iloc[1] == 5
-        # Product 2: 60 - 30 = 30 (needed)
-        assert result['needed_quantity'].iloc[2] == 30
+        # Product 1: 10 - 10 = 0 (no need)
+        assert result['needed_quantity'].iloc[1] == 0
+        # Product 2: 40 - 30 = 10 (needed)
+        assert result['needed_quantity'].iloc[2] == 10
     
     def test_zero_avg_sales(self):
         """Test handling of zero average sales"""
@@ -74,7 +75,7 @@ class TestCalculateBasicQuantities:
         })
         result = calculate_basic_quantities(df)
         
-        assert result['monthly_quantity'].iloc[0] == 0
+        assert result['coverage_quantity'].iloc[0] == 0
         assert result['surplus_quantity'].iloc[0] == 10  # All balance is surplus
         assert result['needed_quantity'].iloc[0] == 0
 

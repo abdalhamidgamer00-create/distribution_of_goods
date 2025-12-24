@@ -2,6 +2,7 @@
 
 import math
 from src.domain.models.entities import StockLevel
+from src.shared.constants import STOCK_COVERAGE_DAYS
 
 
 class StockCalculator:
@@ -27,13 +28,15 @@ class StockCalculator:
         daily_average_sales = (
             sales_quantity / days_covered if days_covered > 0 else 0.0
         )
-        monthly_inventory_need = math.ceil(daily_average_sales * 30)
+        target_inventory_coverage = math.ceil(
+            daily_average_sales * STOCK_COVERAGE_DAYS
+        )
         
         surplus_quantity = math.floor(
-            max(0, balance_quantity - monthly_inventory_need)
+            max(0, balance_quantity - target_inventory_coverage)
         )
         needed_quantity = math.ceil(
-            max(0, monthly_inventory_need - balance_quantity)
+            max(0, target_inventory_coverage - balance_quantity)
         )
         
         return StockLevel(
