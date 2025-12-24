@@ -16,7 +16,9 @@ def save_formatted_excel(dataframe: pd.DataFrame, file_path: str) -> None:
             _apply_header_styles(worksheet)
             _apply_column_widths(worksheet, dataframe.columns)
             _apply_borders(worksheet, len(dataframe), len(dataframe.columns))
-            _apply_conditional_formatting(worksheet, len(dataframe), dataframe.columns)
+            _apply_conditional_formatting(
+                worksheet, len(dataframe), dataframe.columns
+            )
             
     except Exception as error:
         print(f"Error saving formatted Excel {file_path}: {error}")

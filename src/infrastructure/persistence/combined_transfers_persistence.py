@@ -8,47 +8,72 @@ from src.infrastructure.persistence.excel_formatter import save_formatted_excel
 
 
 def save_step11_combined_transfers(
-    branch: Branch,
-    merged_data: List[Dict], 
-    separate_data: List[Dict],
-    timestamp: str,
-    base_dir: str = "data/output/combined_transfers"
+    branch_entity: Branch,
+    merged_items: List[Dict], 
+    separate_items: List[Dict],
+    timestamp_string: str,
+    base_output_dir: str = "data/output/combined_transfers"
 ) -> None:
-    """Saves combined transfers (merged and separate) with clean structure."""
-    _save_merged_outputs(branch, merged_data, timestamp, base_dir)
-    _save_separate_outputs(branch, separate_data, timestamp, base_dir)
+    """Saves combined transfers (merged and separate) precisely."""
+    _persist_merged_outputs(
+        branch_entity, merged_items, timestamp_string, base_output_dir
+    )
+    _persist_separate_outputs(
+        branch_entity, separate_items, timestamp_string, base_output_dir
+    )
 
 
-def _save_merged_outputs(branch, data_list, ts, base_dir) -> None:
-    """Saves merged category-wise transfers."""
-    csv_dir = os.path.join(base_dir, "merged", "csv", f"combined_transfers_from_{branch.name}_{ts}")
-    excel_dir = os.path.join(base_dir, "merged", "excel", f"combined_transfers_from_{branch.name}_{ts}")
+def _persist_merged_outputs(branch, items, timestamp, base_dir) -> None:
+    """Saves merged category-wise transfers to CSV and Excel."""
+    folder_name = f"combined_transfers_from_{branch.name}_{timestamp}"
+    csv_dir = os.path.join(base_dir, "merged", "csv", folder_name)
+    excel_dir = os.path.join(base_dir, "merged", "excel", folder_name)
     
-    for item in data_list:
-        category, df = item['category'], item['df']
+    for entry in items:
+        category, dataframe = entry['category'], entry['df']
         os.makedirs(csv_dir, exist_ok=True)
-        csv_path = os.path.join(csv_dir, f"{branch.name}_combined_{category}.csv")
-        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        filename_csv = f"{branch.name}_combined_{category}.csv"
+        dataframe.to_csv(
+            os.path.join(csv_dir, filename_csv), 
+            index=False, 
+            encoding='utf-8-sig'
+        )
         
         os.makedirs(excel_dir, exist_ok=True)
-        excel_path = os.path.join(excel_dir, f"{branch.name}_combined_{category}.xlsx")
-        save_formatted_excel(df, excel_path)
+        filename_excel = f"{branch.name}_combined_{category}.xlsx"
+        save_formatted_excel(
+            dataframe, os.path.join(excel_dir, filename_excel)
+        )
 
 
-def _save_separate_outputs(branch, data_list, ts, base_dir) -> None:
-    """Saves separate branch-wise transfers."""
-    csv_root = os.path.join(base_dir, "separate", "csv", f"transfers_from_{branch.name}_{ts}")
-    excel_root = os.path.join(base_dir, "separate", "excel", f"transfers_from_{branch.name}_{ts}")
+def _persist_separate_outputs(branch, items, timestamp, base_dir) -> None:
+    """Saves separate branch-wise transfers to CSV and Excel."""
+    folder_name = f"transfers_from_{branch.name}_{timestamp}"
+    csv_root = os.path.join(base_dir, "separate", "csv", folder_name)
+    excel_root = os.path.join(base_dir, "separate", "excel", folder_name)
     
-    for item in data_list:
-        target, category, df = item['target'], item['category'], item['df']
-        
-        csv_dir = os.path.join(csv_root, f"to_{target}")
-        os.makedirs(csv_dir, exist_ok=True)
-        csv_path = os.path.join(csv_dir, f"transfer_from_{branch.name}_to_{target}_{category}_{ts}.csv")
-        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-        
-        excel_dir = os.path.join(excel_root, f"to_{target}")
-        os.makedirs(excel_dir, exist_ok=True)
-        excel_path = os.path.join(excel_dir, f"transfer_from_{branch.name}_to_{target}_{category}_{ts}.xlsx")
-        save_formatted_excel(df, excel_path)
+    for entry in items:
+        target, category, dataframe = (
+            entry['target'], entry['category'], entry['df']
+        )
+        _save_individual_target(
+            branch.name, target, category, timestamp, dataframe, 
+            csv_root, excel_root
+        )
+
+
+def _save_individual_target(
+    source, target, category, timestamp, dataframe, csv_root, excel_root
+) -> None:
+    """Saves files for a specific target branch."""
+    csv_dir = os.path.join(csv_root, f"to_{target}")
+    os.makedirs(csv_dir, exist_ok=True)
+    f_csv = f"transfer_from_{source}_to_{target}_{category}_{timestamp}.csv"
+    dataframe.to_csv(
+        os.path.join(csv_dir, f_csv), index=False, encoding='utf-8-sig'
+    )
+    
+    excel_dir = os.path.join(excel_root, f"to_{target}")
+    os.makedirs(excel_dir, exist_ok=True)
+    tag = f"transfer_from_{source}_to_{target}_{category}_{timestamp}.xlsx"
+    save_formatted_excel(dataframe, os.path.join(excel_dir, tag))

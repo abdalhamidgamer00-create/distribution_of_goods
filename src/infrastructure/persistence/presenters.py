@@ -1,4 +1,4 @@
-"""Presenter for transforming domain reports into persistence-ready dataframes."""
+"""Presenter for transforming domain reports into dataframes."""
 
 import pandas as pd
 from typing import List, Dict
@@ -6,7 +6,7 @@ from src.domain.models.distribution import ConsolidatedLogisticsReport
 
 
 class LogisticsPresenter:
-    """Transforms domain entities into formatted payloads for the repository."""
+    """Transforms domain entities into payloads for the repository."""
 
     def prepare_payloads(
         self, report: ConsolidatedLogisticsReport
@@ -21,7 +21,10 @@ class LogisticsPresenter:
         
         return merged_payloads, separate_payloads
 
-    def _to_dataframe(self, report: ConsolidatedLogisticsReport) -> pd.DataFrame:
+    def _to_dataframe(
+        self, 
+        report: ConsolidatedLogisticsReport
+    ) -> pd.DataFrame:
         """Converts domain records into a single pandas DataFrame."""
         rows = []
         for record in report.records:
@@ -54,7 +57,9 @@ class LogisticsPresenter:
         for target in df['target_branch'].unique():
             target_df = df[df['target_branch'] == target]
             for category in target_df['product_category'].unique():
-                category_df = target_df[target_df['product_category'] == category].copy()
+                category_df = target_df[
+                    target_df['product_category'] == category
+                ].copy()
                 payloads.append({
                     'target': target, 'category': category,
                     'df': self._standardize_df(category_df)
@@ -68,9 +73,8 @@ class LogisticsPresenter:
             'target_branch', 'transfer_type', 
             'sender_balance', 'receiver_balance'
         ]
-        # Filter for existing columns and sort
-        existing_cols = [c for c in column_order if c in dataframe.columns]
-        sorted_df = dataframe[existing_cols].sort_values(
+        present_cols = [c for c in column_order if c in dataframe.columns]
+        sorted_df = dataframe[present_cols].sort_values(
             'product_name', key=lambda x: x.str.lower()
         )
         return sorted_df
