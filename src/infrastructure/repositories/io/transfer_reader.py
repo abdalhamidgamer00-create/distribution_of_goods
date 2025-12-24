@@ -73,6 +73,8 @@ class TransferReader:
                 ),
                 from_branch=Branch(name=source),
                 to_branch=Branch(name=target),
-                quantity=int(row['quantity_to_transfer'])
+                quantity=int(row['quantity_to_transfer']),
+                sender_balance=float(row.get('sender_balance', 0.0)),
+                receiver_balance=float(row.get('receiver_balance', 0.0))
             ))
         return results
