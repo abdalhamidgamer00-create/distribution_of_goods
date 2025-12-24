@@ -1,0 +1,383 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0
+rootdir: /home/abdo/Public/python_project/distribution_of_goods
+plugins: cov-7.0.0
+collected 561 items
+
+tests/test_cli/test_batch_executor.py ................                   [  2%]
+tests/test_cli/test_controller.py ..........                             [  4%]
+tests/test_cli/test_display.py ..........                                [  6%]
+tests/test_cli/test_input_handler.py ......                              [  7%]
+tests/test_cli/test_step_executor.py ................                    [ 10%]
+tests/test_core/test_branches_config.py .................                [ 13%]
+tests/test_core/test_calculations.py ................                    [ 16%]
+tests/test_core/test_edge_cases.py ..........                            [ 18%]
+tests/test_core/test_validation.py .......................               [ 22%]
+tests/test_gui/test_app.py ............                                  [ 24%]
+tests/test_gui/test_auth_comprehensive.py .................              [ 27%]
+tests/test_gui/test_components/test_browser_shared.py ....               [ 27%]
+tests/test_gui/test_components/test_file_display.py ...                  [ 28%]
+tests/test_gui/test_components/test_file_grouping.py .........           [ 30%]
+tests/test_gui/test_file_service.py ...................                  [ 33%]
+tests/test_gui/test_layout.py ....                                       [ 34%]
+tests/test_gui/test_pipeline_service.py ....................             [ 37%]
+tests/test_integration/test_additional_modules.py ...................    [ 41%]
+tests/test_integration/test_e2e_flow.py .                                [ 41%]
+tests/test_integration/test_edge_cases.py ......                         [ 42%]
+tests/test_integration/test_excel_formatter.py ..........                [ 44%]
+tests/test_integration/test_file_combiner.py ..............              [ 46%]
+tests/test_integration/test_handlers_with_mock.py ..............         [ 49%]
+tests/test_integration/test_sample_data_integration.py .............     [ 51%]
+tests/test_integration/test_step_10_comprehensive.py ................... [ 54%]
+.....                                                                    [ 55%]
+tests/test_integration/test_step_10_handler_comprehensive.py ........... [ 57%]
+...........                                                              [ 59%]
+tests/test_integration/test_step_11_comprehensive.py ..................  [ 62%]
+tests/test_integration/test_step_1_comprehensive.py ...................  [ 66%]
+tests/test_integration/test_step_2_5_comprehensive.py .................. [ 69%]
+.                                                                        [ 69%]
+tests/test_integration/test_step_3_4_comprehensive.py .................. [ 72%]
+.                                                                        [ 73%]
+tests/test_integration/test_step_7_comprehensive.py .................... [ 76%]
+.                                                                        [ 76%]
+tests/test_integration/test_step_handlers_comprehensive.py .sssss....... [ 79%]
+...                                                                      [ 79%]
+tests/test_integration/test_steps_8_11_handlers.py ...............       [ 82%]
+tests/test_services/test_conversion.py ...........                       [ 84%]
+tests/test_services/test_splitting.py ................                   [ 87%]
+tests/test_services/test_transfers.py .......                            [ 88%]
+tests/test_shared/test_dataframe_validators.py ......................    [ 92%]
+tests/test_shared/test_file_handler.py ..................                [ 95%]
+tests/test_shared/test_logging_utils.py ..............                   [ 98%]
+tests/test_shared/test_report_generator.py ...........                   [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name                                                                      Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------------------------------
+src/__init__.py                                                               0      0   100%
+src/app/__init__.py                                                           0      0   100%
+src/app/cli/__init__.py                                                       2      0   100%
+src/app/cli/core/__init__.py                                                  3      0   100%
+src/app/cli/core/constants.py                                                 4      0   100%
+src/app/cli/core/controller.py                                               23      0   100%
+src/app/cli/executors/__init__.py                                             3      0   100%
+src/app/cli/executors/batch_executor.py                                      44      0   100%
+src/app/cli/executors/step_executor/__init__.py                               4      0   100%
+src/app/cli/executors/step_executor/execution.py                             18      0   100%
+src/app/cli/executors/step_executor/logging.py                               16      0   100%
+src/app/cli/executors/step_executor/lookup.py                                22      7    68%   29-40
+src/app/cli/executors/step_executor/orchestrator.py                          24      0   100%
+src/app/cli/executors/step_executor/sequence.py                              12      0   100%
+src/app/cli/handlers/__init__.py                                              2      0   100%
+src/app/cli/handlers/input_handler.py                                        20      0   100%
+src/app/cli/menu.py                                                          10      6    40%   10-17
+src/app/cli/ui/__init__.py                                                    2      0   100%
+src/app/cli/ui/display.py                                                    15      0   100%
+src/app/gui/__init__.py                                                       0      0   100%
+src/app/gui/app.py                                                           16     16     0%   2-46
+src/app/gui/components/__init__.py                                            5      0   100%
+src/app/gui/components/branch_selection.py                                    2      0   100%
+src/app/gui/components/branch_selector/__init__.py                            6      0   100%
+src/app/gui/components/branch_selector/constants.py                           1      0   100%
+src/app/gui/components/branch_selector/display.py                            12      8    33%   12-27
+src/app/gui/components/branch_selector/layout.py                             18     13    28%   9-19, 29-37
+src/app/gui/components/branch_selector/logic.py                               9      6    33%   8-15
+src/app/gui/components/branch_selector/orchestrator.py                       12      7    42%   15-23
+src/app/gui/components/browser_shared.py                                     25      0   100%
+src/app/gui/components/file_display.py                                       28      0   100%
+src/app/gui/components/file_grouping.py                                      26      0   100%
+src/app/gui/config/__init__.py                                                3      3     0%   3-6
+src/app/gui/config/departments.py                                             1      1     0%   3
+src/app/gui/config/file_browsers.py                                           2      2     0%   3-5
+src/app/gui/layout/__init__.py                                                3      0   100%
+src/app/gui/layout/sidebar.py                                                27      0   100%
+src/app/gui/layout/styles.py                                                  4      2    50%   8-15
+src/app/gui/page_config.py                                                    2      2     0%   3-5
+src/app/gui/page_templates/__init__.py                                        0      0   100%
+src/app/gui/page_templates/department.py                                     15     15     0%   2-48
+src/app/gui/page_templates/simple_browser/__init__.py                         2      2     0%   3-7
+src/app/gui/page_templates/simple_browser/filters.py                         24     24     0%   3-54
+src/app/gui/page_templates/simple_browser/layout.py                          27     27     0%   3-59
+src/app/gui/page_templates/simple_browser/rendering.py                        9      9     0%   3-21
+src/app/gui/page_templates/simple_browser/setup.py                            8      8     0%   3-15
+src/app/gui/services/__init__.py                                              0      0   100%
+src/app/gui/services/auth/__init__.py                                         3      0   100%
+src/app/gui/services/auth/orchestrator.py                                     7      4    43%   8-12
+src/app/gui/services/auth/session.py                                         24      6    75%   15-21, 54-55
+src/app/gui/services/auth/ui.py                                              19     13    32%   14-21, 26-29, 34-38
+src/app/gui/services/file/__init__.py                                         7      0   100%
+src/app/gui/services/file/classifiers.py                                     32      7    78%   33-35, 46-48, 65
+src/app/gui/services/file/collectors.py                                      35     27    23%   18-32, 37, 49-61, 75-88
+src/app/gui/services/file/grouper.py                                         28      9    68%   38-50
+src/app/gui/services/file/helpers.py                                         10      1    90%   26
+src/app/gui/services/file/lister.py                                           2      0   100%
+src/app/gui/services/file/listing/__init__.py                                 4      0   100%
+src/app/gui/services/file/listing/basics.py                                  23      3    87%   48-51
+src/app/gui/services/file/listing/folders.py                                 15     11    27%   13-29
+src/app/gui/services/file/listing/sorting.py                                  7      4    43%   11-19
+src/app/gui/services/file/reader.py                                          18      3    83%   13-15
+src/app/gui/services/file/writer.py                                          23      5    78%   30-36
+src/app/gui/services/file_service.py                                          2      0   100%
+src/app/gui/services/pipeline/__init__.py                                     4      0   100%
+src/app/gui/services/pipeline/execution.py                                   20      0   100%
+src/app/gui/services/pipeline/info.py                                        16      0   100%
+src/app/gui/services/pipeline/sequences.py                                   16      0   100%
+src/app/gui/services/pipeline_service.py                                      2      0   100%
+src/app/gui/utils/__init__.py                                                 0      0   100%
+src/app/gui/utils/auth.py                                                     2      0   100%
+src/app/gui/utils/translations.py                                             5      0   100%
+src/app/gui/views/__init__.py                                                 0      0   100%
+src/app/gui/views/browsers/__init__.py                                        0      0   100%
+src/app/gui/views/browsers/merged_view/__init__.py                            2      2     0%   3-7
+src/app/gui/views/browsers/merged_view/collection.py                          9      9     0%   3-14
+src/app/gui/views/browsers/merged_view/display.py                            14     14     0%   3-33
+src/app/gui/views/browsers/merged_view/filters.py                            10     10     0%   3-17
+src/app/gui/views/browsers/merged_view/layout.py                              9      9     0%   3-33
+src/app/gui/views/browsers/merged_view/logic.py                              17     17     0%   3-35
+src/app/gui/views/browsers/separate_view/__init__.py                          2      2     0%   3-7
+src/app/gui/views/browsers/separate_view/display.py                          15     15     0%   3-38
+src/app/gui/views/browsers/separate_view/filters.py                          13     13     0%   3-25
+src/app/gui/views/browsers/separate_view/layout.py                            9      9     0%   3-33
+src/app/gui/views/browsers/separate_view/logic.py                            17     17     0%   3-36
+src/app/gui/views/browsers/transfers_view/__init__.py                         2      2     0%   3-7
+src/app/gui/views/browsers/transfers_view/display.py                         13     13     0%   3-35
+src/app/gui/views/browsers/transfers_view/filters.py                          9      9     0%   3-30
+src/app/gui/views/browsers/transfers_view/layout.py                          11     11     0%   3-35
+src/app/gui/views/browsers/transfers_view/logic.py                           15     15     0%   3-31
+src/app/gui/views/purchases/__init__.py                                       5      5     0%   2-7
+src/app/gui/views/purchases/execution.py                                     46     46     0%   2-71
+src/app/gui/views/purchases/files.py                                         46     46     0%   2-84
+src/app/gui/views/purchases/metrics.py                                       10     10     0%   2-15
+src/app/gui/views/purchases/navigation.py                                    22     22     0%   2-57
+src/app/pipeline/__init__.py                                                  0      0   100%
+src/app/pipeline/step_1/__init__.py                                           2      0   100%
+src/app/pipeline/step_1/cleaner/__init__.py                                   2      0   100%
+src/app/pipeline/step_1/cleaner/files.py                                     22      4    82%   13-14, 27-28
+src/app/pipeline/step_1/cleaner/formatting.py                                 6      1    83%   9
+src/app/pipeline/step_1/cleaner/orchestrator.py                              27      6    78%   26-35
+src/app/pipeline/step_1/cleaner/reporting.py                                 14      3    79%   25-32
+src/app/pipeline/step_1/handler.py                                            2      0   100%
+src/app/pipeline/step_2/__init__.py                                           2      0   100%
+src/app/pipeline/step_2/converter/__init__.py                                 2      0   100%
+src/app/pipeline/step_2/converter/core.py                                    19      0   100%
+src/app/pipeline/step_2/converter/naming.py                                   8      0   100%
+src/app/pipeline/step_2/converter/orchestrator.py                            14      0   100%
+src/app/pipeline/step_2/converter/selection.py                               28      6    79%   14-18, 39
+src/app/pipeline/step_2/handler.py                                            2      0   100%
+src/app/pipeline/step_3/__init__.py                                           2      0   100%
+src/app/pipeline/step_3/validator/__init__.py                                 2      0   100%
+src/app/pipeline/step_3/validator/logging.py                                 20      0   100%
+src/app/pipeline/step_3/validator/modification.py                            13      0   100%
+src/app/pipeline/step_3/validator/orchestrator.py                            12      0   100%
+src/app/pipeline/step_3/validator/selection.py                               21      0   100%
+src/app/pipeline/step_3/validator/validation.py                              13      1    92%   29
+src/app/pipeline/step_4/__init__.py                                           2      0   100%
+src/app/pipeline/step_4/handler.py                                           31      0   100%
+src/app/pipeline/step_5/__init__.py                                           2      0   100%
+src/app/pipeline/step_5/handler.py                                           45      0   100%
+src/app/pipeline/step_6/__init__.py                                           2      0   100%
+src/app/pipeline/step_6/handler.py                                            2      0   100%
+src/app/pipeline/step_6/splitter/__init__.py                                  2      0   100%
+src/app/pipeline/step_6/splitter/execution.py                                40      6    85%   52-57
+src/app/pipeline/step_6/splitter/logging_utils.py                            14      0   100%
+src/app/pipeline/step_6/splitter/orchestrator.py                              9      1    89%   13
+src/app/pipeline/step_6/splitter/setup.py                                    14      2    86%   21-22
+src/app/pipeline/step_7/__init__.py                                           2      0   100%
+src/app/pipeline/step_7/handler.py                                            2      0   100%
+src/app/pipeline/step_7/transfers/__init__.py                                 2      0   100%
+src/app/pipeline/step_7/transfers/finders.py                                 38      5    87%   28-33, 62-63
+src/app/pipeline/step_7/transfers/generators.py                               2      2     0%   3-12
+src/app/pipeline/step_7/transfers/generators/__init__.py                      5      0   100%
+src/app/pipeline/step_7/transfers/generators/execution.py                    28      6    79%   58-63
+src/app/pipeline/step_7/transfers/generators/formatting.py                    8      1    88%   12
+src/app/pipeline/step_7/transfers/generators/grouping.py                      7      0   100%
+src/app/pipeline/step_7/transfers/generators/logging.py                      16      0   100%
+src/app/pipeline/step_7/transfers/orchestrator.py                            10      0   100%
+src/app/pipeline/step_7/transfers/validators.py                              11      0   100%
+src/app/pipeline/step_8/__init__.py                                           2      0   100%
+src/app/pipeline/step_8/handler.py                                            3      0   100%
+src/app/pipeline/step_8/transfer_splitter/__init__.py                         2      0   100%
+src/app/pipeline/step_8/transfer_splitter/converters.py                       2      0   100%
+src/app/pipeline/step_8/transfer_splitter/excel_conversion/__init__.py        3      0   100%
+src/app/pipeline/step_8/transfer_splitter/excel_conversion/counting.py       28      1    96%   28
+src/app/pipeline/step_8/transfer_splitter/excel_conversion/execution.py      31      7    77%   44-45, 66-68, 76-77
+src/app/pipeline/step_8/transfer_splitter/orchestrator.py                    21      4    81%   33, 49-51
+src/app/pipeline/step_8/transfer_splitter/processors.py                      22      2    91%   24-25
+src/app/pipeline/step_8/transfer_splitter/validators.py                      43      3    93%   74-76
+src/app/pipeline/step_9/__init__.py                                           2      0   100%
+src/app/pipeline/step_9/analytics_reader.py                                   2      2     0%   3-9
+src/app/pipeline/step_9/analytics_reader/__init__.py                          4      0   100%
+src/app/pipeline/step_9/analytics_reader/extraction.py                       29      3    90%   19-20, 28
+src/app/pipeline/step_9/analytics_reader/loading.py                          20      4    80%   16, 31-33
+src/app/pipeline/step_9/analytics_reader/paths.py                             7      0   100%
+src/app/pipeline/step_9/file_generator.py                                     5      5     0%   3-10
+src/app/pipeline/step_9/file_generator/__init__.py                            5      0   100%
+src/app/pipeline/step_9/file_generator/csv_writer.py                         23      1    96%   63
+src/app/pipeline/step_9/file_generator/excel_writer.py                       21      3    86%   32-34
+src/app/pipeline/step_9/file_generator/processing.py                         12      0   100%
+src/app/pipeline/step_9/file_generator/utils.py                               7      0   100%
+src/app/pipeline/step_9/handler.py                                            9      3    67%   16-18
+src/app/pipeline/step_9/surplus/__init__.py                                   2      0   100%
+src/app/pipeline/step_9/surplus/loading.py                                   28      5    82%   29-34, 42-43, 47
+src/app/pipeline/step_9/surplus/orchestrator.py                              36      3    92%   20, 63-64
+src/app/pipeline/step_9/surplus/processing.py                                11      0   100%
+src/app/pipeline/step_9/surplus/writers.py                                   28      1    96%   42
+src/app/pipeline/step_9/surplus_calculator.py                                34      2    94%   56, 59
+src/app/pipeline/step_10/__init__.py                                          2      0   100%
+src/app/pipeline/step_10/handler.py                                           3      0   100%
+src/app/pipeline/step_10/shortage/__init__.py                                 2      0   100%
+src/app/pipeline/step_10/shortage/loading.py                                 19      0   100%
+src/app/pipeline/step_10/shortage/orchestrator.py                            29      9    69%   22-43, 78-80
+src/app/pipeline/step_10/shortage/processing.py                               6      0   100%
+src/app/pipeline/step_10/shortage/writers/__init__.py                         4      0   100%
+src/app/pipeline/step_10/shortage/writers/csv_writer.py                      28      0   100%
+src/app/pipeline/step_10/shortage/writers/excel_writer.py                    15      2    87%   22-23
+src/app/pipeline/step_10/shortage/writers/logging.py                          8      0   100%
+src/app/pipeline/step_10/shortage/writers/orchestrator.py                    13      8    38%   19-45
+src/app/pipeline/step_10/shortage_calculator.py                               3      3     0%   6-13
+src/app/pipeline/step_10/shortage_calculator/__init__.py                      3      0   100%
+src/app/pipeline/step_10/shortage_calculator/builder.py                      17      0   100%
+src/app/pipeline/step_10/shortage_calculator/core.py                         31      2    94%   72-73
+src/app/pipeline/step_10/shortage_calculator/loading.py                      27      0   100%
+src/app/pipeline/step_10/shortage_calculator/orchestrator.py                  7      0   100%
+src/app/pipeline/step_10/shortage_calculator/validation.py                   10      0   100%
+src/app/pipeline/step_11/__init__.py                                          2      0   100%
+src/app/pipeline/step_11/balance_reader.py                                   41     10    76%   24-25, 28-29, 48-49, 61-63, 73
+src/app/pipeline/step_11/combiner/__init__.py                                 3      0   100%
+src/app/pipeline/step_11/combiner/classifiers.py                             17      1    94%   9
+src/app/pipeline/step_11/combiner/constants.py                                2      0   100%
+src/app/pipeline/step_11/combiner/merger.py                                  16      0   100%
+src/app/pipeline/step_11/combiner/processors.py                              25      1    96%   9
+src/app/pipeline/step_11/combiner/readers.py                                 67      8    88%   46, 53-55, 78, 83, 89-90
+src/app/pipeline/step_11/combiner/writers.py                                  3      0   100%
+src/app/pipeline/step_11/combiner/writing/__init__.py                         3      0   100%
+src/app/pipeline/step_11/combiner/writing/merged.py                          28      0   100%
+src/app/pipeline/step_11/combiner/writing/separate.py                        30      1    97%   17
+src/app/pipeline/step_11/combiner/writing/utils.py                           13      1    92%   22
+src/app/pipeline/step_11/excel_formatter/__init__.py                          2      0   100%
+src/app/pipeline/step_11/excel_formatter/converter.py                        26      0   100%
+src/app/pipeline/step_11/excel_formatter/orchestrator.py                     16      3    81%   21-23
+src/app/pipeline/step_11/excel_formatter/paths.py                            11      0   100%
+src/app/pipeline/step_11/excel_formatter/rules.py                            23      0   100%
+src/app/pipeline/step_11/excel_formatter/styling.py                          20      0   100%
+src/app/pipeline/step_11/runner/__init__.py                                   2      0   100%
+src/app/pipeline/step_11/runner/constants.py                                  8      0   100%
+src/app/pipeline/step_11/runner/generators.py                                14      0   100%
+src/app/pipeline/step_11/runner/orchestrator.py                              18      0   100%
+src/app/pipeline/step_11/runner/processing.py                                23      0   100%
+src/app/pipeline/step_11/runner/validation.py                                15      2    87%   26-30
+src/app/pipeline/steps.py                                                    13      0   100%
+src/app/pipeline/utils/__init__.py                                            2      0   100%
+src/app/pipeline/utils/file_selector.py                                       2      2     0%   3-7
+src/app/pipeline/utils/file_selector/__init__.py                              2      0   100%
+src/app/pipeline/utils/file_selector/finder.py                               21      3    86%   15, 22, 31
+src/app/pipeline/utils/file_selector/interaction.py                          33      3    91%   21-22, 37
+src/app/pipeline/utils/file_selector/orchestrator.py                         15      1    93%   31
+src/core/__init__.py                                                          0      0   100%
+src/core/domain/__init__.py                                                   0      0   100%
+src/core/domain/analysis/__init__.py                                          0      0   100%
+src/core/domain/analysis/sales_analyzer.py                                   28      2    93%   19-20
+src/core/domain/branches/__init__.py                                          0      0   100%
+src/core/domain/branches/config.py                                           14      0   100%
+src/core/domain/calculations/__init__.py                                      0      0   100%
+src/core/domain/calculations/allocation_calculator/__init__.py                2      0   100%
+src/core/domain/calculations/allocation_calculator/constants.py               3      0   100%
+src/core/domain/calculations/allocation_calculator/matrices.py                9      0   100%
+src/core/domain/calculations/allocation_calculator/orchestrator.py           20      0   100%
+src/core/domain/calculations/allocation_calculator/proportions.py            16      0   100%
+src/core/domain/calculations/allocation_calculator/redistribution.py         19      0   100%
+src/core/domain/calculations/allocation_calculator/scoring.py                12      0   100%
+src/core/domain/calculations/order_calculator.py                             41      0   100%
+src/core/domain/calculations/quantity_calculator.py                          24      0   100%
+src/core/domain/classification/__init__.py                                    0      0   100%
+src/core/domain/classification/product_classifier.py                         23      0   100%
+src/core/domain/pipeline/__init__.py                                          2      0   100%
+src/core/domain/pipeline/step.py                                              8      0   100%
+src/core/validation/__init__.py                                               3      0   100%
+src/core/validation/dates.py                                                 46      3    93%   71-73
+src/core/validation/header_validator/__init__.py                              2      0   100%
+src/core/validation/header_validator/checks.py                               26      1    96%   46
+src/core/validation/header_validator/constants.py                             4      0   100%
+src/core/validation/header_validator/orchestrator.py                         25      0   100%
+src/core/validation/header_validator/reader.py                                7      0   100%
+src/core/validation/headers.py                                                2      0   100%
+src/services/__init__.py                                                      0      0   100%
+src/services/conversion/__init__.py                                           0      0   100%
+src/services/conversion/converters/__init__.py                                0      0   100%
+src/services/conversion/converters/csv_column_renamer.py                     23      0   100%
+src/services/conversion/converters/excel_to_csv.py                           14      0   100%
+src/services/conversion/mappers/__init__.py                                   0      0   100%
+src/services/conversion/mappers/column_mapper.py                              2      0   100%
+src/services/splitting/__init__.py                                            0      0   100%
+src/services/splitting/core/__init__.py                                       2      0   100%
+src/services/splitting/core/analytics.py                                     24      0   100%
+src/services/splitting/core/distributor.py                                   20      1    95%   36
+src/services/splitting/core/logic/__init__.py                                 2      0   100%
+src/services/splitting/core/logic/execution_flow.py                           9      0   100%
+src/services/splitting/core/logic/output_handling.py                         11      1    91%   14
+src/services/splitting/core/logic/pipeline_steps.py                          19      0   100%
+src/services/splitting/core/logic/preparation.py                             15      0   100%
+src/services/splitting/core/splitter.py                                      15      5    67%   16-20
+src/services/splitting/core/validators.py                                    15      4    73%   8, 10, 16, 20
+src/services/splitting/processors/__init__.py                                 4      0   100%
+src/services/splitting/processors/data_preparer/__init__.py                   2      0   100%
+src/services/splitting/processors/data_preparer/columns.py                    8      1    88%   16
+src/services/splitting/processors/data_preparer/constants.py                  1      0   100%
+src/services/splitting/processors/data_preparer/dates.py                     24      2    92%   27, 39
+src/services/splitting/processors/data_preparer/loading.py                   11      1    91%   20
+src/services/splitting/processors/data_preparer/orchestrator.py              10      0   100%
+src/services/splitting/processors/data_preparer/processing.py                19      0   100%
+src/services/splitting/processors/surplus_finder/__init__.py                  2      0   100%
+src/services/splitting/processors/surplus_finder/data.py                      9      1    89%   20
+src/services/splitting/processors/surplus_finder/orchestrator.py             22      1    95%   33
+src/services/splitting/processors/surplus_finder/records.py                   8      0   100%
+src/services/splitting/processors/surplus_finder/search.py                   25      1    96%   38
+src/services/splitting/processors/surplus_helpers.py                         24      0   100%
+src/services/splitting/processors/target_calculator.py                       24      1    96%   63
+src/services/splitting/processors/withdrawal_processor.py                    32      0   100%
+src/services/splitting/surplus/__init__.py                                    2      0   100%
+src/services/splitting/surplus/availability.py                                8      0   100%
+src/services/splitting/surplus/distributor.py                                24      0   100%
+src/services/splitting/surplus/eligibility.py                                24      0   100%
+src/services/splitting/surplus/orchestrator.py                               27      0   100%
+src/services/splitting/surplus/tracking.py                                   18      2    89%   15, 31
+src/services/splitting/writers/__init__.py                                    0      0   100%
+src/services/splitting/writers/file_writer.py                                33      1    97%   46
+src/services/transfers/__init__.py                                            4      0   100%
+src/services/transfers/converters/__init__.py                                 2      0   100%
+src/services/transfers/converters/excel_converter.py                         41      3    93%   22-24
+src/services/transfers/generators/__init__.py                                 2      0   100%
+src/services/transfers/generators/core/__init__.py                            2      0   100%
+src/services/transfers/generators/core/batch_processing.py                   17      0   100%
+src/services/transfers/generators/core/builder.py                            15      0   100%
+src/services/transfers/generators/core/calculation.py                        15      0   100%
+src/services/transfers/generators/core/loading.py                            20      0   100%
+src/services/transfers/generators/core/orchestrator.py                        5      0   100%
+src/services/transfers/generators/core/single_transfer.py                    17      3    82%   59-66
+src/services/transfers/generators/core/writer.py                             14      0   100%
+src/services/transfers/generators/transfer_generator.py                       2      0   100%
+src/services/transfers/splitters/__init__.py                                  2      0   100%
+src/services/transfers/splitters/file_splitter/__init__.py                    3      0   100%
+src/services/transfers/splitters/file_splitter/io.py                         21      0   100%
+src/services/transfers/splitters/file_splitter/orchestrator.py               17      0   100%
+src/services/transfers/splitters/file_splitter/paths.py                      22      2    91%   12, 24
+src/services/transfers/splitters/file_splitter/processing.py                 27      3    89%   55-59
+src/shared/__init__.py                                                        0      0   100%
+src/shared/dataframes/__init__.py                                             0      0   100%
+src/shared/dataframes/validators.py                                          26      0   100%
+src/shared/reporting/__init__.py                                              0      0   100%
+src/shared/reporting/report_generator.py                                     43      0   100%
+src/shared/utils/__init__.py                                                  0      0   100%
+src/shared/utils/archiver.py                                                  1      1     0%   6
+src/shared/utils/archiver/__init__.py                                         4      0   100%
+src/shared/utils/archiver/cleanup.py                                         44     13    70%   17, 20-21, 29-30, 57-63, 75, 83-84, 88-90
+src/shared/utils/archiver/directory_ops.py                                   29      1    97%   37
+src/shared/utils/archiver/manager.py                                         27     10    63%   31, 45, 73-84
+src/shared/utils/archiver/zip_ops.py                                         20      1    95%   25
+src/shared/utils/file_handler.py                                             34      0   100%
+src/shared/utils/logging_utils.py                                            29      0   100%
+-------------------------------------------------------------------------------------------------------
+TOTAL                                                                      4216    765    82%
+======================= 556 passed, 5 skipped in 26.27s ========================

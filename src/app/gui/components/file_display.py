@@ -39,7 +39,8 @@ def render_download_all_button(
     files: list,
     zip_name: str,
     label_template: str = "📦 تحميل الملفات المعروضة ({count})",
-    add_separator: bool = True
+    add_separator: bool = True,
+    key: str = None
 ) -> None:
     """Render download all button for a list of files."""
     if not files:
@@ -52,7 +53,8 @@ def render_download_all_button(
         data=zip_data,
         file_name=zip_name,
         mime="application/zip",
-        use_container_width=True
+        use_container_width=True,
+        key=key
     )
     
     if add_separator:
