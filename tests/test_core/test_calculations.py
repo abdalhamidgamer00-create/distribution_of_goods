@@ -9,8 +9,10 @@ from src.domain.services.calculations.quantity_calculator import (
     calculate_surplus_remaining
 )
 from src.shared.constants import (
-    STOCK_COVERAGE_DAYS,
-    MAX_BALANCE_FOR_NEED_THRESHOLD
+    STOCK_COVERAGE_DAYS, 
+    MAX_BALANCE_FOR_NEED_THRESHOLD,
+    MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
+    MIN_NEED_THRESHOLD
 )
 from src.domain.services.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized
@@ -95,6 +97,22 @@ class TestCalculateBasicQuantities:
         assert result['needed_quantity'].iloc[0] == 71
         # 30 >= 30 -> should have 0 need
         assert result['needed_quantity'].iloc[1] == 0
+
+    def test_small_need_suppression(self):
+        """Test that need is zeroed if coverage >= 15 and need < 10"""
+        df = pd.DataFrame({
+            'avg_sales': [1.0, 1.0, 0.4],
+            'balance': [12.0, 5.0, 4.0]
+        })
+        # coverage for 1.0: 20. coverage for 0.4: 8
+        result = calculate_basic_quantities(df)
+        
+        # Product 0: coverage=20 (>=15), need=8 (<10) -> suppressed to 0
+        assert result['needed_quantity'].iloc[0] == 0
+        # Product 1: coverage=20 (>=15), need=15 (>=10) -> NOT suppressed
+        assert result['needed_quantity'].iloc[1] == 15
+        # Product 2: coverage=8 (<15), need=4 (<10) -> NOT suppressed (low coverage)
+        assert result['needed_quantity'].iloc[2] == 4
 
 
 class TestCalculateSurplusRemaining:

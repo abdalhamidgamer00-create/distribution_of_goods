@@ -63,6 +63,25 @@ def test_stock_calculator_suppresses_need_at_threshold():
     stock_above = StockCalculator.calculate_stock_level(180, 50, 90)
     assert stock_above.needed == 0
 
+def test_stock_calculator_suppresses_small_need():
+    """Verify that StockCalculator suppresses need if coverage >= 15 and need < 10."""
+    # Scenario: coverage = 20, balance = 12. Need = 8.
+    # coverage >= 15 and need < 10 -> Should be suppressed to 0.
+    stock = StockCalculator.calculate_stock_level(sales_quantity=90, balance_quantity=12, days_covered=90)
+    # 90/90 = 1.0 avg. 1.0 * 20 = 20 coverage. 20 - 12 = 8 need.
+    assert stock.needed == 0
+    
+    # Scenario: coverage = 20, balance = 5. Need = 15.
+    # coverage >= 15 and need >= 10 -> Should NOT be suppressed.
+    stock_needed = StockCalculator.calculate_stock_level(sales_quantity=90, balance_quantity=5, days_covered=90)
+    assert stock_needed.needed == 15
+    
+    # Scenario: coverage = 8, balance = 4. Need = 4.
+    # coverage < 15 -> Should NOT be suppressed.
+    stock_low_coverage = StockCalculator.calculate_stock_level(sales_quantity=36, balance_quantity=4, days_covered=90)
+    # 36/90 = 0.4 avg. 0.4 * 20 = 8 coverage. 8 - 4 = 4 need.
+    assert stock_low_coverage.needed == 4
+
 def test_dates_calculate_days_between():
     """Verify date difference calculation."""
     start = datetime(2025, 1, 1, 0, 0)

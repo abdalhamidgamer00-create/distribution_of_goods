@@ -4,7 +4,9 @@ import math
 from src.domain.models.entities import StockLevel
 from src.shared.constants import (
     STOCK_COVERAGE_DAYS, 
-    MAX_BALANCE_FOR_NEED_THRESHOLD
+    MAX_BALANCE_FOR_NEED_THRESHOLD,
+    MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
+    MIN_NEED_THRESHOLD
 )
 
 
@@ -44,6 +46,12 @@ class StockCalculator:
         
         # New Rule: If balance >= threshold, suppress need to 0
         if balance_quantity >= MAX_BALANCE_FOR_NEED_THRESHOLD:
+            needed_quantity = 0
+            
+        # New Rule: Small Need Suppression
+        # If coverage >= 15 and need < 10, suppress to 0
+        if (target_inventory_coverage >= MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION 
+            and needed_quantity < MIN_NEED_THRESHOLD):
             needed_quantity = 0
             
         return StockLevel(

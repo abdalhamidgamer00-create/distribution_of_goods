@@ -4,7 +4,9 @@ import math
 import pandas as pd
 from src.shared.constants import (
     STOCK_COVERAGE_DAYS, 
-    MAX_BALANCE_FOR_NEED_THRESHOLD
+    MAX_BALANCE_FOR_NEED_THRESHOLD,
+    MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
+    MIN_NEED_THRESHOLD
 )
 
 
@@ -41,6 +43,15 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
         dataframe['balance'] >= MAX_BALANCE_FOR_NEED_THRESHOLD, 
         'needed_quantity'
     ] = 0
+    
+    # New Rule: Small Need Suppression
+    # If coverage >= 15 and need < 10, suppress to 0
+    small_need_mask = (
+        (dataframe['coverage_quantity'] >= MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION) &
+        (dataframe['needed_quantity'] > 0) & 
+        (dataframe['needed_quantity'] < MIN_NEED_THRESHOLD)
+    )
+    dataframe.loc[small_need_mask, 'needed_quantity'] = 0
     
     return dataframe
 
