@@ -15,8 +15,8 @@ class SurplusReader:
         self._surplus_directory = surplus_directory
 
     def load_remaining_surplus(self, branch_name: str) -> List[Dict]:
-        """Loads all surplus records for a specific branch from disk."""
-        directory = os.path.join(self._surplus_directory, branch_name)
+        """Loads total surplus records for a specific branch from disk."""
+        directory = os.path.join(self._surplus_directory, "csv", branch_name)
         if not os.path.exists(directory):
             return []
             
@@ -28,8 +28,12 @@ class SurplusReader:
         return records
 
     def _is_surplus_file(self, name: str) -> bool:
-        """Identifies Step 9 surplus CSV files."""
-        return name.endswith('.csv') and 'remaining_surplus' in name
+        """Identifies official Step 9 total surplus CSV files."""
+        return (
+            name.endswith('.csv') and 
+            'remaining_surplus' in name and 
+            '_total_' in name
+        )
 
     def _parse_surplus_csv(self, path: str) -> List[Dict]:
         """Parses a surplus CSV into a list of dictionaries for the UI."""
