@@ -44,16 +44,22 @@
 
    * Use early exits (`if (!isValid) return;`) to reduce nesting. 🔄
 
+9. **Apply Command-Query Separation (CQS)**
+
+   * **Command** (→ None): Change state, don't return data.
+   * **Query** (→ data): Return data, don't change state.
+   * Never mix both! ⚡
+
 ## Golden Rules / Guidelines ✨
 
-9. **Step-down reading** 📖
+10. **Step-down reading** 📖
 
    * Code should read top-to-bottom like a story; higher-level functions delegate to lower-level ones.
 
-10. **Explicit is better than implicit** 💎
+11. **Explicit is better than implicit** 💎
 
     * Always aim for clarity over clever tricks or hidden behavior.
 
-11. **Readable for others** 🚀🏆
+12. **Readable for others** 🚀🏆
 
     * Anyone reading your code should understand the logic without digging into technical details.

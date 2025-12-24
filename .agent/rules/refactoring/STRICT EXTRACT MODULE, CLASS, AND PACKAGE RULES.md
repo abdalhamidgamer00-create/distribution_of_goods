@@ -109,6 +109,13 @@ The AI model **MUST**:
 - Circular dependencies are **strictly forbidden**
 - Moving functions or classes must respect dependency direction
 
+## 🔌 REDUCE DEPENDENCIES BETWEEN FILES
+
+- Use **Dependency Injection**: pass services as parameters instead of importing.
+- Avoid direct imports of multiple files; prefer interfaces/abstractions.
+- Keep imports minimal: only import what you directly use.
+- Limit file-to-file coupling to enable easier testing and maintenance.
+
 ---
 
 ## 📏 LINE LENGTH RULE
