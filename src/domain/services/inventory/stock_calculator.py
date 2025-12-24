@@ -2,7 +2,10 @@
 
 import math
 from src.domain.models.entities import StockLevel
-from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.shared.constants import (
+    STOCK_COVERAGE_DAYS, 
+    MAX_BALANCE_FOR_NEED_THRESHOLD
+)
 
 
 class StockCalculator:
@@ -39,6 +42,10 @@ class StockCalculator:
             max(0, target_inventory_coverage - balance_quantity)
         )
         
+        # New Rule: If balance >= threshold, suppress need to 0
+        if balance_quantity >= MAX_BALANCE_FOR_NEED_THRESHOLD:
+            needed_quantity = 0
+            
         return StockLevel(
             needed=needed_quantity,
             surplus=surplus_quantity,

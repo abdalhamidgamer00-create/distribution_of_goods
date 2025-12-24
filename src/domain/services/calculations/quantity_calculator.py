@@ -2,7 +2,10 @@
 
 import math
 import pandas as pd
-from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.shared.constants import (
+    STOCK_COVERAGE_DAYS, 
+    MAX_BALANCE_FOR_NEED_THRESHOLD
+)
 
 
 def _calculate_coverage_quantity(avg_sales: pd.Series) -> pd.Series:
@@ -32,6 +35,12 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
     dataframe['needed_quantity'] = _calculate_needed(
         coverage, dataframe['balance']
     )
+    
+    # New Rule: If balance >= threshold, suppress need to 0
+    dataframe.loc[
+        dataframe['balance'] >= MAX_BALANCE_FOR_NEED_THRESHOLD, 
+        'needed_quantity'
+    ] = 0
     
     return dataframe
 

@@ -21,6 +21,7 @@ PRIORITY_WEIGHTS = {
 
 # Inventory Constraints
 STOCK_COVERAGE_DAYS = 20
+MAX_BALANCE_FOR_NEED_THRESHOLD = 30
 
 # Product Types/Categories
 PRODUCT_CATEGORIES = [

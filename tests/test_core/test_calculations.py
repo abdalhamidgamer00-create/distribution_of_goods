@@ -8,7 +8,10 @@ from src.domain.services.calculations.quantity_calculator import (
     calculate_basic_quantities,
     calculate_surplus_remaining
 )
-from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.shared.constants import (
+    STOCK_COVERAGE_DAYS,
+    MAX_BALANCE_FOR_NEED_THRESHOLD
+)
 from src.domain.services.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized
 )
@@ -64,8 +67,8 @@ class TestCalculateBasicQuantities:
         assert result['needed_quantity'].iloc[0] == 0
         # Product 1: 10 - 10 = 0 (no need)
         assert result['needed_quantity'].iloc[1] == 0
-        # Product 2: 40 - 30 = 10 (needed)
-        assert result['needed_quantity'].iloc[2] == 10
+        # Product 2: 40 - 30 = 10 -> Suppressed to 0 because balance >= 30
+        assert result['needed_quantity'].iloc[2] == 0
     
     def test_zero_avg_sales(self):
         """Test handling of zero average sales"""
@@ -78,6 +81,20 @@ class TestCalculateBasicQuantities:
         assert result['coverage_quantity'].iloc[0] == 0
         assert result['surplus_quantity'].iloc[0] == 10  # All balance is surplus
         assert result['needed_quantity'].iloc[0] == 0
+
+    def test_max_balance_suppresses_need(self):
+        """Test that need is zeroed if balance >= 30"""
+        df = pd.DataFrame({
+            'avg_sales': [5.0, 5.0],
+            'balance': [29.0, 30.0]
+        })
+        # 5.0 * 20 = 100 coverage
+        result = calculate_basic_quantities(df)
+        
+        # 29 < 30 -> should have need (100 - 29 = 71)
+        assert result['needed_quantity'].iloc[0] == 71
+        # 30 >= 30 -> should have 0 need
+        assert result['needed_quantity'].iloc[1] == 0
 
 
 class TestCalculateSurplusRemaining:

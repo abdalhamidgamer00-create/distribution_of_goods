@@ -49,6 +49,20 @@ def test_stock_calculator_recalculates_avg_sales():
     stock_10 = StockCalculator.calculate_stock_level(sales, balance, 10)
     assert stock_10.avg_sales == 9.0
 
+def test_stock_calculator_suppresses_need_at_threshold():
+    """Verify that StockCalculator zeroes need if balance is >= 30."""
+    # Coverage: 2.0 sales * 20 days = 40. balance = 25. Need = 15.
+    stock_below = StockCalculator.calculate_stock_level(180, 25, 90)
+    assert stock_below.needed > 0
+    
+    # Same as above but balance = 30. Need = 0.
+    stock_at = StockCalculator.calculate_stock_level(180, 30, 90)
+    assert stock_at.needed == 0
+    
+    # Balance = 50. Need = 0.
+    stock_above = StockCalculator.calculate_stock_level(180, 50, 90)
+    assert stock_above.needed == 0
+
 def test_dates_calculate_days_between():
     """Verify date difference calculation."""
     start = datetime(2025, 1, 1, 0, 0)
