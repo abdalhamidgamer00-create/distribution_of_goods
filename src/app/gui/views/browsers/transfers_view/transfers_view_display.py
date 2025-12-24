@@ -46,11 +46,15 @@ def display_transfer_files(
     render_download_all_button(
         files, 
         zip_name, 
-        key=f"{key_prefix}_{selected_branch}_{extension}"
+        key=f"{key_prefix}_{selected_branch}_{extension}_single_download"
     )
     
     for file_info in files:
-        render_file_expander(file_info, extension, key_prefix=key_prefix)
+        render_file_expander(
+            file_info, 
+            extension, 
+            key_prefix=f"{key_prefix}_{extension}_expander"
+        )
 
 def display_transfer_files_grouped(
     grouped_files: Dict[str, List[Dict]],
@@ -76,7 +80,7 @@ def display_transfer_files_grouped(
         all_files, 
         global_zip_name,
         label_template="📦 تحميل جميع ملفات الفروع ({count})",
-        key=f"{key_prefix}_global_all_btn_{extension}"
+        key=f"{key_prefix}_global_all_btn_{extension}_all"
     )
     
     branch_keys = sorted(grouped_files.keys())
@@ -98,12 +102,12 @@ def display_transfer_files_grouped(
             render_download_all_button(
                 files, 
                 zip_name, 
-                key=f"{key_prefix}_{branch_key}_{extension}"
+                key=f"{key_prefix}_tab_{branch_key}_{extension}_btn"
             )
             
             for file_info in files:
                 render_file_expander(
                     file_info, 
                     extension, 
-                    key_prefix=f"{key_prefix}_{branch_key}"
+                    key_prefix=f"{key_prefix}_tab_{branch_key}_{extension}"
                 )

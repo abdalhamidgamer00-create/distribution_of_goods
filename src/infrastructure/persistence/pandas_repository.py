@@ -1,6 +1,7 @@
 """Pandas implementation of the DataRepository interface."""
 
 import os
+import re
 import pandas as pd
 from typing import List, Dict, Optional
 from src.domain.models.entities import (
@@ -578,10 +579,15 @@ class PandasDataRepository(DataRepository):
                         for target_directory_name in os.listdir(item_full_path):
                             target_directory_full_path = os.path.join(item_full_path, target_directory_name)
                             if os.path.isdir(target_directory_full_path) and target_directory_name.startswith('to_'):
-                                branch_metadata = branch_name_filter or filesystem_item.split('_')[-1]
+                                # Extract clean branch from transfers_from_SOURCE_TS
+                                match = re.search(r'from_([a-z]+)_', filesystem_item)
+                                branch_metadata = branch_name_filter or (match.group(1) if match else filesystem_item)
                                 self._collect_files_recursive(target_directory_full_path, category_name, branch_metadata, output_artifact_results)
                     else:
-                        branch_metadata = branch_name_filter or filesystem_item
+                        # Extract clean branch from combined_transfers_from_SOURCE_TS or similar
+                        match = re.search(r'from_([a-z]+)_', filesystem_item)
+                        branch_metadata = branch_name_filter or (match.group(1) if match else filesystem_item)
+                        
                         # For transfers, extract source branch from folder name if not provided
                         if category_name == 'transfers' and not branch_name_filter:
                             # pattern: transfers_from_SOURCE_TS/to_... or transfers_excel_from_SOURCE_TS/to_...

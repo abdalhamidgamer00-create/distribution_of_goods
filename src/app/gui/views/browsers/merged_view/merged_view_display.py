@@ -1,6 +1,7 @@
 """Display logic for merged view."""
 
 import os
+import re
 from typing import List, Dict
 import streamlit as st
 from src.app.gui.components import (
@@ -9,6 +10,17 @@ from src.app.gui.components import (
 )
 from src.app.gui.utils.translations import BRANCH_NAMES
 from src.app.gui.services.file_service import group_files_by_branch
+
+
+def _extract_branch_name(branch_key: str) -> str:
+    """
+    Extract a clean branch key from potential folder names.
+    e.g. 'combined_transfers_from_admin_20251224_082047' -> 'admin'
+    """
+    match = re.search(r'from_([a-z]+)_', branch_key)
+    if match:
+        return match.group(1)
+    return branch_key
 
 
 def _prepare_zip_paths(files: List[Dict]) -> None:
@@ -44,17 +56,18 @@ def display_merged_files(
     render_download_all_button(
         files, 
         zip_name, 
-        key=f"{key_prefix}_{selected_branch}_{extension}_download"
+        key=f"{key_prefix}_{selected_branch}_{extension}_single_download"
     )
     
     grouped = group_files_by_branch(files)
-    for branch_key, branch_files in grouped.items():
-        st.subheader(BRANCH_NAMES.get(branch_key, branch_key))
+    for raw_branch_key, branch_files in grouped.items():
+        clean_key = _extract_branch_name(raw_branch_key)
+        st.subheader(BRANCH_NAMES.get(clean_key, raw_branch_key))
         for file_info in branch_files:
             render_file_expander(
                 file_info, 
                 extension, 
-                key_prefix=f"{key_prefix}_{branch_key}_{extension}"
+                key_prefix=f"{key_prefix}_{clean_key}_{extension}_expander"
             )
         st.markdown("---")
 
@@ -83,34 +96,40 @@ def display_merged_files_grouped(
         all_files, 
         global_zip_name,
         label_template="📦 تحميل جميع الملفات المجمعة ({count})",
-        key=f"{key_prefix}_global_merged_btn_{extension}"
+        key=f"{key_prefix}_global_merged_btn_{extension}_all"
     )
     
-    branch_keys = sorted(grouped_files.keys())
-    tab_labels = [BRANCH_NAMES.get(k, k) for k in branch_keys]
+    raw_branch_keys = sorted(grouped_files.keys())
+    tab_labels = []
+    clean_keys = []
+    
+    for k in raw_branch_keys:
+        clean_k = _extract_branch_name(k)
+        tab_labels.append(BRANCH_NAMES.get(clean_k, k))
+        clean_keys.append(clean_k)
     
     tabs = st.tabs(tab_labels)
     
-    for branch_key, tab in zip(branch_keys, tabs):
+    for raw_key, clean_key, tab in zip(raw_branch_keys, clean_keys, tabs):
         with tab:
-            files = grouped_files[branch_key]
-            branch_label = BRANCH_NAMES.get(branch_key, branch_key)
+            files = grouped_files[raw_key]
+            branch_label = BRANCH_NAMES.get(clean_key, raw_key)
             
             st.subheader(f"الملفات المجمعة لـ: {branch_label}")
             st.info(f"عدد الملفات: {len(files)}")
             
             _prepare_zip_paths(files)
             
-            zip_name = f"{key_prefix}_{branch_key}_{extension[1:]}.zip"
+            zip_name = f"{key_prefix}_{clean_key}_{extension[1:]}.zip"
             render_download_all_button(
                 files, 
                 zip_name, 
-                key=f"{key_prefix}_{branch_key}_{extension}_tab_download"
+                key=f"{key_prefix}_tab_{clean_key}_{extension}_btn"
             )
             
             for file_info in files:
                 render_file_expander(
                     file_info, 
                     extension, 
-                    key_prefix=f"{key_prefix}_{branch_key}_{extension}_tab"
+                    key_prefix=f"{key_prefix}_tab_{clean_key}_{extension}"
                 )
