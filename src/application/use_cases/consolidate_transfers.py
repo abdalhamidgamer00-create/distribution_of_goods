@@ -5,7 +5,7 @@ from src.domain.models.entities import Branch
 from src.application.ports.repository import DataRepository
 from src.domain.services.model_factory import DomainModelFactory
 from src.domain.services.consolidation_service import ConsolidationEngine
-from src.infrastructure.repositories.presenters import LogisticsPresenter
+from src.infrastructure.repositories.mappers.presenters import LogisticsPresenter
 
 logger = get_logger(__name__)
 

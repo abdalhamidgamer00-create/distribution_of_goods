@@ -2,7 +2,7 @@
 
 import pytest
 import pandas as pd
-from src.infrastructure.repositories.mappers import StockMapper
+from src.infrastructure.repositories.mappers.mappers import StockMapper
 
 
 class TestStockMapper:

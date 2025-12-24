@@ -3,7 +3,7 @@
 import os
 from typing import List
 from src.domain.models.entities import Branch, BranchStock
-from src.infrastructure.repositories.mappers import StockMapper
+from src.infrastructure.repositories.mappers.mappers import StockMapper
 
 
 class StockWriter:

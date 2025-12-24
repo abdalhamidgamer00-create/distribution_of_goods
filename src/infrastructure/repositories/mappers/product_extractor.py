@@ -31,7 +31,7 @@ class ProductExtractor:
         
         normalized_keys = [k.strip().lower() for k in keys]
         for column_name in row.index:
-            cl_col = str(column_name).strip().lower().replace('\ufeff', '')
-            if cl_col in normalized_keys:
+            cleaned_column = str(column_name).strip().lower().replace('\ufeff', '')
+            if cleaned_column in normalized_keys:
                 return row[column_name]
         return ""

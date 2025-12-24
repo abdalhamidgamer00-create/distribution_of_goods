@@ -2,7 +2,7 @@
 
 import os
 from typing import List, Dict, Optional
-from src.infrastructure.repositories.output_manager import list_artifacts
+from src.infrastructure.repositories.metadata.output_manager import list_artifacts
 
 
 class ArtifactLister:

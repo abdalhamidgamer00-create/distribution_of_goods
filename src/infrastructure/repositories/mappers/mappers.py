@@ -1,13 +1,15 @@
 """Mapper for converting between domain models and data structures."""
 
-import math
 import pandas as pd
 from typing import Dict, List, Optional
 from src.domain.models.entities import (
     StockLevel, ConsolidatedStock, BranchStock
 )
 from src.shared.constants import BRANCHES
-from src.infrastructure.repositories.product_extractor import ProductExtractor
+from src.domain.services.inventory.stock_calculator import StockCalculator
+from src.infrastructure.repositories.mappers.product_extractor import (
+    ProductExtractor
+)
 
 
 class StockMapper:
@@ -40,19 +42,14 @@ class StockMapper:
         branch: str, 
         days: int
     ) -> StockLevel:
-        """Calculates inventory needs and surpluses for a branch."""
+        """Extracts metrics and uses domain service for calculations."""
         sales = StockMapper._find_metric(row, branch, ["_sales", " مبيعات"])
         balance = StockMapper._find_metric(row, branch, ["_balance", " رصيد"])
         
-        daily_avg = sales / days if days > 0 else 0.0
-        monthly_need = math.ceil(daily_avg * 30)
-        
-        surplus = math.floor(max(0, balance - monthly_need))
-        needed = math.ceil(max(0, monthly_need - balance))
-        
-        return StockLevel(
-            needed=needed, surplus=surplus, balance=float(balance),
-            avg_sales=float(daily_avg), sales=float(sales)
+        return StockCalculator.calculate_stock_level(
+            sales_quantity=sales,
+            balance_quantity=balance,
+            days_covered=days
         )
 
     @staticmethod

@@ -3,7 +3,7 @@
 import os
 import re
 from typing import List, Dict, Optional
-from src.infrastructure.repositories.artifact_metadata import (
+from src.infrastructure.repositories.metadata.artifact_metadata import (
     create_artifact_metadata, enrich_separate_metadata
 )
 def list_artifacts(

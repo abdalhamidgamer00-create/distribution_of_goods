@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from typing import List, Dict, Optional
 from src.domain.models.entities import Product, StockLevel, ConsolidatedStock
-from src.infrastructure.repositories.mappers import StockMapper
+from src.infrastructure.repositories.mappers.mappers import StockMapper
 from src.domain.services.validation.dates import extract_dates_from_header
 from src.shared.utility.logging_utils import get_logger
 

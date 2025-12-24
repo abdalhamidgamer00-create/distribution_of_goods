@@ -7,23 +7,23 @@ from src.domain.models.entities import (
 from src.domain.models.distribution import Transfer, DistributionResult
 from src.application.ports.repository import DataRepository
 from src.shared.constants import BRANCHES
-from src.infrastructure.repositories.transfers_persistence import (
+from src.infrastructure.repositories.persistence.transfers_persistence import (
     save_step7_transfers, save_step8_split_transfers
 )
-from src.infrastructure.repositories.surplus_persistence import (
+from src.infrastructure.repositories.persistence.surplus_persistence import (
     save_surplus_reports
 )
-from src.infrastructure.repositories.shortage_persistence import (
+from src.infrastructure.repositories.persistence.shortage_persistence import (
     save_shortage_reports
 )
-from src.infrastructure.repositories.combined_transfers_persistence import (
+from src.infrastructure.repositories.persistence.combined_transfers_persistence import (
     save_step11_combined_transfers
 )
-from src.infrastructure.repositories.artifact_lister import ArtifactLister
-from src.infrastructure.repositories.stock_reader import StockReader
-from src.infrastructure.repositories.stock_writer import StockWriter
-from src.infrastructure.repositories.transfer_reader import TransferReader
-from src.infrastructure.repositories.surplus_reader import SurplusReader
+from src.infrastructure.repositories.metadata.artifact_lister import ArtifactLister
+from src.infrastructure.repositories.io.stock_reader import StockReader
+from src.infrastructure.repositories.io.stock_writer import StockWriter
+from src.infrastructure.repositories.io.transfer_reader import TransferReader
+from src.infrastructure.repositories.io.surplus_reader import SurplusReader
 from src.infrastructure.cache.data_cache import DataSnapshotCache
 
 

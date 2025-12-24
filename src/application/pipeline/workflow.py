@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 from typing import Dict, Optional
 from src.shared.utility.logging_utils import get_logger
-from src.infrastructure.repositories.pandas_repository import (
+from src.infrastructure.repositories.base.pandas_repository import (
     PandasDataRepository
 )
 from src.shared.config.paths import (

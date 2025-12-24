@@ -41,7 +41,7 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
 
 def get_repository() -> Any:
     """Get a pre-configured repository instance for the GUI."""
-    from src.infrastructure.repositories.pandas_repository import (
+    from src.infrastructure.repositories.base.pandas_repository import (
         PandasDataRepository
     )
     from src.shared.config.paths import TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR
