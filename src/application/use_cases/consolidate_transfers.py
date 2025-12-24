@@ -1,10 +1,11 @@
-"""Use case for consolidating transfers and surplus reports."""
-
 from datetime import datetime
 from src.core.domain.branches.config import get_branches
 from src.shared.utils.logging_utils import get_logger
-from src.domain.models.entities import Branch as BranchEntity
+from src.domain.models.entities import Branch
 from src.application.interfaces.repository import DataRepository
+from src.application.services.model_factory import DomainModelFactory
+from src.domain.services.consolidation_service import ConsolidationEngine
+from src.infrastructure.persistence.presenters import LogisticsPresenter
 
 logger = get_logger(__name__)
 
@@ -14,6 +15,9 @@ class ConsolidateTransfers:
 
     def __init__(self, repository: DataRepository):
         self._repository = repository
+        self._factory = DomainModelFactory()
+        self._engine = ConsolidationEngine()
+        self._presenter = LogisticsPresenter()
 
     def execute(self, **kwargs) -> bool:
         """Processes all branches to generate consolidated logistics files."""
@@ -23,25 +27,25 @@ class ConsolidateTransfers:
             self._log_execution_summary(merged_total, separate_total)
             return (merged_total + separate_total) > 0
         except Exception as error:
-            logger.exception(f"ConsolidateTransfers use case failed: {error}")
+            logger.exception(f"ConsolidateTransfers execution failed: {error}")
             return False
 
-    def execute_for_branch(self, branch: BranchEntity, timestamp: str) -> tuple:
+    def execute_for_branch(self, branch: Branch, timestamp: str) -> tuple:
         """Executes the consolidation logic for a specific branch."""
-        from src.domain.services.consolidation_service import ConsolidationEngine
-        
-        transfers, surplus = self._load_branch_data(branch)
-        if not transfers and not surplus:
+        transfers, surplus_raw = self._load_branch_input_data(branch)
+        if not transfers and not surplus_raw:
             return 0, 0
 
-        balances = self._load_all_branch_balances()
-        engine = ConsolidationEngine()
-        merged, separate = engine.combine_data(
-            branch=branch,
-            transfers=transfers,
-            surplus_items=surplus,
-            branch_balances=balances
+        network_state = self._factory.create_network_state(
+            [Branch(n) for n in get_branches()], 
+            self._repository.load_stock_levels
         )
+        surplus_entries = self._factory.create_surplus_entries(surplus_raw, branch)
+        
+        report = self._engine.combine_data(
+            branch, transfers, surplus_entries, network_state
+        )
+        merged, separate = self._presenter.prepare_payloads(report)
         
         self._save_results(branch, merged, separate, timestamp)
         return len(merged), len(separate)
@@ -50,32 +54,18 @@ class ConsolidateTransfers:
         """Iterates through all branches and consolidates their data."""
         merged_total = 0
         separate_total = 0
-        branch_names = get_branches()
-        
-        for name in branch_names:
-            m_count, s_count = self.execute_for_branch(
-                BranchEntity(name=name), timestamp
-            )
+        for name in get_branches():
+            m_count, s_count = self.execute_for_branch(Branch(name), timestamp)
             merged_total += m_count
             separate_total += s_count
         return merged_total, separate_total
 
-    def _load_branch_data(self, branch: BranchEntity) -> tuple:
+    def _load_branch_input_data(self, branch: Branch) -> tuple:
         """Loads transfers and surplus for a specific branch."""
         all_transfers = self._repository.load_transfers()
-        transfers = [t for t in all_transfers if t.from_branch.name == branch.name]
-        surplus = self._repository.load_remaining_surplus(branch)
-        return transfers, surplus
-
-    def _load_all_branch_balances(self) -> dict:
-        """Loads current stock balances for all branches."""
-        branch_names = get_branches()
-        balances_map = {}
-        for name in branch_names:
-            branch_obj = BranchEntity(name=name)
-            stocks = self._repository.load_stock_levels(branch_obj)
-            balances_map[name] = {code: s.balance for code, s in stocks.items()}
-        return balances_map
+        branch_transfers = [t for t in all_transfers if t.from_branch.name == branch.name]
+        branch_surplus = self._repository.load_remaining_surplus(branch)
+        return branch_transfers, branch_surplus
 
     def _save_results(self, branch, merged, separate, timestamp) -> None:
         """Persists the consolidated results to the repository."""
@@ -91,4 +81,3 @@ class ConsolidateTransfers:
         logger.info("=" * 50)
         logger.info(f"Generated {merged_count} merged files (CSV + Excel)")
         logger.info(f"Generated {separate_count} separate files (CSV + Excel)")
-        logger.info(f"Output: data/output/combined_transfers/")

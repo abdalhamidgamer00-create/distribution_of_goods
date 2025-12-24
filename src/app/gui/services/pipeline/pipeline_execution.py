@@ -9,6 +9,11 @@ from src.shared.config.paths import (
 )
 
 
+from src.domain.exceptions.pipeline_exceptions import (
+    PipelineError, PrerequisiteNotFoundError, ContractViolationError
+)
+
+
 def run_single_step(step_id: str) -> Tuple[bool, str]:
     """Execute a single step and return status and message."""
     step = _find_step_by_id(step_id)
@@ -19,10 +24,17 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
     try:
         # Execute the step with standard parameters
         result = step.function(use_latest_file=True)
-        
         status_key = 'success' if result else 'failed'
         return result, f"{MESSAGES[status_key]}: {step_name}"
         
+    except PrerequisiteNotFoundError as error:
+        return False, MESSAGES['prerequisite_missing'].format(
+            prerequisite=error.missing_prerequisite, service=error.service_name
+        )
+    except ContractViolationError as error:
+        return False, MESSAGES['contract_violation'].format(
+            service=error.service_name, detail=str(error)
+        )
     except Exception as error:
         return False, f"{MESSAGES['error']} في {step_name}: {str(error)}"
 

@@ -1,10 +1,10 @@
-"""Use case for calculating and optimizing stock transfers."""
-
-from typing import List
+from typing import List, Tuple
+from src.domain.models.entities import Branch, Product, StockLevel, NetworkStockState
 from src.domain.models.distribution import DistributionResult
 from src.domain.services.distribution_service import DistributionEngine
 from src.domain.services.priority_service import PriorityCalculator
 from src.application.interfaces.repository import DataRepository
+from src.application.services.model_factory import DomainModelFactory
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -16,6 +16,7 @@ class OptimizeTransfers:
     def __init__(self, repository: DataRepository, engine: DistributionEngine = None):
         self._repository = repository
         self._engine = engine or DistributionEngine(PriorityCalculator())
+        self._factory = DomainModelFactory()
 
     def execute(self, **kwargs) -> List[DistributionResult]:
         """Runs the distribution optimization process and persists transfers."""
@@ -25,20 +26,24 @@ class OptimizeTransfers:
             logger.info("✓ Transfer optimization completed successfully")
             return results
         except Exception as error:
-            logger.exception(f"OptimizeTransfers use case failed: {error}")
+            logger.exception(f"OptimizeTransfers execution failed: {error}")
             return []
 
     def calculate(self) -> List[DistributionResult]:
         """Performs calculation for all products across all branches."""
         branches = self._repository.load_branches()
         products = self._repository.load_products()
-        logger.info("OptimizeTransfers: Calculating for %d branches.", len(branches))
         
-        branch_stocks_map = self._load_all_branch_stocks(branches)
+        network_state = self._factory.create_network_state(
+            branches, self._repository.load_stock_levels
+        )
+        stocks_map = self._load_all_branch_stocks(branches)
+        
         all_results = []
-        
         for product in products:
-            result = self._process_single_product(product, branches, branch_stocks_map)
+            result = self._process_single_product(
+                product, branches, stocks_map, network_state
+            )
             if result:
                 all_results.append(result)
         
@@ -47,19 +52,20 @@ class OptimizeTransfers:
     def save(self, results: List[DistributionResult]) -> None:
         """Persists the generated transfers to the repository."""
         transfers = [t for res in results for t in res.transfers]
-        logger.info("OptimizeTransfers: Saving %d transfers.", len(transfers))
         self._repository.save_transfers(transfers)
 
-    def _load_all_branch_stocks(self, branches: list) -> dict:
+    def _load_all_branch_stocks(self, branches: List[Branch]) -> dict:
         """Loads and maps stock levels for all branches."""
         stocks_map = {}
         for branch in branches:
             stocks_map[branch.name] = self._repository.load_stock_levels(branch)
         return stocks_map
 
-    def _process_single_product(self, product, branches, stocks_map) -> DistributionResult:
+    def _process_single_product(
+        self, product, branches, stocks_map, network_state
+    ) -> DistributionResult:
         """Determines distribution for a single product across branches."""
-        needs, surpluses, balances, sales = self._collect_product_context(
+        needs, surpluses, sales = self._collect_distribution_needs(
             product, branches, stocks_map
         )
         
@@ -67,27 +73,32 @@ class OptimizeTransfers:
             return None
             
         result = self._engine.distribute_product(product, needs, surpluses)
-        result.branch_balances = balances
+        result.branch_balances = self._extract_product_balances(
+            product.code, branches, network_state
+        )
         result.total_sales = sales
         return result
 
-    def _collect_product_context(self, product, branches, stocks_map) -> tuple:
-        """Collects needs, surpluses, and balances for a product."""
+    def _collect_distribution_needs(self, product, branches, stocks_map) -> tuple:
+        """Collects needs, surpluses, and total sales for a product."""
         needs = []
         surpluses = []
-        balances = {}
         total_sales = 0.0
         
         for branch in branches:
             branch_stocks = stocks_map[branch.name]
             if product.code in branch_stocks:
                 stock = branch_stocks[product.code]
-                balances[branch.name] = stock.balance
                 total_sales += stock.sales
-                
                 if stock.needed > 0:
                     needs.append((branch, stock))
                 elif stock.surplus > 0:
                     surpluses.append((branch, stock))
                     
-        return needs, surpluses, balances, total_sales
+        return needs, surpluses, total_sales
+
+    def _extract_product_balances(
+        self, product_code: str, branches: List[Branch], state: NetworkStockState
+    ) -> dict:
+        """Extracts branch balances for a specific product from network state."""
+        return {branch.name: state.get_balance(branch.name, product_code) for branch in branches}

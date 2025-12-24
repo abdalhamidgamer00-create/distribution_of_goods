@@ -47,3 +47,24 @@ class ConsolidatedStock:
     """
     product: Product
     branch_stocks: Dict[str, StockLevel]
+
+
+@dataclass(frozen=True)
+class NetworkStockState:
+    """
+    Encapsulates the stock balances across the entire branch network.
+    Structure: {branch_name: {product_code: balance}}
+    """
+    balances: Dict[str, Dict[str, float]]
+
+    def get_balance(self, branch_name: str, product_code: str) -> float:
+        """Retrieves balance for a specific branch and product."""
+        return self.balances.get(branch_name, {}).get(product_code, 0.0)
+
+
+@dataclass(frozen=True)
+class SurplusEntry:
+    """Represents a product with surplus stock in a branch."""
+    product: Product
+    quantity: int
+    branch: Branch

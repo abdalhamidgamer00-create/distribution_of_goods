@@ -1,7 +1,7 @@
 """Domain models for distribution outcomes."""
 
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional
 from src.domain.models.entities import Product, Branch
 
 
@@ -24,3 +24,26 @@ class DistributionResult:
     remaining_branch_surplus: Dict[str, int]
     branch_balances: Dict[str, float] = None
     total_sales: float = 0.0
+
+
+@dataclass(frozen=True)
+class LogisticsRecord:
+    """Represents a single entry in a logistics report."""
+    product: Product
+    quantity: int
+    target_branch: str
+    transfer_type: str  # 'normal' or 'surplus'
+    sender_balance: float
+    receiver_balance: float
+    category: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ConsolidatedLogisticsReport:
+    """Encapsulates a collection of logistics records for a source branch."""
+    source_branch: Branch
+    records: List[LogisticsRecord]
+
+    def has_records(self) -> bool:
+        """Checks if the report contains any records."""
+        return len(self.records) > 0

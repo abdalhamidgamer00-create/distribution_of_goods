@@ -1,14 +1,16 @@
-"""Orchestration logic for the distribution workflow."""
-
+from datetime import datetime
+from typing import List, Dict, Tuple, Optional
 from src.shared.utils.logging_utils import get_logger
 from src.infrastructure.persistence.pandas_repository import PandasDataRepository
 from src.shared.config.paths import (
     RENAMED_CSV_DIR, ANALYTICS_DIR, SURPLUS_DIR, 
     SHORTAGE_DIR, TRANSFERS_CSV_DIR, INPUT_CSV_DIR,
-    COMBINED_DIR
+    TRANSFERS_ROOT_DIR, COMBINED_DIR
 )
+from src.domain.models.pipeline import PipelineContract, StepResult, PipelineState
+from src.domain.exceptions.pipeline_exceptions import PrerequisiteNotFoundError, ServiceExecutionError
 
-# Import domain services (Use Cases)
+# Use Case Imports
 from src.application.use_cases.archive_data import ArchiveData
 from src.application.use_cases.ingest_data import IngestData
 from src.application.use_cases.validate_inventory import ValidateInventory
@@ -25,53 +27,99 @@ logger = get_logger(__name__)
 
 
 class PipelineManager:
-    """Orchestrates the execution of use cases in the distribution pipeline."""
+    """Orchestrates the execution of use cases with formal data contracts."""
 
     def __init__(self, repository=None):
         self._repository = repository or self._create_default_repository()
         self._services = self._initialize_services()
-        self._deps = self._define_dependencies()
+        self._contracts = self._define_contracts()
+        self._dependencies = self._define_dependencies()
+        self._execution_history: Dict[str, StepResult] = {}
 
     def run_all(self, use_latest_file: bool = None) -> bool:
-        """Executes the complete distribution workflow."""
-        logger.info("Starting full distribution workflow...")
+        """Executes the complete distribution sequence."""
         sequence = self._get_full_sequence(use_latest_file)
-        
-        for name, args in sequence:
-            logger.info(f"--- Running Service: {name.upper()} ---")
-            if not self._services[name].execute(**args):
-                logger.error(f"Service {name} failed. Aborting pipeline.")
+        for name, arguments in sequence:
+            if not self.run_service(name, **arguments):
                 return False
-        
-        logger.info("=" * 50)
-        logger.info("✓ Full distribution workflow completed successfully!")
         return True
 
     def run_service(self, service_name: str, **kwargs) -> bool:
-        """Runs a specific service by name, resolving dependencies if missing."""
-        if service_name not in self._services:
-            logger.error(f"Unknown service: {service_name}")
+        """Runs a service, resolving prerequisites with recursion guards."""
+        try:
+            self._resolve_prerequisites(service_name, **kwargs)
+            success = self._services[service_name].execute(**kwargs)
+            self._record_result(service_name, success, "Success" if success else "Fail")
+            return success
+        except PrerequisiteNotFoundError as error:
+            logger.warning(f"Rescuing: {error}")
+            if not self.run_service(error.missing_prerequisite, **kwargs):
+                return False
+            if not self._is_data_present(error.missing_prerequisite):
+                logger.error(f"Rescue failed for {error.missing_prerequisite}")
+                return False
+            return self.run_service(service_name, **kwargs)
+        except Exception as error:
+            self._record_result(service_name, False, str(error))
+            return False
+
+    def get_workflow_state(self) -> PipelineState:
+        """Returns the current state and health of all pipeline steps."""
+        results = {}
+        for service_name in self._services:
+            if self._is_data_present(service_name):
+                results[service_name] = StepResult(
+                    service_name=service_name, is_success=True,
+                    timestamp=datetime.now(), message="Data on disk"
+                )
+            elif service_name in self._execution_history:
+                results[service_name] = self._execution_history[service_name]
+        return PipelineState(step_results=results)
+
+    def _resolve_prerequisites(self, service_name: str, **kwargs) -> None:
+        """Checks formal contracts; raises PrerequisiteNotFoundError if violated."""
+        prerequisites = self._dependencies.get(service_name, [])
+        for prerequisite in prerequisites:
+            if not self._is_data_present(prerequisite):
+                raise PrerequisiteNotFoundError(service_name, prerequisite)
+
+    def _is_data_present(self, service_name: str) -> bool:
+        """Verifies if a service's output satisfies its defined contract."""
+        if service_name not in self._contracts:
+            return True
+        contract = self._contracts[service_name]
+        return self._verify_contract_path(contract.output_path, contract.output_type)
+
+    def _verify_contract_path(self, path: str, check_type: str) -> bool:
+        """Verifies disk content against contract, with recursive support."""
+        import os
+        from src.shared.utils.file_handler import has_files_in_directory
+        if not os.path.exists(path):
             return False
             
-        if not self._check_and_resolve_deps(service_name, **kwargs):
-            return False
+        # Recursive check needed for nested output structures
+        if check_type in ["csv", "any"]:
+            return has_files_in_directory(path)
 
-        return self._services[service_name].execute(**kwargs)
+        return False
+
+    def _record_result(self, name: str, success: bool, message: str) -> None:
+        """Persists the result of a step in the execution history."""
+        self._execution_history[name] = StepResult(
+            service_name=name, is_success=success,
+            timestamp=datetime.now(), message=message
+        )
 
     def _create_default_repository(self) -> PandasDataRepository:
-        """Creates a repository with standard paths."""
-        from src.shared.config.paths import TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR
+        """Creates repo with central path configuration."""
         return PandasDataRepository(
-            input_dir=RENAMED_CSV_DIR,
-            output_dir=TRANSFERS_ROOT_DIR,
-            analytics_dir=ANALYTICS_DIR,
-            surplus_dir=SURPLUS_DIR,
-            shortage_dir=SHORTAGE_DIR,
-            transfers_dir=TRANSFERS_CSV_DIR
+            input_dir=RENAMED_CSV_DIR, output_dir=TRANSFERS_ROOT_DIR,
+            analytics_dir=ANALYTICS_DIR, surplus_dir=SURPLUS_DIR,
+            shortage_dir=SHORTAGE_DIR, transfers_dir=TRANSFERS_CSV_DIR
         )
 
     def _initialize_services(self) -> dict:
-        """Initializes all use cases with their dependencies."""
+        """Wire up all use cases with the shared repository."""
         repo = self._repository
         return {
             "archive": ArchiveData(), "ingest": IngestData(),
@@ -82,8 +130,18 @@ class PipelineManager:
             "consolidate": ConsolidateTransfers(repo)
         }
 
+    def _define_contracts(self) -> Dict[str, PipelineContract]:
+        """Definitions of expected outputs for each pipeline step."""
+        return {
+            "ingest": PipelineContract("ingest", INPUT_CSV_DIR, "csv", "Raw Data"),
+            "normalize": PipelineContract("normalize", RENAMED_CSV_DIR, "csv", "Normalized"),
+            "segment": PipelineContract("segment", ANALYTICS_DIR, "any", "Segments"),
+            "optimize": PipelineContract("optimize", TRANSFERS_ROOT_DIR, "csv", "Transfers"),
+            "report_surplus": PipelineContract("report_surplus", SURPLUS_DIR, "csv", "Surplus")
+        }
+
     def _define_dependencies(self) -> dict:
-        """Defines the relationship between different services."""
+        """Logical ordering and prerequisites of the workflow."""
         return {
             "validate": ["ingest"], "analyze": ["ingest"],
             "normalize": ["ingest"], "segment": ["normalize"],
@@ -93,57 +151,11 @@ class PipelineManager:
         }
 
     def _get_full_sequence(self, use_latest: bool) -> list:
-        """Returns the complete sequence of steps for a full run."""
-        args = {"use_latest_file": use_latest}
+        """Standard sequence for a complete automated run."""
+        params = {"use_latest_file": use_latest}
         return [
-            ("archive", {}), ("ingest", args), ("validate", args),
-            ("analyze", args), ("normalize", args), ("segment", {}),
+            ("archive", {}), ("ingest", params), ("validate", params),
+            ("analyze", params), ("normalize", params), ("segment", {}),
             ("optimize", {}), ("classify", {}), ("report_surplus", {}),
             ("report_shortage", {}), ("consolidate", {})
         ]
-
-    def _check_and_resolve_deps(self, service_name: str, **kwargs) -> bool:
-        """Ensures all prerequisites for a service are met."""
-        prerequisites = self._deps.get(service_name, [])
-        for prerequisite in prerequisites:
-            if not self._is_data_present(prerequisite):
-                logger.warning(f"Prerequisite '{prerequisite}' missing for '{service_name}'.")
-                if not self.run_service(prerequisite, **kwargs):
-                    return False
-        return True
-
-    def _is_data_present(self, service_name: str) -> bool:
-        """Checks if the output data of a service exists on disk."""
-        import os
-        from src.shared.config.paths import TRANSFERS_ROOT_DIR
-        
-        # Registry of paths and their check types
-        data_registry = {
-            "ingest": (INPUT_CSV_DIR, "csv"),
-            "normalize": (RENAMED_CSV_DIR, "csv"),
-            "segment": (ANALYTICS_DIR, "any"),
-            "optimize": (TRANSFERS_ROOT_DIR, "csv"),
-            "report_surplus": (SURPLUS_DIR, "csv")
-        }
-
-        if service_name not in data_registry:
-            return True
-
-        directory_path, check_type = data_registry[service_name]
-        return self._verify_path_content(directory_path, check_type)
-
-    def _verify_path_content(self, directory_path: str, check_type: str) -> bool:
-        """Verifies if the specified directory contains required data."""
-        import os
-        from src.shared.utils.file_handler import get_csv_files
-        
-        if not os.path.exists(directory_path):
-            return False
-
-        if check_type == "csv":
-            return len(get_csv_files(directory_path)) > 0
-        
-        if check_type == "any":
-            return len(os.listdir(directory_path)) > 0
-
-        return False
