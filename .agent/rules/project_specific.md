@@ -33,10 +33,10 @@ When searching for surplus, use the order defined in `get_search_order()`:
 
 ## Step Execution Flow
 
-The project follows an 11-step workflow managed by `src/app/core/steps/steps.py`:
+The project follows an 11-step workflow managed by `src/application/pipeline/steps.py`:
 1. **Step 1**: Archive Previous Output
 2. **Step 2**: Convert Excel to CSV
-3. **Step 3**: Validate Data
+3. **Step 4**: Sales Analytics
 4. **Step 5**: Schema Normalization (Rename Columns)
 5. **Step 6**: Branch Segmentation
 6. **Step 7**: Transfer Optimization
@@ -72,8 +72,8 @@ Products are classified into 6 categories:
 
 ### Service-View-Renderer Pattern
 The GUI follows a strict Service-View separation, often using Renderers for complex logic:
-- **Services**: Pure logic (e.g., `src/app/gui/services/`).
-- **Views**: Layout and orchestration (e.g., `src/app/gui/views/`).
+- **Services**: Pure logic (e.g., `src/presentation/gui/services/`).
+- **Views**: Layout and orchestration (e.g., `src/presentation/gui/views/`).
 - **Renderers**: Complex UI building logic (e.g., `merged_view_renderer.py`).
 
 ### Import Safety
