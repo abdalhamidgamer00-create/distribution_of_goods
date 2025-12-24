@@ -24,7 +24,7 @@ class DistributionEngine:
         transfers = []
         for consumer_branch, consumer_stock in sorted_needs:
             branch_transfers = self._fulfill_branch_need(
-                product, consumer_branch, consumer_stock.needed, 
+                product, consumer_branch, consumer_stock, 
                 surplus_branches, available_surplus
             )
             transfers.extend(branch_transfers)
@@ -43,18 +43,18 @@ class DistributionEngine:
         )
 
     def _fulfill_branch_need(
-        self, product, consumer, needed_amount, 
+        self, product, consumer, consumer_stock, 
         surplus_branches, available_surplus
     ) -> List[Transfer]:
         """Fulfill single branch's need from surplus sources."""
         transfers = []
-        remaining_needed = needed_amount
+        remaining_needed = consumer_stock.needed
         sorted_sources = sorted(
             surplus_branches,
             key=lambda item: available_surplus[item[0].name],
             reverse=True
         )
-        for provider_branch, _ in sorted_sources:
+        for provider_branch, provider_stock in sorted_sources:
             if remaining_needed <= 0:
                 break
             qty = self._calculate_transfer_quantity(
@@ -63,7 +63,9 @@ class DistributionEngine:
             if qty > 0:
                 transfers.append(Transfer(
                     product=product, from_branch=provider_branch, 
-                    to_branch=consumer, quantity=qty
+                    to_branch=consumer, quantity=qty,
+                    sender_balance=provider_stock.balance,
+                    receiver_balance=consumer_stock.balance
                 ))
                 available_surplus[provider_branch.name] -= qty
                 remaining_needed -= qty

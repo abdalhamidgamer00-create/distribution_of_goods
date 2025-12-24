@@ -73,7 +73,9 @@ def _prepare_transfer_dataframe(
             'code': transfer.product.code,
             'product_name': transfer.product.name,
             'quantity_to_transfer': transfer.quantity,
-            'target_branch': target_name
+            'target_branch': target_name,
+            'sender_balance': transfer.sender_balance,
+            'receiver_balance': transfer.receiver_balance
         })
     return pd.DataFrame(records).sort_values('product_name')
 

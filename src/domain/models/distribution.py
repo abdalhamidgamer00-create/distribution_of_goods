@@ -12,6 +12,8 @@ class Transfer:
     from_branch: Branch
     to_branch: Branch
     quantity: int
+    sender_balance: float = 0.0
+    receiver_balance: float = 0.0
 
 
 @dataclass
