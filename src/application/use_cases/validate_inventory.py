@@ -2,7 +2,9 @@
 
 import os
 from src.shared.utils.logging_utils import get_logger
-from src.core.validation import validate_csv_header, validate_csv_headers
+from src.domain.services.validation import (
+    validate_csv_header, validate_csv_headers
+)
 from src.infrastructure.services.file_selector import FileSelectorService
 from src.shared.config.paths import INPUT_CSV_DIR
 

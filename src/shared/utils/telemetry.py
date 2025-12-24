@@ -16,7 +16,9 @@ def execution_timer(service_name: str):
     finally:
         end_time = time.perf_counter()
         duration = end_time - start_time
-        logger.info(f"Service '{service_name}' execution took {duration:.4f} seconds.")
+        logger.info(
+            f"Service '{service_name}' execution took {duration:.4f} seconds."
+        )
 
 
 class TelemetryTracker:

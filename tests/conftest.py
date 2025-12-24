@@ -35,7 +35,7 @@ def sample_branch_df():
 @pytest.fixture
 def sample_branch_data(sample_branch_df):
     """Create sample branch data dictionary for testing"""
-    from src.core.domain.branches.config import get_branches
+    from src.domain.services.branches.config import get_branches
     
     branches = get_branches()
     branch_data = {}
@@ -48,7 +48,7 @@ def sample_branch_data(sample_branch_df):
         df['balance'] = df['balance'] * (1 + i * 0.05)
         
         # Calculate quantities
-        from src.core.domain.calculations.quantity_calculator import calculate_basic_quantities
+        from src.domain.services.calculations.quantity_calculator import calculate_basic_quantities
         df = calculate_basic_quantities(df)
         branch_data[branch] = df
     

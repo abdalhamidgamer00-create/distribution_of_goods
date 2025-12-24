@@ -10,7 +10,9 @@ class QueryOutputs:
     def __init__(self, repository: DataRepository):
         self._repository = repository
 
-    def execute(self, category: str, branch_name: Optional[str] = None) -> List[Dict]:
+    def execute(
+        self, category: str, branch_name: Optional[str] = None
+    ) -> List[Dict]:
         """
         Returns a list of available artifacts for the given category and branch.
         """

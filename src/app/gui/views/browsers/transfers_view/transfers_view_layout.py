@@ -1,6 +1,6 @@
 """Main layout for transfers view."""
 
-from src.core.domain.branches.config import get_branches
+from src.domain.services.branches.config import get_branches
 from src.app.gui.components import (
     render_branch_selection_section,
     setup_browser_page,
@@ -47,6 +47,7 @@ def render_transfers_browser(
         csv_directory, 
         excel_directory,
         lambda dir_path, ext: logic.process_transfer_tab(
-            dir_path, ext, step_number, key_prefix, selected_branch, branches
+            dir_path, ext, step_number, 
+            key_prefix, selected_branch, branches
         )
     )

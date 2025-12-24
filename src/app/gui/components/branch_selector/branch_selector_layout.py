@@ -1,8 +1,8 @@
 """Branch selection layout components."""
 
 import streamlit as st
-from src.core.domain.branches.config import get_branches
-from src.app.gui.components.branch_selector.branch_selector_constants import BRANCH_LABELS
+from src.domain.services.branches.config import get_branches
+from .branch_selector_constants import BRANCH_LABELS
 
 def render_grid_buttons(session_key: str, key_prefix: str) -> None:
     """Render the grid of branch buttons."""
@@ -10,8 +10,8 @@ def render_grid_buttons(session_key: str, key_prefix: str) -> None:
     col1, col2, col3 = st.columns(3)
     columns = [col1, col2, col3, col1, col2, col3]
     
-    for idx, branch in enumerate(branches):
-        with columns[idx]:
+    for index, branch in enumerate(branches):
+        with columns[index]:
             label = BRANCH_LABELS.get(branch, branch)
             key = f"{key_prefix}_branch_btn_{branch}"
             

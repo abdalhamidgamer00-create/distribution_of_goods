@@ -10,7 +10,10 @@ class PipelineError(Exception):
 class PrerequisiteNotFoundError(PipelineError):
     """Raised when a required prerequisite for a service is missing."""
     def __init__(self, service_name: str, missing_prerequisite: str):
-        message = f"Prerequisite '{missing_prerequisite}' missing for '{service_name}'"
+        message = (
+            f"Prerequisite '{missing_prerequisite}' "
+            f"missing for '{service_name}'"
+        )
         super().__init__(message, service_name)
         self.missing_prerequisite = missing_prerequisite
 

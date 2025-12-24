@@ -2,8 +2,8 @@
 
 import streamlit as st
 from typing import Optional
-from src.app.gui.components.branch_selector.branch_selector_layout import render_buttons
-from src.app.gui.components.branch_selector.branch_selector_display import (
+from .branch_selector_layout import render_buttons
+from .branch_selector_display import (
     render_selected_branch_info
 )
 

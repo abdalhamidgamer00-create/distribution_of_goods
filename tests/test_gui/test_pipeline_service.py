@@ -82,7 +82,7 @@ class TestRunStep:
     
     def test_run_step_success(self):
         """Test running a step successfully"""
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -98,7 +98,7 @@ class TestRunStep:
     
     def test_run_step_failure(self):
         """Test running a step that fails"""
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -113,7 +113,7 @@ class TestRunStep:
     
     def test_run_step_exception(self):
         """Test running a step that throws exception"""
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         
         # Create a mock step that mimics the structure but is mutable
         mock_step = MagicMock()
@@ -200,7 +200,7 @@ class TestBuildStepInfo:
         WHY: UI needs all step properties
         BREAKS: Missing properties in step cards
         """
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         
         step = AVAILABLE_STEPS[0]
         info = _build_step_info(step)
@@ -216,7 +216,7 @@ class TestBuildStepInfo:
         WHY: Arabic UI requires translations
         BREAKS: English text in Arabic interface
         """
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         from src.app.gui.utils.translations import STEP_NAMES
         
         step = AVAILABLE_STEPS[0]

@@ -3,10 +3,6 @@
 from datetime import datetime
 
 
-# =============================================================================
-# PUBLIC API
-# =============================================================================
-
 def generate_report(analysis: dict, csv_file: str) -> str:
     """Generate complete analysis report."""
     report_lines = _generate_header(csv_file, analysis)
@@ -26,28 +22,19 @@ def generate_improvement_suggestions(analysis: dict) -> list:
     return suggestions
 
 
-# =============================================================================
-# SUGGESTION HELPERS
-# =============================================================================
-
 def _get_empty_cell_suggestions(empty_percentage: float) -> list:
     """Get suggestions based on empty cell percentage."""
     suggestions = []
     if empty_percentage > 10:
-        message = (
+        suggestions.append(
             "High percentage of empty cells detected. "
             "Consider data validation before processing."
         )
-        suggestions.append(message)
     if empty_percentage > 5:
-        suggestions.append("Review data sources to ensure complete data entry.")
-        suggestions.append(
-            "Implement data quality checks to prevent missing values."
-        )
+        suggestions.append("Review data sources for completeness.")
+        suggestions.append("Implement data quality checks.")
     if empty_percentage > 0:
-        suggestions.append(
-            "Consider filling empty cells with default values or 'N/A'."
-        )
+        suggestions.append("Consider filling empty cells with default values.")
     return suggestions
 
 
@@ -55,39 +42,29 @@ def _get_base_suggestions(total_rows: int) -> list:
     """Get base suggestions for data quality."""
     suggestions = []
     if total_rows == 0:
-        suggestions.append("No data rows found. Verify CSV file structure.")
-    suggestions.append("Ensure consistent data format across all columns.")
-    suggestions.append("Regular data audits to maintain data quality.")
+        suggestions.append("No data rows found. Verify CSV structure.")
+    suggestions.append("Ensure consistent data format.")
+    suggestions.append("Regular data audits.")
     return suggestions
 
-
-# =============================================================================
-# REPORT SECTION HELPERS
-# =============================================================================
 
 def _generate_header(csv_file: str, analysis: dict) -> list:
     """Generate report header section."""
     lines = [
-        "=" * 60, 
-        "SALES DATA ANALYSIS REPORT", 
-        "=" * 60, 
+        "=" * 60, "SALES DATA ANALYSIS REPORT", "=" * 60, 
         f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 
         f"File: {csv_file}"
     ]
     if analysis.get('date_range'):
-        date_range = analysis['date_range']
-        lines.append(
-            f"Date Range: {date_range['start']} to {date_range['end']}"
-        )
+        dr = analysis['date_range']
+        lines.append(f"Date Range: {dr['start']} to {dr['end']}")
     return lines
 
 
 def _generate_statistics(analysis: dict) -> list:
     """Generate statistics section."""
     return [
-        "\n" + "-" * 60, 
-        "STATISTICS", 
-        "-" * 60, 
+        "\n" + "-" * 60, "STATISTICS", "-" * 60, 
         f"Total Rows (Data): {analysis.get('total_rows', 0):,}", 
         f"Total Columns: {analysis.get('total_columns', 0):,}", 
         f"Total Cells: {analysis.get('total_cells', 0):,}", 

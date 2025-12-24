@@ -40,29 +40,30 @@ class LogisticsPresenter:
             })
         return pd.DataFrame(rows)
 
-    def _create_merged_payloads(self, df: pd.DataFrame) -> List[Dict]:
+    def _create_merged_payloads(self, dataframe: pd.DataFrame) -> List[Dict]:
         """Creates category-grouped payloads."""
         payloads = []
-        for category in df['product_category'].unique():
-            category_df = df[df['product_category'] == category].copy()
+        for category in dataframe['product_category'].unique():
+            is_category = dataframe['product_category'] == category
+            category_df = dataframe[is_category].copy()
             payloads.append({
                 'category': category,
-                'df': self._standardize_df(category_df)
+                'dataframe': self._standardize_df(category_df)
             })
         return payloads
 
-    def _create_separate_payloads(self, df: pd.DataFrame) -> List[Dict]:
+    def _create_separate_payloads(self, dataframe: pd.DataFrame) -> List[Dict]:
         """Creates target-and-category-grouped payloads."""
         payloads = []
-        for target in df['target_branch'].unique():
-            target_df = df[df['target_branch'] == target]
+        for target in dataframe['target_branch'].unique():
+            target_df = dataframe[dataframe['target_branch'] == target]
             for category in target_df['product_category'].unique():
                 category_df = target_df[
                     target_df['product_category'] == category
                 ].copy()
                 payloads.append({
                     'target': target, 'category': category,
-                    'df': self._standardize_df(category_df)
+                    'dataframe': self._standardize_df(category_df)
                 })
         return payloads
 

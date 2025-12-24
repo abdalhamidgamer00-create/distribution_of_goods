@@ -4,10 +4,10 @@ import os
 import pandas as pd
 from typing import List, Dict
 from src.domain.models.distribution import Transfer
-from src.core.domain.classification.product_classifier import (
+from src.domain.services.classification.product_classifier import (
     classify_product_type
 )
-from src.infrastructure.persistence.excel_formatter import save_formatted_excel
+from src.infrastructure.excel.formatter import save_formatted_excel
 
 
 def save_step7_transfers(transfers: List[Transfer], output_dir: str) -> None:
@@ -78,21 +78,23 @@ def _prepare_transfer_dataframe(
     return pd.DataFrame(records).sort_values('product_name')
 
 
-def _save_split_csv(source, target, category, ts, dataframe, base_dir):
+def _save_split_csv(source, target, category, timestamp, dataframe, base_dir):
     """Saves a category-split CSV."""
     directory = os.path.join(base_dir, f"{source}_to_{target}")
     os.makedirs(directory, exist_ok=True)
-    filename = f"{source}_to_{target}_{ts}_{category}.csv"
+    filename = f"{source}_to_{target}_{timestamp}_{category}.csv"
     path = os.path.join(directory, filename)
     dataframe.to_csv(path, index=False, encoding='utf-8-sig')
 
 
-def _save_split_excel(source, target, category, ts, dataframe, excel_dir):
+def _save_split_excel(
+    source, target, category, timestamp, dataframe, excel_dir
+):
     """Saves a category-split Excel."""
     directory = os.path.join(
         excel_dir, f"transfers_excel_from_{source}_to_other_branches", 
         f"{source}_to_{target}"
     )
     os.makedirs(directory, exist_ok=True)
-    filename = f"{source}_to_{target}_{ts}_{category}.xlsx"
+    filename = f"{source}_to_{target}_{timestamp}_{category}.xlsx"
     save_formatted_excel(dataframe, os.path.join(directory, filename))

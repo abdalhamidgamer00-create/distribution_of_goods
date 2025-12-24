@@ -1,7 +1,7 @@
 """Pipeline step execution logic for the GUI."""
 
 from typing import Tuple, Any
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 from src.app.gui.utils.translations import STEP_NAMES, MESSAGES
 from src.shared.config.paths import (
     RENAMED_CSV_DIR, ANALYTICS_DIR, SURPLUS_DIR, 
@@ -41,7 +41,9 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
 
 def get_repository() -> Any:
     """Get a pre-configured repository instance for the GUI."""
-    from src.infrastructure.persistence.pandas_repository import PandasDataRepository
+    from src.infrastructure.persistence.pandas_repository import (
+        PandasDataRepository
+    )
     from src.shared.config.paths import TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR
     return PandasDataRepository(
         input_dir=RENAMED_CSV_DIR,

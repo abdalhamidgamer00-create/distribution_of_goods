@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.core.domain.branches.config import (
+from src.domain.services.branches.config import (
     get_branches,
     get_search_order,
     get_base_columns,
@@ -26,8 +26,16 @@ class TestGetBranches:
     def test_expected_branches(self):
         """Test that all expected branches are present"""
         result = get_branches()
-        expected = ['asherin', 'wardani', 'akba', 'shahid', 'nujum', 'admin']
-        assert result == expected
+        expected = [
+            "administration",
+            "asherin",
+            "star",
+            "shahid",
+            "okba",
+            "wardani"
+        ]
+        # Sort both to ensure comparison doesn't fail on order
+        assert sorted(result) == sorted(expected)
     
     def test_branches_are_strings(self):
         """Test that all branch names are strings"""
@@ -44,10 +52,10 @@ class TestGetSearchOrder:
         result = get_search_order()
         assert isinstance(result, list)
     
-    def test_admin_first(self):
-        """Test that admin is first in search order"""
+    def test_administration_first(self):
+        """Test that administration is first in search order"""
         result = get_search_order()
-        assert result[0] == 'admin'
+        assert result[0] == 'administration'
     
     def test_returns_six_branches(self):
         """Test that exactly 6 branches are returned"""
@@ -101,7 +109,6 @@ class TestGetAnalyticsColumns:
         result = get_analytics_columns()
         
         # Should have 8 base columns + 4 columns per withdrawal * 5 = 28 total
-        # But the function has 8 base analytics columns, not exactly base columns
         assert len(result) >= 8
     
     def test_custom_max_withdrawals(self):

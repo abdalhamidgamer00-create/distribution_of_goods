@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Dict
 from src.domain.models.distribution import DistributionResult
-from src.core.domain.classification.product_classifier import (
+from src.domain.services.classification.product_classifier import (
     classify_product_type
 )
 from src.app.gui.utils.translations import BRANCH_NAMES, COLUMNS
@@ -85,8 +85,8 @@ def _persist_total_shortage_report(date, items, base_dir):
         COLUMNS['shortage_quantity'], ascending=False
     )
     
-    f_name = f"shortage_report_total_{date}.csv"
-    csv_path = os.path.join(base_dir, "csv", f_name)
+    filename = f"shortage_report_total_{date}.csv"
+    csv_path = os.path.join(base_dir, "csv", filename)
     dataframe.to_csv(csv_path, index=False, encoding='utf-8-sig')
     
     excel_path = os.path.join(

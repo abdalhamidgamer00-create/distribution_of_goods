@@ -1,6 +1,6 @@
 """Menu display functions"""
 
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 from src.app.cli.core.cli_constants import (
     MENU_OPTIONS,
     WELCOME_MESSAGE,

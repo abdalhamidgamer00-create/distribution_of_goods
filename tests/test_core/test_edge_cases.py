@@ -22,8 +22,8 @@ class TestAllocationCalculatorEdgeCases:
         WHY: Cover line 50 - fallback to needed-based proportions
         BREAKS: Division by zero in allocation
         """
-        from src.core.domain.calculations.allocation_calculator.matrices import build_branch_matrices
-        from src.core.domain.calculations.allocation_calculator.proportions import calculate_proportions
+        from src.domain.services.calculations.allocation_calculator.matrices import build_branch_matrices
+        from src.domain.services.calculations.allocation_calculator.proportions import calculate_proportions
         
         # Create branch data where weighted scores sum to zero
         branches = ['branch1', 'branch2']
@@ -60,8 +60,8 @@ class TestAllocationCalculatorEdgeCases:
         WHY: Cover line 98 - return None for products with no need
         BREAKS: Unnecessary processing of fully-stocked products
         """
-        from src.core.domain.calculations.allocation_calculator.matrices import build_branch_matrices
-        from src.core.domain.calculations.allocation_calculator.allocation_orchestrator import process_single_product_allocation
+        from src.domain.services.calculations.allocation_calculator.matrices import build_branch_matrices
+        from src.domain.services.calculations.allocation_calculator.allocation_orchestrator import process_single_product_allocation
         
         # Create branch data where needed_quantity is 0
         branches = ['branch1', 'branch2']
@@ -103,7 +103,7 @@ class TestDataValidatorEdgeCases:
         WHY: Cover lines 14-15 - ValueError exception handling
         BREAKS: Crash on malformed date strings
         """
-        from src.core.validation.dates import _parse_date_strings
+        from src.domain.services.validation.dates import _parse_date_strings
         
         # Invalid date format
         invalid_dates = ["not-a-date", "invalid"]
@@ -119,7 +119,7 @@ class TestDataValidatorEdgeCases:
         WHY: Additional coverage for ValueError path
         BREAKS: Crash on invalid day number
         """
-        from src.core.validation.dates import _parse_date_strings
+        from src.domain.services.validation.dates import _parse_date_strings
         
         # Day 32 is invalid
         invalid_dates = ["32/01/2024 10:00", "01/01/2024 10:00"]
@@ -134,7 +134,7 @@ class TestDataValidatorEdgeCases:
         WHY: Cover line 171 - empty header returns error
         BREAKS: IndexError on empty file
         """
-        from src.core.validation import validate_csv_headers
+        from src.domain.services.validation import validate_csv_headers
         
         # Create CSV with empty second line
         csv_file = tmp_path / "empty_header.csv"
@@ -152,8 +152,8 @@ class TestDataValidatorEdgeCases:
         WHY: Cover path when optional_warning is None
         BREAKS: Incorrect warning messages
         """
-        from src.core.validation.header_validator.checks import _check_optional_present
-        from src.core.validation.header_validator.header_validation_constants import get_optional_headers
+        from src.domain.services.validation.header_validator.checks import _check_optional_present
+        from src.domain.services.validation.header_validator.header_validation_constants import get_optional_headers
         
         # Headers with no optional columns
         actual_headers = ["كود", "إسم الصنف"]
@@ -176,7 +176,7 @@ class TestAllocationBoundaryConditions:
         WHY: Edge case for single-branch scenarios
         BREAKS: Index errors with single element
         """
-        from src.core.domain.calculations.allocation_calculator import (
+        from src.domain.services.calculations.allocation_calculator import (
             calculate_proportional_allocations_vectorized,
         )
         
@@ -201,7 +201,7 @@ class TestAllocationBoundaryConditions:
         WHY: Edge case where max - min = 0
         BREAKS: Division by zero
         """
-        from src.core.domain.calculations.allocation_calculator.scoring import normalize_scores
+        from src.domain.services.calculations.allocation_calculator.scoring import normalize_scores
         
         # All identical values
         series = pd.Series([5.0, 5.0, 5.0])
@@ -221,7 +221,7 @@ class TestValidatorBoundaryConditions:
         WHY: Boundary condition for minimum months
         BREAKS: Off-by-one error in month calculation
         """
-        from src.core.validation import validate_date_range_months
+        from src.domain.services.validation import validate_date_range_months
         
         start = datetime(2024, 1, 1)
         end = datetime(2024, 4, 1)  # Exactly 3 months
@@ -236,7 +236,7 @@ class TestValidatorBoundaryConditions:
         WHY: Minimum days should be 1
         BREAKS: Returns 0 for same day
         """
-        from src.core.validation import calculate_days_between
+        from src.domain.services.validation import calculate_days_between
         
         date = datetime(2024, 1, 1)
         

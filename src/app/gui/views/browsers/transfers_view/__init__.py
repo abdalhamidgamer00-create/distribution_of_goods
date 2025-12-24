@@ -1,6 +1,6 @@
 """Transfers View Package."""
 
-from src.app.gui.views.browsers.transfers_view.transfers_view_layout import (
+from .transfers_view_layout import (
     render_transfers_browser
 )
 

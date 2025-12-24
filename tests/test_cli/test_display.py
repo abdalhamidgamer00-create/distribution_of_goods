@@ -62,7 +62,7 @@ class TestDisplayMenu:
         WHY: All options should be visible
         BREAKS: Missing menu options
         """
-        from src.app.pipeline.steps import AVAILABLE_STEPS
+        from src.app.core.steps.steps import AVAILABLE_STEPS
         
         display_menu()
         

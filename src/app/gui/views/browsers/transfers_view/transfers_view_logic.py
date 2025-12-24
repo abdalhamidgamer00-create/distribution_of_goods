@@ -2,8 +2,10 @@
 
 from typing import List, Dict, Optional
 import streamlit as st
-from src.app.gui.views.browsers.transfers_view import transfers_view_filters as filters
-from src.app.gui.views.browsers.transfers_view import transfers_view_display as display
+from . import (
+    transfers_view_filters as filters, 
+    transfers_view_display as display
+)
 from src.app.gui.services.pipeline_service import get_repository
 from src.application.use_cases.query_outputs import QueryOutputs
 

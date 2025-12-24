@@ -2,7 +2,7 @@
 
 import streamlit as st
 from typing import Optional
-from src.app.gui.components.branch_selector.branch_selector_constants import BRANCH_LABELS
+from .branch_selector_constants import BRANCH_LABELS
 
 def render_selected_branch_info(
     session_key: str,

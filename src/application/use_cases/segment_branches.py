@@ -1,4 +1,4 @@
-"""Use case for segmenting global inventory data into branch-specific datasets."""
+"""Use case for segmenting global inventory data\ninto branch-specific datasets."""
 
 from typing import Dict, List
 from src.domain.services.branch_service import BranchSplitter
@@ -9,9 +9,13 @@ logger = get_logger(__name__)
 
 
 class SegmentBranches:
-    """Orchestrates splitting consolidated data into branch-specific records."""
+    """Orchestrates splitting consolidated data\ninto branch-specific records."""
 
-    def __init__(self, repository: DataRepository, splitter: BranchSplitter = None):
+    def __init__(
+        self,
+        repository: DataRepository,
+        splitter: BranchSplitter = None
+    ):
         self._repository = repository
         self._splitter = splitter or BranchSplitter()
 

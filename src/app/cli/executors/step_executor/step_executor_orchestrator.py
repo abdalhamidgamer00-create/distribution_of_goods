@@ -27,7 +27,9 @@ def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
     return execution.execute_single_step(step, use_latest_file=use_latest_file)
 
 
-def execute_step_with_dependencies(step_id: str, use_latest_file: bool = False) -> bool:
+def execute_step_with_dependencies(
+    step_id: str, use_latest_file: bool = False
+) -> bool:
     """Execute all steps from 1 to step_id in sequence."""
     all_steps = lookup.get_steps_up_to(step_id)
     if not all_steps:

@@ -1,6 +1,9 @@
 """Use case for archiving and clearing previous output data."""
 
-from src.shared.utils.archiver import archive_all_output, clear_output_directory
+from src.shared.utils.archiver import (
+    archive_all_output, 
+    clear_output_directory
+)
 from src.shared.utils.logging_utils import get_logger
 from src.shared.utils.file_handler import has_files_in_directory
 from src.shared.config.paths import OUTPUT_DIR, ARCHIVE_DIR
@@ -37,7 +40,7 @@ class ArchiveData:
         )
         
         if archive_result.get('zip_path'):
-            logger.info("✓ Output archived to: %s", archive_result['zip_path'])
+            logger.info("✓ Output archived to:\n%s", archive_result["zip_path"])
         
         return self._clear_output_safely()
 

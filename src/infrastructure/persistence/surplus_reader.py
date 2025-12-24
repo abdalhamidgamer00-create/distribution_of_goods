@@ -41,7 +41,7 @@ class SurplusReader:
                     'code': str(row['code']),
                     'product_name': row['product_name'],
                     'quantity': int(row['remaining_surplus']),
-                    'target_branch': 'admin',
+                    'target_branch': 'administration',
                     'transfer_type': 'surplus'
                 })
             return results

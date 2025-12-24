@@ -1,9 +1,9 @@
 from datetime import datetime
-from src.core.domain.branches.config import get_branches
+from src.domain.services.branches.config import get_branches
 from src.shared.utils.logging_utils import get_logger
 from src.domain.models.entities import Branch
 from src.application.interfaces.repository import DataRepository
-from src.application.services.model_factory import DomainModelFactory
+from src.domain.services.model_factory import DomainModelFactory
 from src.domain.services.consolidation_service import ConsolidationEngine
 from src.infrastructure.persistence.presenters import LogisticsPresenter
 
@@ -71,7 +71,9 @@ class ConsolidateTransfers:
     def _load_branch_input_data(self, branch: Branch) -> tuple:
         """Loads transfers and surplus for a specific branch."""
         all_transfers = self._repository.load_transfers()
-        branch_transfers = [t for t in all_transfers if t.from_branch.name == branch.name]
+        branch_transfers = [
+            t for t in all_transfers if t.from_branch.name == branch.name
+        ]
         branch_surplus = self._repository.load_remaining_surplus(branch)
         return branch_transfers, branch_surplus
 
@@ -84,7 +86,9 @@ class ConsolidateTransfers:
             timestamp_string=timestamp
         )
 
-    def _log_execution_summary(self, merged_count: int, separate_count: int) -> None:
+    def _log_execution_summary(
+        self, merged_count: int, separate_count: int
+    ) -> None:
         """Logs a summary of the generation process."""
         logger.info("=" * 50)
         logger.info(f"Generated {merged_count} merged files (CSV + Excel)")

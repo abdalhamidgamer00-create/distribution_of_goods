@@ -1,7 +1,11 @@
 from typing import List, Optional
 from src.domain.models.entities import Branch, NetworkStockState, SurplusEntry
-from src.domain.models.distribution import Transfer, LogisticsRecord, ConsolidatedLogisticsReport
-from src.core.domain.classification.product_classifier import classify_product_type
+from src.domain.models.distribution import (
+    Transfer, LogisticsRecord, ConsolidatedLogisticsReport
+)
+from src.domain.services.classification.product_classifier import (
+    classify_product_type
+)
 
 
 class ConsolidationEngine:
@@ -14,10 +18,12 @@ class ConsolidationEngine:
         surplus_entries: List[SurplusEntry],
         network_state: NetworkStockState
     ) -> ConsolidatedLogisticsReport:
-        """Combines normal transfers and surplus for a branch into a domain report."""
+        """Combines transfers and surplus into a domain report."""
         records = []
         self._append_normal_transfers(records, branch, transfers, network_state)
-        self._append_surplus_records(records, branch, surplus_entries, network_state)
+        self._append_surplus_records(
+            records, branch, surplus_entries, network_state
+        )
         
         return ConsolidatedLogisticsReport(
             source_branch=branch,
@@ -33,8 +39,12 @@ class ConsolidationEngine:
     ) -> None:
         """Processes normal transfers and adds them to the record list."""
         for transfer in transfers:
-            sender_balance = network_state.get_balance(branch.name, transfer.product.code)
-            receiver_balance = network_state.get_balance(transfer.to_branch.name, transfer.product.code)
+            sender_balance = network_state.get_balance(
+                branch.name, transfer.product.code
+            )
+            receiver_balance = network_state.get_balance(
+                transfer.to_branch.name, transfer.product.code
+            )
             
             records.append(LogisticsRecord(
                 product=transfer.product,
@@ -53,15 +63,19 @@ class ConsolidationEngine:
         surplus_entries: List[SurplusEntry], 
         network_state: NetworkStockState
     ) -> None:
-        """Processes surplus entries (targeted at admin) and adds them to records."""
+        """Processes surplus entries and adds them to records."""
         for surplus in surplus_entries:
-            sender_balance = network_state.get_balance(branch.name, surplus.product.code)
-            receiver_balance = network_state.get_balance('admin', surplus.product.code)
+            sender_balance = network_state.get_balance(
+                branch.name, surplus.product.code
+            )
+            receiver_balance = network_state.get_balance(
+                'administration', surplus.product.code
+            )
             
             records.append(LogisticsRecord(
                 product=surplus.product,
                 quantity=surplus.quantity,
-                target_branch='admin',
+                target_branch='administration',
                 transfer_type='surplus',
                 sender_balance=sender_balance,
                 receiver_balance=receiver_balance,

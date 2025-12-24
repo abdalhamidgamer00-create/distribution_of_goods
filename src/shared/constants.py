@@ -2,8 +2,15 @@
 
 from typing import Dict
 
-# Branch Names
-BRANCHES = ["asherin", "wardani", "akba", "shahid", "nujum", "admin"]
+# Branch Names - Enforcing Zero Abbreviations
+BRANCHES = [
+    "administration",
+    "asherin",
+    "star",
+    "shahid",
+    "okba",
+    "wardani"
+]
 
 # Scoring Weights for Priority Calculation
 PRIORITY_WEIGHTS = {

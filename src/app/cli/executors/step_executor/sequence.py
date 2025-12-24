@@ -1,8 +1,8 @@
 """Sequential step execution logic."""
 
 from src.shared.utils.logging_utils import get_logger
-from src.app.cli.executors.step_executor.step_execution import execute_single_step
-from src.app.cli.executors.step_executor.logging import (
+from .step_execution import execute_single_step
+from .logging import (
     log_step_header,
     log_step_failure
 )

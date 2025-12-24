@@ -8,8 +8,8 @@ from typing import List, Dict
 def extract_clean_branch_name(branch_key: str) -> str:
     """
     Extract a clean branch key from potential folder names.
-    e.g. 'combined_transfers_from_admin_20251224_082047' -> 'admin'
-    """
+    e.g. 'combined_transfers_from_administration_20251224_082047' -> 'administration'
+   """
     match = re.search(r'from_([a-z]+)_', branch_key)
     if match:
         return match.group(1)

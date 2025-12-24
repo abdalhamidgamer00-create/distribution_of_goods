@@ -54,8 +54,13 @@ class IngestData:
         try:
             import streamlit as streamlit_lib
             state = streamlit_lib.session_state
-            if hasattr(streamlit_lib, 'session_state') and 'selected_file' in state:
-                logger.info("Using file from session state: %s", state['selected_file'])
+            if (
+                hasattr(streamlit_lib, 'session_state')
+                and 'selected_file' in state
+            ):
+                logger.info(
+                    "Using file from session state: %s", state['selected_file']
+                )
                 return state['selected_file']
         except (ImportError, RuntimeError):
             pass

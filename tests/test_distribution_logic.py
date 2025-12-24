@@ -8,19 +8,19 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.core.domain.branches.config import get_branches
-from src.core.domain.calculations.quantity_calculator import calculate_basic_quantities
-from src.core.domain.calculations.allocation_calculator import (
+from src.domain.services.branches.config import get_branches
+from src.domain.services.calculations.quantity_calculator import calculate_basic_quantities
+from src.domain.services.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized,
 )
-from src.core.domain.calculations.order_calculator import (
+from src.domain.services.calculations.order_calculator import (
     get_needing_branches_ordered_by_priority,
     get_surplus_sources_ordered_for_product,
 )
 from src.domain.models.entities import StockLevel
 
 
-from src.core.validation import extract_dates_from_header
+from src.domain.services.validation import extract_dates_from_header
 
 
 def load_test_data(csv_path: str):

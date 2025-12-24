@@ -8,7 +8,9 @@ def render_sidebar() -> None:
     st.sidebar.title("💊 مشاريع صيدليات محروس")
     st.sidebar.markdown("---")
     
-    st.sidebar.page_link("pages/00_الرئيسية.py", label="🏠 الرئيسية", icon="🏠")
+    st.sidebar.page_link(
+        "pages/00_الرئيسية.py", label="🏠 الرئيسية", icon="🏠"
+    )
     st.sidebar.markdown("### الأقسام")
     
     _render_purchases_section()
@@ -22,7 +24,9 @@ def render_sidebar() -> None:
 def _render_purchases_section() -> None:
     """Render purchases section links."""
     with st.sidebar.expander("🛒 قسم المشتريات", expanded=False):
-        st.page_link("pages/01_مشتريات.py", label="⚙️ الخطوات", icon="⚙️")
+        st.page_link(
+            "pages/01_مشتريات.py", label="⚙️ الخطوات", icon="⚙️"
+        )
         st.page_link(
             "pages/06_ملفات_التحويل.py", 
             label="📤 ملفات التحويل", 

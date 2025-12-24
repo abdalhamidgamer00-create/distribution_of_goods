@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from typing import List, Dict
 from src.domain.models.distribution import DistributionResult
-from src.core.domain.classification.product_classifier import (
+from src.domain.services.classification.product_classifier import (
     classify_product_type
 )
 
@@ -76,11 +76,11 @@ def _persist_total_branch_surplus(branch, date, items, base_dir):
     dataframe = pd.DataFrame(items).sort_values('product_name')
     
     csv_dir = os.path.join(base_dir, "csv", branch)
-    f_csv = f"remaining_surplus_{branch}_total_{date}.csv"
-    csv_path = os.path.join(csv_dir, f_csv)
+    csv_filename = f"remaining_surplus_{branch}_total_{date}.csv"
+    csv_path = os.path.join(csv_dir, csv_filename)
     dataframe.to_csv(csv_path, index=False, encoding='utf-8-sig')
     
     excel_folder = os.path.join(base_dir, "excel", branch)
-    f_xls = f"remaining_surplus_{branch}_total_{date}.xlsx"
-    excel_path = os.path.join(excel_folder, f_xls)
+    excel_filename = f"remaining_surplus_{branch}_total_{date}.xlsx"
+    excel_path = os.path.join(excel_folder, excel_filename)
     dataframe.to_excel(excel_path, index=False)

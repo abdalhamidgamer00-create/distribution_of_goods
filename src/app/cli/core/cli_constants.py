@@ -1,6 +1,6 @@
 """Constants for CLI menu"""
 
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 
 SEPARATOR = "=" * 50
 EXIT_CHOICE = "0"

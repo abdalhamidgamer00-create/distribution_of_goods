@@ -15,9 +15,7 @@ from src.domain.models.pipeline import StepResult, PipelineState
 from src.domain.exceptions.pipeline_exceptions import PrerequisiteNotFoundError
 from src.shared.utils.telemetry import execution_timer
 from src.app.core.pipeline_config import PipelineConfig
-
 logger = get_logger(__name__)
-
 
 class PipelineManager:
     """Orchestrates use cases with performance tracking."""
@@ -51,7 +49,6 @@ class PipelineManager:
         except Exception as error:
             self._record_result(service_name, False, str(error))
             return False
-
     def get_workflow_state(self) -> PipelineState:
         """Returns the current collective health of the pipeline."""
         results = {}
@@ -67,23 +64,26 @@ class PipelineManager:
 
     def _resolve_prerequisites(self, name: str, **kwargs) -> None:
         """Verifies all required upstream data artifacts exist."""
-        for pr in self._dependencies.get(name, []):
-            if not self._is_data_present(pr):
-                raise PrerequisiteNotFoundError(name, pr)
+        for prerequisite in self._dependencies.get(name, []):
+            if not self._is_data_present(prerequisite):
+                raise PrerequisiteNotFoundError(name, prerequisite)
 
     def _is_data_present(self, name: str) -> bool:
         """Matches service output against its data contract."""
         if name not in self._contracts:
             return True
         path = self._contracts[name].output_path
-        import src.shared.utils.file_handler as f_h
-        return os.path.exists(path) and f_h.has_files_in_directory(path)
+        from src.shared.utils import file_handler
+        return os.path.exists(path) and (
+            file_handler.has_files_in_directory(path)
+        )
 
     def _handle_rescue(self, name, error, **kwargs) -> bool:
         """Attempts to resolve a missing prerequisite."""
         logger.warning(f"Rescuing: {error}")
-        res = error.missing_prerequisite
-        if not (self.run_service(res, **kwargs) and self._is_data_present(res)):
+        res_name = error.missing_prerequisite
+        if not (self.run_service(res_name, **kwargs) and 
+                self._is_data_present(res_name)):
             return False
         return self.run_service(name, **kwargs)
 

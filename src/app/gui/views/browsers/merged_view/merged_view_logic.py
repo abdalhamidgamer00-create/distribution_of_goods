@@ -27,7 +27,9 @@ def process_merged_tab(
     if selected_branch == "all":
         _handle_all_branches_view(files, key_prefix, extension)
     else:
-        _handle_single_branch_view(files, key_prefix, selected_branch, extension)
+        _handle_single_branch_view(
+            files, key_prefix, selected_branch, extension
+        )
 
 
 def _load_and_prepare_files(selected_branch: str, extension: str) -> List[Dict]:
@@ -69,7 +71,7 @@ def _handle_single_branch_view(
     files: List[Dict], key_prefix: str, selected_branch: str, extension: str
 ) -> None:
     """Applies branch filters and dispatches to standard display."""
-    from src.app.gui.views.browsers.merged_view import merged_view_filters as filters
+    from . import merged_view_filters as filters
     filtered_files = filters.filter_merged_files(
         files, key_prefix, extension
     )

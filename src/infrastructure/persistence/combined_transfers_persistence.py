@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from typing import List, Dict
 from src.domain.models.entities import Branch
-from src.infrastructure.persistence.excel_formatter import save_formatted_excel
+from src.infrastructure.excel.formatter import save_formatted_excel
 
 
 def save_step11_combined_transfers(
@@ -30,7 +30,7 @@ def _persist_merged_outputs(branch, items, timestamp, base_dir) -> None:
     excel_dir = os.path.join(base_dir, "merged", "excel", folder_name)
     
     for entry in items:
-        category, dataframe = entry['category'], entry['df']
+        category, dataframe = entry['category'], entry['dataframe']
         os.makedirs(csv_dir, exist_ok=True)
         filename_csv = f"{branch.name}_combined_{category}.csv"
         dataframe.to_csv(
@@ -54,7 +54,7 @@ def _persist_separate_outputs(branch, items, timestamp, base_dir) -> None:
     
     for entry in items:
         target, category, dataframe = (
-            entry['target'], entry['category'], entry['df']
+            entry['target'], entry['category'], entry['dataframe']
         )
         _save_individual_target(
             branch.name, target, category, timestamp, dataframe, 
@@ -68,12 +68,18 @@ def _save_individual_target(
     """Saves files for a specific target branch."""
     csv_dir = os.path.join(csv_root, f"to_{target}")
     os.makedirs(csv_dir, exist_ok=True)
-    f_csv = f"transfer_from_{source}_to_{target}_{category}_{timestamp}.csv"
+    csv_filename = (
+        f"transfer_from_{source}_to_{target}_{category}_{timestamp}.csv"
+    )
     dataframe.to_csv(
-        os.path.join(csv_dir, f_csv), index=False, encoding='utf-8-sig'
+        os.path.join(csv_dir, csv_filename), 
+        index=False, 
+        encoding='utf-8-sig'
     )
     
     excel_dir = os.path.join(excel_root, f"to_{target}")
     os.makedirs(excel_dir, exist_ok=True)
-    tag = f"transfer_from_{source}_to_{target}_{category}_{timestamp}.xlsx"
-    save_formatted_excel(dataframe, os.path.join(excel_dir, tag))
+    excel_filename = (
+        f"transfer_from_{source}_to_{target}_{category}_{timestamp}.xlsx"
+    )
+    save_formatted_excel(dataframe, os.path.join(excel_dir, excel_filename))

@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List, Dict, Optional
 from src.domain.models.entities import Product, StockLevel, ConsolidatedStock
 from src.infrastructure.persistence.mappers import StockMapper
-from src.core.validation.dates import extract_dates_from_header
+from src.domain.services.validation.dates import extract_dates_from_header
 from src.shared.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

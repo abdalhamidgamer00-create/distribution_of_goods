@@ -1,7 +1,9 @@
 """Purchases view package."""
 from .metrics import show_metrics
 from .files import start_file_management_ui
-from src.app.gui.views.purchases.purchases_execution import execute_step_ui, run_all_steps_ui
+from .purchases_execution import (
+    execute_step_ui, run_all_steps_ui
+)
 from .navigation import render_nav_button, render_results_navigation
 
 __all__ = [

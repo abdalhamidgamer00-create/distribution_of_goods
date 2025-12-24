@@ -1,7 +1,7 @@
 """Batch step execution"""
 
 from typing import Any
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 from src.app.cli.core.cli_constants import SEPARATOR
 from src.app.cli.handlers.input_handler import get_file_selection_mode
 from src.app.cli.executors.step_executor import execute_single_step

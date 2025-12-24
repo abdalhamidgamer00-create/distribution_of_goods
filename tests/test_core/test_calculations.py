@@ -4,14 +4,14 @@ import math
 import pandas as pd
 import pytest
 
-from src.core.domain.calculations.quantity_calculator import (
+from src.domain.services.calculations.quantity_calculator import (
     calculate_basic_quantities,
     calculate_surplus_remaining
 )
-from src.core.domain.calculations.allocation_calculator import (
+from src.domain.services.calculations.allocation_calculator import (
     calculate_proportional_allocations_vectorized
 )
-from src.core.domain.calculations.order_calculator import (
+from src.domain.services.calculations.order_calculator import (
     get_needing_branches_ordered_by_priority,
     get_surplus_sources_ordered_for_product
 )
@@ -84,7 +84,7 @@ class TestCalculateSurplusRemaining:
     
     def test_no_withdrawals(self, sample_branch_data):
         """Test surplus remaining with no withdrawals"""
-        from src.core.domain.branches.config import get_branches
+        from src.domain.services.branches.config import get_branches
         branches = get_branches()
         
         withdrawals = {}
@@ -97,7 +97,7 @@ class TestCalculateSurplusRemaining:
     
     def test_with_withdrawals(self, sample_branch_data):
         """Test surplus remaining after withdrawals"""
-        from src.core.domain.branches.config import get_branches
+        from src.domain.services.branches.config import get_branches
         branches = get_branches()
         
         # Add some withdrawals
@@ -114,7 +114,7 @@ class TestCalculateSurplusRemaining:
     
     def test_withdrawal_exceeds_surplus(self, sample_branch_data):
         """Test that surplus remaining is never negative"""
-        from src.core.domain.branches.config import get_branches
+        from src.domain.services.branches.config import get_branches
         branches = get_branches()
         
         # Withdraw more than available
@@ -138,7 +138,7 @@ class TestCalculateProportionalAllocationsVectorized:
     
     def test_proportional_allocation_when_surplus_less_than_needed(self, sample_branch_data):
         """Test proportional allocation when total surplus < total needed"""
-        from src.core.domain.branches.config import get_branches
+        from src.domain.services.branches.config import get_branches
         branches = get_branches()
         
         result = calculate_proportional_allocations_vectorized(sample_branch_data, branches)
@@ -155,7 +155,7 @@ class TestCalculateProportionalAllocationsVectorized:
     
     def test_allocation_values_are_integers(self, sample_branch_data):
         """Test that all allocated values are integers"""
-        from src.core.domain.branches.config import get_branches
+        from src.domain.services.branches.config import get_branches
         branches = get_branches()
         
         result = calculate_proportional_allocations_vectorized(sample_branch_data, branches)

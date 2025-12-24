@@ -1,7 +1,7 @@
 """Pipeline step sequencing logic."""
 
 from typing import Tuple, Any, List
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 
 def get_steps_sequence(step_id: str) -> Tuple[bool, Any]:
     """Get sequence of steps up to target step_id."""

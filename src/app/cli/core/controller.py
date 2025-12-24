@@ -1,6 +1,6 @@
 """Menu control and choice handling"""
 
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 from src.app.cli.core.cli_constants import EXIT_CHOICE, ALL_STEPS_CHOICE_OFFSET
 from src.app.cli.executors import (
     execute_step, 

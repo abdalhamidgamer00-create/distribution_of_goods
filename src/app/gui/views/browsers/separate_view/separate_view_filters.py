@@ -2,7 +2,7 @@
 
 from typing import Tuple, Optional
 import streamlit as st
-from src.core.domain.branches.config import get_branches
+from src.domain.services.branches.config import get_branches
 from src.app.gui.utils.translations import CATEGORY_NAMES
 from src.app.gui.components import (
     BRANCH_LABELS,
@@ -10,7 +10,9 @@ from src.app.gui.components import (
 )
 
 
-def render_filters(key_prefix: str, extension: str) -> Tuple[Optional[str], Optional[str]]:
+def render_filters(
+    key_prefix: str, extension: str
+) -> Tuple[Optional[str], Optional[str]]:
     """
     Render filters for separate files and return keys.
     
@@ -23,7 +25,8 @@ def render_filters(key_prefix: str, extension: str) -> Tuple[Optional[str], Opti
     """
     branches_list = get_branches()
     
-    target_options = ["الكل"] + [BRANCH_LABELS.get(branch, branch) for branch in branches_list]
+    target_labels = [BRANCH_LABELS.get(b, b) for b in branches_list]
+    target_options = ["الكل"] + target_labels
     selected_target = st.selectbox(
         "إلى:", 
         target_options, 

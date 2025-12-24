@@ -1,7 +1,7 @@
 """Step lookup and validation."""
 
 from typing import Optional, Any
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 
 
 def find_step_by_id(step_id: str) -> Optional[Any]:

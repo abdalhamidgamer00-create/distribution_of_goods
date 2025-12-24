@@ -1,10 +1,10 @@
 """Pipeline step information helpers."""
 
 from typing import Dict, Optional, List, Any
-from src.app.pipeline.steps import AVAILABLE_STEPS
+from src.app.core.steps.steps import AVAILABLE_STEPS
 from src.app.gui.utils.translations import STEP_NAMES, STEP_DESCRIPTIONS
 
-from src.core.domain.pipeline.step import Step
+from src.domain.models.step import Step
 
 def get_all_steps() -> List[Step]:
     """Get all available pipeline steps with translations."""

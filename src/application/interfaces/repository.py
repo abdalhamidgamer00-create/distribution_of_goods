@@ -17,7 +17,8 @@ class DataRepository(ABC):
         pass
 
     @abstractmethod
-    def save_branch_stocks(self, branch: Branch, stocks: List[BranchStock]) -> None:
+    def save_branch_stocks(self, branch: Branch, stocks: List[BranchStock]
+    ) -> None:
         """Save stock data for a specific branch."""
         pass
 
@@ -55,7 +56,9 @@ class DataRepository(ABC):
         pass
 
     @abstractmethod
-    def save_split_transfers(self, transfers_list: List[Transfer], excel_directory: str) -> None:
+    def save_split_transfers(
+        self, transfers_list: List[Transfer], excel_directory: str
+    ) -> None:
         """Save transfers split by category into CSV and Excel."""
         pass
 
@@ -76,6 +79,8 @@ class DataRepository(ABC):
         pass
 
     @abstractmethod
-    def list_outputs(self, category_name: str, branch_name_filter: Optional[str] = None) -> List[Dict]:
-        """Lists available output artifacts for a given category and optional branch."""
+    def list_outputs(
+        self, category_name: str, branch_name_filter: Optional[str] = None
+    ) -> List[Dict]:
+        """Lists available output artifacts for a given category."""
         pass

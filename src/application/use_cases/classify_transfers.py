@@ -14,7 +14,9 @@ class ClassifyTransfers:
 
     def __init__(self, repository: DataRepository):
         self._repository = repository
-        self._excel_output_directory = os.path.join("data", "output", "transfers", "excel")
+        self._excel_output_directory = os.path.join(
+            "data", "output", "transfers", "excel"
+        )
 
     def execute(self, **kwargs) -> bool:
         """

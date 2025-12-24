@@ -33,6 +33,8 @@ class PipelineState:
     def is_step_ready(self, service_name: str, dependencies: List[str]) -> bool:
         """Checks if a step is ready based on its dependencies."""
         for dep in dependencies:
-            if dep not in self.step_results or not self.step_results[dep].is_success:
+            if dep not in self.step_results:
+                return False
+            if not self.step_results[dep].is_success:
                 return False
         return True
