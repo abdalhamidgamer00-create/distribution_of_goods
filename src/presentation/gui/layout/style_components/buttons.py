@@ -3,10 +3,16 @@
 def get_button_styles() -> str:
     """Return CSS for the hierarchical button system."""
     return """
-        /* 1. Global Base Style - Modern & Slick */
+        /* 1. Global Base Style - Pure & Clean */
+        .stButton {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
         .stButton>button {
             width: 100%;
-            border-radius: 16px;
+            border-radius: 12px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
             display: flex;
@@ -17,38 +23,38 @@ def get_button_styles() -> str:
             font-family: 'Tajawal', sans-serif;
             letter-spacing: 0.5px;
             font-weight: 700 !important;
+            outline: none !important;
         }
 
-        /* 2. Dashboard Tiles (Home Page) - Deep Glass Gradient */
-        div:has(> button[key^="home_"]) .stButton > button,
-        div:has(> button[key^="home_"]) .stButton > button p {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%) !important;
+        /* 2. Dashboard Tiles (Home Page) - Strong Deep Gradient */
+        div:has(> button[key^="home_"]) button,
+        div:has(> button[key^="home_"]) button p {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1a2a6c 100%) !important;
             font-size: 1.8rem !important;
-            padding: 2rem 0.5rem !important;
-            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.3);
-            min-height: 140px;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 2.5rem 1rem !important;
+            box-shadow: 0 10px 25px rgba(30, 60, 114, 0.3);
+            min-height: 150px;
         }
 
-        /* 3. Tool Action Buttons (Vibrant Emerald/Teal Tiles) */
-        div:has(> button[key^="run_"]) .stButton > button,
-        div:has(> button[key^="run_"]) .stButton > button p {
+        /* 3. Tool Action Buttons (Vibrant Emerald Tiles) */
+        div:has(> button[key^="run_"]) button,
+        div:has(> button[key^="run_"]) button p {
             background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%) !important;
-            font-size: 1.3rem !important;
+            font-size: 1.4rem !important;
             padding: 1.5rem !important;
             box-shadow: 0 8px 20px rgba(0, 176, 155, 0.25);
-            min-height: 100px;
-            border-radius: 20px !important;
+            min-height: 110px;
+            border-radius: 15px !important;
         }
 
-        /* 4. Primary Command Buttons (Lustrous Ruby Red) */
+        /* 4. Primary Command Buttons (Warm Sunset Gradient) */
         button[data-testid="stBaseButton-primary"],
         button[data-testid="stBaseButton-primary"] p {
-            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%) !important;
-            font-size: 1.25rem !important;
+            background: linear-gradient(135deg, #f09819 0%, #edde5d 100%) !important; /* Golden Orange */
+            color: #1e3c72 !important;
+            font-size: 1.3rem !important;
             padding: 1.2rem !important;
-            box-shadow: 0 12px 25px rgba(238, 9, 121, 0.3);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(240, 152, 25, 0.2);
         }
 
         /* 5. Utility Buttons (Premium White Glass) */

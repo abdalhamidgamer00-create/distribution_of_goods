@@ -27,12 +27,11 @@ def render_home():
     
     for col, dept in zip(all_cols, departments):
         with col:
-            with st.container(border=True):
-                if st.button(
-                    f"{dept['icon']} {dept['name']}", 
-                    key=f"home_{dept['key']}", 
-                    use_container_width=True
-                ):
-                    st.switch_page(dept['page'])
+            if st.button(
+                f"{dept['icon']} {dept['name']}", 
+                key=f"home_{dept['key']}", 
+                use_container_width=True
+            ):
+                st.switch_page(dept['page'])
 
     st.markdown("---")
