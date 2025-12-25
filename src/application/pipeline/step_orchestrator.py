@@ -38,6 +38,50 @@ class StepOrchestrator:
         return [archive_step, target_step]
 
     @staticmethod
+    def get_sequence_up_to(step_id: str) -> List[Step]:
+        """
+        Returns all steps from the beginning up to and including the target step.
+        
+        Args:
+            step_id: The ID of the final step in the sequence.
+            
+        Returns:
+            List[Step]: Ordered list of steps.
+        """
+        try:
+            target_step_number = int(step_id)
+        except ValueError:
+            return []
+            
+        return [
+            step for step in AVAILABLE_STEPS 
+            if int(step.id) <= target_step_number
+        ]
+
+    @staticmethod
+    def get_previous_step(step_id: str) -> Optional[Step]:
+        """
+        Returns the step immediately preceding the target step.
+        
+        Args:
+            step_id: The ID of the target step.
+            
+        Returns:
+            Optional[Step]: The preceding step if it exists.
+        """
+        sorted_steps = sorted(
+            AVAILABLE_STEPS, 
+            key=lambda x: int(x.id)
+        )
+        
+        for i, step in enumerate(sorted_steps):
+            if step.id == step_id:
+                if i > 0:
+                    return sorted_steps[i-1]
+                return None
+        return None
+
+    @staticmethod
     def find_step(step_id: str) -> Optional[Step]:
         """Helper to find a step by its ID."""
         for step in AVAILABLE_STEPS:

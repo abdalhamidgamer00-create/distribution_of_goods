@@ -41,26 +41,11 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
 
 def get_repository() -> Any:
     """Get a pre-configured repository instance for the GUI."""
-    from src.infrastructure.repositories.base.pandas_repository import (
-        PandasDataRepository
-    )
-    from src.shared.config.paths import (
-        TRANSFERS_ROOT_DIR, TRANSFERS_CSV_DIR, SALES_REPORT_DIR
-    )
-    return PandasDataRepository(
-        input_dir=RENAMED_CSV_DIR,
-        output_dir=TRANSFERS_ROOT_DIR,
-        surplus_dir=SURPLUS_DIR,
-        shortage_dir=SHORTAGE_DIR,
-        analytics_dir=ANALYTICS_DIR,
-        transfers_dir=TRANSFERS_CSV_DIR,
-        sales_analysis_dir=SALES_REPORT_DIR
-    )
+    from src.application.factories.repository_factory import RepositoryFactory
+    return RepositoryFactory.create_pandas_repository()
 
 
 def _find_step_by_id(step_id: str) -> Any:
     """Helper to find a step by its integer ID string."""
-    for step in AVAILABLE_STEPS:
-        if step.id == step_id:
-            return step
-    return None
+    from src.application.pipeline.step_orchestrator import StepOrchestrator
+    return StepOrchestrator.find_step(step_id)

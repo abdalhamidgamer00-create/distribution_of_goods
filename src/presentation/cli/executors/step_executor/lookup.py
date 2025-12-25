@@ -1,43 +1,22 @@
-"""Step lookup and validation."""
+"""Step lookup and validation (Deprecated: Use StepOrchestrator)."""
 
 from typing import Optional, Any
-from src.application.pipeline.steps import AVAILABLE_STEPS
+from src.application.pipeline.step_orchestrator import StepOrchestrator
 
 
 def find_step_by_id(step_id: str) -> Optional[Any]:
     """Find a step by its ID."""
-    return next(
-        (step for step in AVAILABLE_STEPS if step.id == step_id), None
-    )
+    return StepOrchestrator.find_step(step_id)
 
 
 def get_steps_up_to(step_id: str) -> list:
     """Get all steps up to and including the target step ID."""
-    try:
-        target_step_number = int(step_id)
-    except ValueError:
-        return []
-    
-    return [
-        step for step in AVAILABLE_STEPS 
-        if int(step.id) <= target_step_number
-    ]
+    return StepOrchestrator.get_sequence_up_to(step_id)
 
 
 def get_step_prior_to_step(target_step_id: str):
     """Get the step immediately preceding the target step."""
-    sorted_steps = sorted(
-        AVAILABLE_STEPS, 
-        key=lambda x: int(x.id)
-    )
-    
-    for i, step in enumerate(sorted_steps):
-        if step.id == target_step_id:
-            if i > 0:
-                return sorted_steps[i-1]
-            return None
-            
-    return None
+    return StepOrchestrator.get_previous_step(target_step_id)
 
 
 def validate_step_function(step: Any) -> bool:
@@ -45,4 +24,3 @@ def validate_step_function(step: Any) -> bool:
     if not hasattr(step, 'function'):
         return False
     return callable(step.function)
-

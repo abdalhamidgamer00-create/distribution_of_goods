@@ -1,31 +1,15 @@
-"""Pipeline step sequencing logic."""
+"""Pipeline step sequencing logic using centralized orchestrator."""
 
-from typing import Tuple, Any, List
-from src.application.pipeline.steps import AVAILABLE_STEPS
+from typing import Tuple, Any
+from src.application.pipeline.step_orchestrator import StepOrchestrator
 
 def get_steps_sequence(step_id: str) -> Tuple[bool, Any]:
     """Get sequence of steps up to target step_id."""
-    valid, result = _validate_step_id(step_id)
+    target_step_id = str(step_id) if step_id else ""
     
-    if not valid:
-        return False, str(result)
-        
-    target_step_number = int(result)
-    
-    steps = [
-        step for step in AVAILABLE_STEPS 
-        if int(step.id) <= target_step_number
-    ]
+    steps = StepOrchestrator.get_sequence_up_to(target_step_id)
     
     if not steps:
-        return False, f"لم يتم العثور على خطوات حتى الخطوة {step_id}"
+        return False, f"لم يتم العثور على الخطوة أو التسلسل للخطوة {step_id}"
         
     return True, steps
-
-
-def _validate_step_id(step_id: str) -> Tuple[bool, Any]:
-    """Validate step_id and return (success, target_step_num/error)."""
-    try:
-        return True, int(step_id)
-    except ValueError:
-        return False, f"معرف خطوة غير صالح: {step_id}"

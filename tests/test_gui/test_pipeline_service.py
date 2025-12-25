@@ -14,7 +14,7 @@ from src.presentation.gui.services.pipeline.info import (
     _build_step_info
 )
 from src.presentation.gui.services.pipeline.sequences import (
-    _validate_step_id
+    get_steps_sequence
 )
 from src.presentation.gui.services.pipeline_service import (
     get_step_info,
@@ -226,42 +226,6 @@ class TestBuildStepInfo:
         assert info.name == expected_name
 
 
-class TestValidateStepId:
-    """Tests for _validate_step_id helper function."""
-    
-    def test_valid_numeric_string(self):
-        """
-        WHAT: Accept numeric string IDs
-        WHY: Step IDs are strings like "1", "11"
-        BREAKS: Valid step IDs rejected
-        """
-        valid, result = _validate_step_id("5")
-        
-        assert valid is True
-        assert result == 5
-    
-    def test_invalid_non_numeric_string(self):
-        """
-        WHAT: Reject non-numeric strings
-        WHY: Prevent invalid step lookups
-        BREAKS: Crashes on bad input
-        """
-        valid, result = _validate_step_id("abc")
-        
-        assert valid is False
-        assert isinstance(result, str)  # Error message
-    
-    def test_handles_negative_numbers(self):
-        """
-        WHAT: Handle negative step numbers
-        WHY: Edge case for input validation
-        BREAKS: Unexpected behavior with negative numbers
-        """
-        valid, result = _validate_step_id("-1")
-        
-        # Should parse but will fail later in lookup
-        assert valid is True
-        assert result == -1
 
 
 

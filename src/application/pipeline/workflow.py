@@ -93,8 +93,5 @@ class PipelineManager:
 
     def _create_default_repository(self) -> PandasDataRepository:
         """Initializes the standard repository for the manager."""
-        return PandasDataRepository(
-            RENAMED_CSV_DIR, TRANSFERS_ROOT_DIR,
-            analytics_dir=ANALYTICS_DIR, surplus_dir=SURPLUS_DIR,
-            shortage_dir=SHORTAGE_DIR, transfers_dir=TRANSFERS_CSV_DIR
-        )
+        from src.application.factories.repository_factory import RepositoryFactory
+        return RepositoryFactory.create_pandas_repository()
