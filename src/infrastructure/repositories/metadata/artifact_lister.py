@@ -12,6 +12,7 @@ class ArtifactLister:
         self._output_directory = output_directory
         self._surplus_directory = kwargs.get('surplus_dir', output_directory)
         self._shortage_directory = kwargs.get('shortage_dir', output_directory)
+        self._sales_analysis_directory = kwargs.get('sales_analysis_dir', output_directory)
 
     def list_outputs(
         self, 
@@ -62,5 +63,9 @@ class ArtifactLister:
                     'csv': 'transfers_from_', 
                     'excel': 'transfers_from_'
                 }
+            },
+            'sales_analysis': {
+                'base_directory': self._sales_analysis_directory,
+                'search_patterns': {'csv': 'analysis_', 'excel': ''}
             }
         }
