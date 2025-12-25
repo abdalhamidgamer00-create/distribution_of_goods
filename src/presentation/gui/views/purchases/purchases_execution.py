@@ -8,19 +8,13 @@ from src.presentation.gui.services.pipeline_service import (
 )
 
 def execute_step_ui(step: Any) -> None:
-    """Run a step with dependencies and display result."""
+    """Run a single step independently and display result."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
         return
 
-    success, result = get_steps_sequence(step.id)
-    
-    if not success:
-        st.error(result)
-        return
-        
-    all_steps = result
-    _run_steps_sequence(all_steps, step)
+    # Execute only the target step
+    _run_steps_sequence([step], step)
 
 
 def run_all_steps_ui() -> None:
@@ -67,5 +61,9 @@ def _run_steps_sequence(all_steps: list, target_step: Any) -> None:
         
     progress.empty()
     status.empty()
-    st.success(f"✅ تم تنفيذ الخطوات حتى {target_step.name}")
+    if len(all_steps) == 1:
+        st.success(f"✅ تم تنفيذ {target_step.name} بنجاح")
+    else:
+        st.success(f"✅ تم تنفيذ الخطوات حتى {target_step.name}")
+        
     st.session_state[f'step_{target_step.id}_success'] = True
