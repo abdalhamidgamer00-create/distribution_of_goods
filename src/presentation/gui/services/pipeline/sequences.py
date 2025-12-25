@@ -10,6 +10,6 @@ def get_steps_sequence(step_id: str) -> Tuple[bool, Any]:
     steps = StepOrchestrator.get_sequence_up_to(target_step_id)
     
     if not steps:
-        return False, f"لم يتم العثور على الخطوة أو التسلسل للخطوة {step_id}"
+        return False, f"لم يتم العثور على الأداة أو التسلسل للأداة {step_id}"
         
     return True, steps

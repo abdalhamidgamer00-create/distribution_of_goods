@@ -18,7 +18,7 @@ def execute_step_ui(step: Any) -> None:
     steps_to_run = StepOrchestrator.get_isolated_sequence(step.id)
     
     if not steps_to_run:
-        st.error(f"❌ لم يتم العثور على الخطوة: {step.id}")
+        st.error(f"❌ لم يتم العثور على الأداة: {step.id}")
         return
 
     _run_steps_sequence(steps_to_run, step)

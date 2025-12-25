@@ -18,7 +18,7 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
     """Execute a single step and return status and message."""
     step = _find_step_by_id(step_id)
     if not step:
-        return False, f"خطوة غير موجودة: {step_id}"
+        return False, f"أداة غير موجودة: {step_id}"
     
     step_name = STEP_NAMES.get(step_id, step.name)
     try:
