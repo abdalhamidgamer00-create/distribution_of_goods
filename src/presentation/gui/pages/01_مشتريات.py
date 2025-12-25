@@ -64,7 +64,7 @@ for i, step in enumerate(visible_steps):
         st.caption(step.description)
         
         if st.button(
-            f"▶️ تشغيل مع الخطوات السابقة",
+            f"▶️ تشغيل هذه الخطوة فقط",
             key=f"run_{step.id}"
         ):
             execute_step_ui(step)
