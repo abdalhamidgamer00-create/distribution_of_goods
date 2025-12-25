@@ -69,8 +69,10 @@ class TestStockMapper:
         # Assert
         # asherin: 180 sales / 90 days = 2.0 avg_sales
         # coverage_qty = ceil(2.0 * 20) = 40
-        # balance = 20. Surplus = 0. Needed = 40 - 20 = 20.
+        # balance = 20. Surplus = 0.
+        # Raw Needed = 40 - 20 = 20.
+        # Capped Needed = min(20, 30 - 20) = 10.
         asherin_stock = result.branch_stocks['asherin']
         assert asherin_stock.avg_sales == 2.0
         assert asherin_stock.surplus == 0
-        assert asherin_stock.needed == 20
+        assert asherin_stock.needed == 10
