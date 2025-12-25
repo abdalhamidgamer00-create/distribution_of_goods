@@ -18,10 +18,10 @@ def render_grouped_merged_files(
     for raw_key, branch_files in grouped.items():
         clean_key = extract_clean_branch_name(raw_key)
         st.subheader(BRANCH_NAMES.get(clean_key, raw_key))
-        for file_info in branch_files:
+        for i, file_info in enumerate(branch_files):
             render_file_expander(
                 file_info, extension, 
-                key_prefix=f"{key_prefix}_{clean_key}_{extension}_expander"
+                key_prefix=f"{key_prefix}_{clean_key}_{extension}_{i}_expander"
             )
         st.markdown("---")
 
@@ -33,8 +33,8 @@ def render_merged_files_list(
     extension: str
 ) -> None:
     """Renders a simple list of file expanders."""
-    for file_info in files:
+    for i, file_info in enumerate(files):
         render_file_expander(
             file_info, extension, 
-            key_prefix=f"{key_prefix}_tab_{clean_key}_{extension}"
+            key_prefix=f"{key_prefix}_tab_{clean_key}_{extension}_{i}"
         )

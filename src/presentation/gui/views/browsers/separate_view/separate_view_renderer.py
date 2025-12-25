@@ -30,12 +30,12 @@ def render_grouped_separate_entries(
         )
         st.subheader(header)
         
-        for file_info in branch_files:
+        for i, file_info in enumerate(branch_files):
             render_file_expander(
                 file_info, extension, 
                 key_prefix=(
                     f"{key_prefix}_{clean_source}_"
-                    f"{clean_target}_{extension}_expander"
+                    f"{clean_target}_{extension}_{i}_expander"
                 )
             )
         st.markdown("---")
@@ -53,12 +53,12 @@ def render_subgrouped_by_target(
         clean_target = extract_clean_branch_name(target)
         header = f"إلى: {BRANCH_NAMES.get(clean_target, target)}"
         st.write(f"**{header}**")
-        for file_info in branch_files:
+        for i, file_info in enumerate(branch_files):
             render_file_expander(
                 file_info, extension, 
                 key_prefix=(
                     f"{key_prefix}_tab_{clean_source}_"
-                    f"{clean_target}_{extension}_expander"
+                    f"{clean_target}_{extension}_{i}_expander"
                 )
             )
         st.markdown("---")

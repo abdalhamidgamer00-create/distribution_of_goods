@@ -80,8 +80,8 @@ def _render_branch_tab_content(
         files, zip_filename, 
         key=f"{key_prefix}_tab_{branch_key}_{extension}_btn"
     )
-    for file_info in files:
+    for i, file_info in enumerate(files):
         render_file_expander(
             file_info, extension, 
-            key_prefix=f"{key_prefix}_tab_{branch_key}_{extension}"
+            key_prefix=f"{key_prefix}_tab_{branch_key}_{extension}_{i}"
         )
