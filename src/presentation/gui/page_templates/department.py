@@ -13,9 +13,9 @@ def render_department(cfg: dict) -> None:
     st.markdown("---")
     
     _render_info_box(cfg)
-    
+    st.markdown("---")
     if st.button("← العودة إلى الرئيسية"):
-        st.switch_page("app.py")
+        st.switch_page("pages/00_home.py")
 
 
 # =============================================================================
