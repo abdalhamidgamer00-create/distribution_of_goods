@@ -43,7 +43,6 @@ pg = st.navigation(get_navigation_config())
 with st.sidebar:
     st.markdown("## 💊 صيدليات محروس")
     st.markdown("---")
-    _render_info_box()
 
 # Run current page
 pg.run()

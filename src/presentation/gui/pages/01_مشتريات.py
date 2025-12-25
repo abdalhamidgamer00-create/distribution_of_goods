@@ -54,12 +54,10 @@ visible_steps = [s for s in steps if s.id in ['4', '8', '9', '10', '11']]
 cols = st.columns(len(visible_steps))
 for i, step in enumerate(visible_steps):
     with cols[i]:
-        st.markdown(f"### {step.name}")
-        st.caption(step.description)
-        
         if st.button(
-            f"▶️ تشغيل هذه الخطوة فقط",
-            key=f"run_{step.id}"
+            f"▶️ {step.name}",
+            key=f"run_{step.id}",
+            use_container_width=True
         ):
             execute_step_ui(step)
             

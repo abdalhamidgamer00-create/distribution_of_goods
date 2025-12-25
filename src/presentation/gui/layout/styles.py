@@ -29,21 +29,33 @@ def apply_custom_styles() -> None:
         /* Premium Card/Button Style */
         .stButton>button {
             width: 100%;
-            border-radius: 12px;
+            border-radius: 15px;
             border: none;
             background: linear-gradient(90deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
-            color: white;
-            font-weight: 600;
-            padding: 0.6rem;
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 2rem !important;
+            padding: 0.8rem 0.5rem !important;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .stButton>button p {
+            font-size: 2rem !important;
+            font-weight: 700 !important;
         }
         
         .stButton>button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
             color: white;
-            opacity: 0.9;
+            opacity: 1;
+        }
+
+        /* Specifically style the container for the tiles */
+        div[data-testid="stVerticalBlock"] > div:has(button[key^="home_"]) {
+            transition: all 0.3s ease;
         }
 
         /* Glassmorphism containers */
