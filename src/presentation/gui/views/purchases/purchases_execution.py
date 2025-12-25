@@ -61,8 +61,11 @@ def _run_steps_sequence(all_steps: list, target_step: Any) -> None:
         
     progress.empty()
     status.empty()
+    
     if len(all_steps) == 1:
         st.success(f"✅ تم تنفيذ {target_step.name} بنجاح")
+    elif len(all_steps) == 2 and all_steps[0].id == "1":
+        st.success(f"✅ تم الأرشفة وتنفيذ {target_step.name} بنجاح")
     else:
         st.success(f"✅ تم تنفيذ الخطوات حتى {target_step.name}")
         
