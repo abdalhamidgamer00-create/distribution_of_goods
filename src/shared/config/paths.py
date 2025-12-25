@@ -13,6 +13,7 @@ RENAMED_CSV_DIR = os.path.join(CONVERTED_DIR, "renamed")
 
 # Output categories
 ANALYTICS_DIR = os.path.join(OUTPUT_DIR, "branches", "analytics")
+SALES_REPORT_DIR = os.path.join(OUTPUT_DIR, "sales_analysis")
 TRANSFERS_ROOT_DIR = os.path.join(OUTPUT_DIR, "transfers")
 TRANSFERS_CSV_DIR = os.path.join(TRANSFERS_ROOT_DIR, "csv")
 TRANSFERS_EXCEL_DIR = os.path.join(TRANSFERS_ROOT_DIR, "excel")

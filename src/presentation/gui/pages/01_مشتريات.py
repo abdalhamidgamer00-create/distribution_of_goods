@@ -55,7 +55,7 @@ st.markdown("---")
 # Steps
 st.subheader("الخطوات المتاحة")
 steps = get_all_steps()
-visible_steps = [s for s in steps if s.id in ['8', '9', '10', '11']]
+visible_steps = [s for s in steps if s.id in ['4', '8', '9', '10', '11']]
 
 cols = st.columns(len(visible_steps))
 for i, step in enumerate(visible_steps):

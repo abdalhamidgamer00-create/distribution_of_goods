@@ -36,8 +36,25 @@ class AnalyzeSales:
         """Runs domain analysis logic and handles potential failures."""
         try:
             results = analyze_csv_data(csv_path)
-            report = generate_report(results, filename)
             
+            # Save results to CSV
+            from src.shared.config.paths import SALES_REPORT_DIR
+            import pandas as pd
+            
+            os.makedirs(SALES_REPORT_DIR, exist_ok=True)
+            report_name = f"analysis_{filename}"
+            report_path = os.path.join(SALES_REPORT_DIR, report_name)
+            
+            # Flatten results and save
+            df = pd.DataFrame([results])
+            # If date_range is a dict, flatten it or convert to string
+            if 'date_range' in df.columns:
+                df['date_range'] = df['date_range'].apply(lambda x: str(x) if x else "")
+                
+            df.to_csv(report_path, index=False, encoding='utf-8-sig')
+            logger.info("Saved analysis report to: %s", report_path)
+
+            report = generate_report(results, filename)
             # Log the report as intended by the system
             logger.info("\n%s", report)
             return True

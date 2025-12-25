@@ -56,4 +56,13 @@ FILE_BROWSERS = {
         'session_key': 'sep_selected_source', 
         'key_prefix': 'sep'
     },
+    'sales_analysis': {
+        'title': 'تحليل المبيعات', 
+        'icon': '📈',
+        'csv': os.path.join("data", "output", "sales_analysis"),
+        'excel': os.path.join("data", "output", "sales_analysis"), # No excel for now
+        'step': 4, 
+        'session_key': 'sales_analysis_filter', 
+        'key_prefix': 'sales'
+    },
 }

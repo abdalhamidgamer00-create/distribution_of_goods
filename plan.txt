@@ -14,3 +14,10 @@ sales and performance and more analysis
 عمل داتا بيز 
 
 cleaning code 
+
+
+
+
+
+
+تشغل كل خطوة علي حدة في gui 
