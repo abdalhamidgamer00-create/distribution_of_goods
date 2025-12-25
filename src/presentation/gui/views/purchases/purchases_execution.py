@@ -4,17 +4,26 @@ from typing import Any
 from src.presentation.gui.services.pipeline_service import (
     run_single_step,
     get_all_steps,
-    get_steps_sequence
+    get_steps_sequence,
+    get_step_info
 )
 
 def execute_step_ui(step: Any) -> None:
-    """Run a single step independently and display result."""
+    """Run archiving followed by the target step."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
         return
 
-    # Execute only the target step
-    _run_steps_sequence([step], step)
+    # If it's already the archive step, just run it
+    if step.id == "1":
+        _run_steps_sequence([step], step)
+        return
+
+    # Get archive step info
+    archive_step = get_step_info("1")
+    steps_to_run = [archive_step, step] if archive_step else [step]
+    
+    _run_steps_sequence(steps_to_run, step)
 
 
 def run_all_steps_ui() -> None:
