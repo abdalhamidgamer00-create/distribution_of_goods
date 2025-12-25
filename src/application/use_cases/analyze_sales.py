@@ -41,11 +41,16 @@ class AnalyzeSales:
             from src.shared.config.paths import SALES_REPORT_DIR
             import pandas as pd
             
+            # --- CSV Export ---
             csv_dir = os.path.join(SALES_REPORT_DIR, "csv")
             os.makedirs(csv_dir, exist_ok=True)
+            csv_report_path = os.path.join(csv_dir, f"analysis_{filename}")
             
-            report_name = f"analysis_{filename}"
-            report_path = os.path.join(csv_dir, report_name)
+            # --- Excel Export ---
+            excel_dir = os.path.join(SALES_REPORT_DIR, "excel")
+            os.makedirs(excel_dir, exist_ok=True)
+            excel_filename = f"analysis_{filename.replace('.csv', '')}.xlsx"
+            excel_report_path = os.path.join(excel_dir, excel_filename)
             
             # Flatten results and save
             df = pd.DataFrame([results])
@@ -53,8 +58,10 @@ class AnalyzeSales:
             if 'date_range' in df.columns:
                 df['date_range'] = df['date_range'].apply(lambda x: str(x) if x else "")
                 
-            df.to_csv(report_path, index=False, encoding='utf-8-sig')
-            logger.info("Saved analysis report to: %s", report_path)
+            df.to_csv(csv_report_path, index=False, encoding='utf-8-sig')
+            df.to_excel(excel_report_path, index=False)
+            
+            logger.info("Saved analysis reports: CSV=%s, Excel=%s", csv_report_path, excel_report_path)
 
             # Log text report
             report = generate_report(results, filename)

@@ -59,8 +59,8 @@ FILE_BROWSERS = {
     'sales_analysis': {
         'title': 'تحليل المبيعات', 
         'icon': '📈',
-        'csv': os.path.join("data", "output", "sales_analysis"),
-        'excel': os.path.join("data", "output", "sales_analysis"), # No excel for now
+        'csv': os.path.join("data", "output", "sales_analysis", "csv"),
+        'excel': os.path.join("data", "output", "sales_analysis", "excel"),
         'step': 4, 
         'session_key': 'sales_analysis_filter', 
         'key_prefix': 'sales'

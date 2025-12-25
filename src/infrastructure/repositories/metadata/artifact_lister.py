@@ -66,6 +66,6 @@ class ArtifactLister:
             },
             'sales_analysis': {
                 'base_directory': self._sales_analysis_directory,
-                'search_patterns': {'csv': 'analysis_', 'excel': ''}
+                'search_patterns': {'csv': 'analysis_', 'excel': 'analysis_'}
             }
         }
