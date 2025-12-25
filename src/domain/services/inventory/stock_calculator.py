@@ -2,12 +2,8 @@
 
 import math
 from src.domain.models.entities import StockLevel
-from src.shared.constants import (
-    STOCK_COVERAGE_DAYS, 
-    MAX_BALANCE_FOR_NEED_THRESHOLD,
-    MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
-    MIN_NEED_THRESHOLD
-)
+from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.domain.services.inventory.inventory_policy import InventoryPolicy
 
 
 class StockCalculator:
@@ -44,21 +40,12 @@ class StockCalculator:
             max(0, target_inventory_coverage - balance_quantity)
         )
         
-        # New Rule: If balance >= threshold, suppress need to 0
-        if balance_quantity >= MAX_BALANCE_FOR_NEED_THRESHOLD:
-            needed_quantity = 0
-            
-        # New Rule: Small Need Suppression
-        # If coverage >= 15 and need < 10, suppress to 0
-        if (target_inventory_coverage >= MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION 
-            and needed_quantity < MIN_NEED_THRESHOLD):
-            needed_quantity = 0
-            
-        # New Rule: Max Balance Capping
-        # Ensure that (balance + need) <= MAX_BALANCE_FOR_NEED_THRESHOLD
-        if needed_quantity > 0:
-            available_space = max(0, MAX_BALANCE_FOR_NEED_THRESHOLD - balance_quantity)
-            needed_quantity = min(needed_quantity, int(available_space))
+        # Apply centralized business rules (Max Balance, Small Need, Capping)
+        needed_quantity = InventoryPolicy.apply_scalar_rules(
+            needed=needed_quantity,
+            balance=balance_quantity,
+            coverage=target_inventory_coverage
+        )
 
         return StockLevel(
             needed=needed_quantity,

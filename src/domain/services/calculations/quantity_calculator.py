@@ -2,12 +2,8 @@
 
 import math
 import pandas as pd
-from src.shared.constants import (
-    STOCK_COVERAGE_DAYS, 
-    MAX_BALANCE_FOR_NEED_THRESHOLD,
-    MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
-    MIN_NEED_THRESHOLD
-)
+from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.domain.services.inventory.inventory_policy import InventoryPolicy
 
 
 def _calculate_coverage_quantity(avg_sales: pd.Series) -> pd.Series:
@@ -38,27 +34,8 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
         coverage, dataframe['balance']
     )
     
-    # New Rule: If balance >= threshold, suppress need to 0
-    dataframe.loc[
-        dataframe['balance'] >= MAX_BALANCE_FOR_NEED_THRESHOLD, 
-        'needed_quantity'
-    ] = 0
-    
-    # New Rule: Small Need Suppression
-    # If coverage >= 15 and need < 10, suppress to 0
-    small_need_mask = (
-        (dataframe['coverage_quantity'] >= MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION) &
-        (dataframe['needed_quantity'] > 0) & 
-        (dataframe['needed_quantity'] < MIN_NEED_THRESHOLD)
-    )
-    dataframe.loc[small_need_mask, 'needed_quantity'] = 0
-    
-    # New Rule: Max Balance Capping
-    # Ensure that (balance + need) <= MAX_BALANCE_FOR_NEED_THRESHOLD
-    available_space = (MAX_BALANCE_FOR_NEED_THRESHOLD - dataframe['balance']).clip(lower=0)
-    dataframe['needed_quantity'] = dataframe['needed_quantity'].clip(upper=available_space)
-    
-    return dataframe
+    # Apply centralized business rules (Max Balance, Small Need, Capping)
+    return InventoryPolicy.apply_vectorized_rules(dataframe)
 
 
 def _calculate_branch_remaining(
