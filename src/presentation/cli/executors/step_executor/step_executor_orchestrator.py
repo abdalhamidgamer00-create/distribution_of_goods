@@ -30,16 +30,26 @@ def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
 def execute_step_with_dependencies(
     step_id: str, use_latest_file: bool = False
 ) -> bool:
-    """Execute all steps from 1 to step_id in sequence."""
-    all_steps = lookup.get_steps_up_to(step_id)
-    if not all_steps:
-        logger.error("✗ No steps found up to step %s", step_id)
+    """Execute Step 1 (Archiving) followed by the target step."""
+    target_step = lookup.find_step_by_id(step_id)
+    if not target_step:
+        logger.error("✗ Step %s not found", step_id)
         return False
+
+    if step_id == "1":
+        all_steps = [target_step]
+    else:
+        archive_step = lookup.find_step_by_id("1")
+        all_steps = [archive_step, target_step] if archive_step else [target_step]
     
     logger.info("=" * 70)
-    logger.info(
-        "Running steps 1 through %s (Total: %d steps)", 
-        step_id, len(all_steps)
-    )
+    if len(all_steps) > 1:
+        logger.info(
+            "Running Archiving (Step 1) and Target Step (%s: %s)", 
+            step_id, target_step.name
+        )
+    else:
+        logger.info("Running Step %s: %s", step_id, target_step.name)
     logger.info("=" * 70)
+    
     return run_and_log_success(all_steps, use_latest_file=use_latest_file)
