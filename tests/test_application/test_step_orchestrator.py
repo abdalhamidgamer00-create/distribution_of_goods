@@ -44,3 +44,27 @@ class TestStepOrchestrator:
         """Should return None for invalid step."""
         step = StepOrchestrator.find_step("non_existent")
         assert step is None
+
+    def test_get_sequence_up_to_step_3(self):
+        """Should return steps 1, 2, 3 in order."""
+        sequence = StepOrchestrator.get_sequence_up_to("3")
+        assert len(sequence) == 3
+        # Assuming typical IDs: 1, 2, 3
+        ids = [s.id for s in sequence]
+        assert ids == ["1", "2", "3"]
+
+    def test_get_sequence_up_to_invalid_step(self):
+        """Should return empty list for invalid target."""
+        sequence = StepOrchestrator.get_sequence_up_to("invalid")
+        assert sequence == []
+
+    def test_get_previous_step_for_2(self):
+        """Step 1 is previous to 2."""
+        prev = StepOrchestrator.get_previous_step("2")
+        assert prev is not None
+        assert prev.id == "1"
+
+    def test_get_previous_step_for_1(self):
+        """No previous step for the first one."""
+        prev = StepOrchestrator.get_previous_step("1")
+        assert prev is None
