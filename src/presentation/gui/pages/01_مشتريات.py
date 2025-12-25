@@ -23,12 +23,6 @@ from src.presentation.gui.views.purchases import (
     render_results_navigation
 )
 
-# Page config
-st.set_page_config(
-    page_title="قسم المشتريات",
-    page_icon="🛒",
-    layout="wide"
-)
 
 # Auth
 from src.presentation.gui.utils.auth import check_password
@@ -84,7 +78,6 @@ if st.button(
 
 render_results_navigation()
 
-# Back button
 st.markdown("---")
 if st.button("← العودة إلى الرئيسية"):
-    st.switch_page("pages/00_الرئيسية.py")
+    st.switch_page("app.py")

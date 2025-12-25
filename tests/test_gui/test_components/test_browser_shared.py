@@ -23,11 +23,11 @@ class TestBrowserShared:
     @patch('streamlit.markdown')
     @patch('src.presentation.gui.utils.auth.check_password', return_value=True)
     def test_setup_browser_page_success(self, mock_auth, mock_md, mock_title, mock_config):
-        """Test successful page setup"""
+        """Test successful page setup (config should NOT be called here anymore)"""
         result = setup_browser_page("Title", "🚀")
         
         assert result is True
-        mock_config.assert_called_once()
+        mock_config.assert_not_called()
         mock_title.assert_called_with("🚀 Title")
         
     @patch('streamlit.stop')
@@ -38,6 +38,7 @@ class TestBrowserShared:
         result = setup_browser_page("Title", "🚀")
         
         assert result is False
+        mock_config.assert_not_called()
         mock_stop.assert_called_once()
 
     @patch('streamlit.subheader')

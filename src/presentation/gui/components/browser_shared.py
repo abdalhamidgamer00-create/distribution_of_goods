@@ -7,8 +7,7 @@ from src.presentation.gui.components.branch_selection import (
 )
 
 def setup_browser_page(title: str, icon: str) -> bool:
-    """Initialize page, check auth, and render header. Returns success."""
-    st.set_page_config(page_title=title, page_icon=icon, layout="wide")
+    """Initialize page header and check auth. Returns success."""
     
     from src.presentation.gui.utils.auth import check_password
     if not check_password():

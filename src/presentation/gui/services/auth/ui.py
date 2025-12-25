@@ -5,7 +5,23 @@ from src.presentation.gui.services.auth.session import handle_password_entry
 
 LOGIN_STYLES = """
 <style>
-.stTextInput {direction: rtl;}
+    /* Hide sidebar on login page */
+    [data-testid="stSidebar"] {
+        display: none;
+    }
+    
+    /* Center and style login card */
+    .stTextInput { 
+        direction: rtl; 
+    }
+    
+    div[data-testid="stColumn"] {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+    }
 </style>
 """
 

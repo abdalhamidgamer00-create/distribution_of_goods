@@ -8,11 +8,6 @@ import streamlit as st
 
 def render_department(cfg: dict) -> None:
     """Render a department placeholder page."""
-    st.set_page_config(
-        page_title=cfg['title'],
-        page_icon=cfg['icon'],
-        layout="wide"
-    )
     
     st.title(f"{cfg['icon']} {cfg['title']}")
     st.markdown("---")
@@ -20,7 +15,7 @@ def render_department(cfg: dict) -> None:
     _render_info_box(cfg)
     
     if st.button("← العودة إلى الرئيسية"):
-        st.switch_page("pages/00_الرئيسية.py")
+        st.switch_page("app.py")
 
 
 # =============================================================================
