@@ -10,7 +10,7 @@ def get_navigation_config():
             st.Page("pages/00_home.py", title="Dashboard", icon="🏠", default=True)
         ],
         "🛒 قسم المشتريات": [
-            st.Page("pages/01_مشتريات.py", title="إدارة الخطوات", icon="⚙️"),
+            st.Page("pages/01_مشتريات.py", title="إدارة الادوات", icon="⚙️"),
             st.Page("pages/06_ملفات_التحويل.py", title="ملفات التحويل", icon="📤"),
             st.Page("pages/07_الفائض_المتبقي.py", title="الفائض المتبقي", icon="📦"),
             st.Page("pages/08_النقص.py", title="تقارير النقص", icon="⚠️"),

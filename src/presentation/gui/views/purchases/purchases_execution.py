@@ -44,8 +44,8 @@ def run_all_steps_ui() -> None:
             
         progress.progress((i + 1) / len(steps))
     
-    status.text("اكتمل تنفيذ جميع الخطوات!")
-    st.success("✅ تم تنفيذ جميع الخطوات بنجاح!")
+    status.text("اكتمل تنفيذ جميع الادوات!")
+    st.success("✅ تم تنفيذ جميع الادوات بنجاح!")
     st.session_state['all_steps_success'] = True
 
 
@@ -74,6 +74,6 @@ def _run_steps_sequence(all_steps: list, target_step: Any) -> None:
     elif len(all_steps) == 2 and all_steps[0].id == "1":
         st.success(f"✅ تم الأرشفة وتنفيذ {target_step.name} بنجاح")
     else:
-        st.success(f"✅ تم تنفيذ الخطوات حتى {target_step.name}")
+        st.success(f"✅ تم تنفيذ الادوات حتى {target_step.name}")
         
     st.session_state[f'step_{target_step.id}_success'] = True

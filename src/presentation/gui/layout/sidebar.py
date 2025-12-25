@@ -25,7 +25,7 @@ def _render_purchases_section() -> None:
     """Render purchases section links."""
     with st.sidebar.expander("🛒 قسم المشتريات", expanded=False):
         st.page_link(
-            "pages/01_مشتريات.py", label="⚙️ الخطوات", icon="⚙️"
+            "pages/01_مشتريات.py", label="⚙️ الادوات", icon="⚙️"
         )
         st.page_link(
             "pages/06_ملفات_التحويل.py", 

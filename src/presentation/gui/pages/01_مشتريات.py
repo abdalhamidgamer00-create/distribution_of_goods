@@ -47,7 +47,7 @@ start_file_management_ui()
 st.markdown("---")
 
 # Steps
-st.subheader("الخطوات المتاحة")
+st.subheader("الادوات المتاحة حاليا")
 steps = get_all_steps()
 visible_steps = [s for s in steps if s.id in ['4', '8', '9', '10', '11']]
 
@@ -66,9 +66,9 @@ for i, step in enumerate(visible_steps):
 
 # Run all
 st.markdown("---")
-st.subheader("تشغيل جميع الخطوات")
+st.subheader("تشغيل جميع الادوات")
 if st.button(
-    "🚀 تشغيل جميع الخطوات بالترتيب",
+    "🚀 تشغيل جميع الادوات بالترتيب",
     type="primary",
     use_container_width=True
 ):
