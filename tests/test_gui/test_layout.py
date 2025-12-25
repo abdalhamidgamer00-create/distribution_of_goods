@@ -35,7 +35,7 @@ class TestSidebar:
         
         mock_sidebar.expander.assert_called_with("🛒 قسم المشتريات", expanded=False)
         # Check if some links were called inside the expander part (global page_link mock since st.page_link is used)
-        mock_page_link.assert_any_call("pages/01_مشتريات.py", label="⚙️ الخطوات", icon="⚙️")
+        mock_page_link.assert_any_call("pages/01_مشتريات.py", label="⚙️ الادوات", icon="⚙️")
         mock_page_link.assert_any_call("pages/10_التحويلات_المنفصلة.py", label="📂 التحويلات المنفصلة", icon="📂")
 
     @patch('streamlit.sidebar')
