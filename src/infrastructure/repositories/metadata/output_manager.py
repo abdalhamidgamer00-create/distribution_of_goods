@@ -18,7 +18,7 @@ def list_artifacts(
             continue
         prefix = patterns.get(file_format, '')
         pattern = f"{prefix}{branch_filter}" if branch_filter else prefix
-        if category_name == 'shortage':
+        if category_name in ['shortage', 'sales_analysis']:
             _collect_recursive(fmt_dir, category_name, None, results, fmt_dir)
         else:
             _scan_directory(

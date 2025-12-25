@@ -37,13 +37,15 @@ class AnalyzeSales:
         try:
             results = analyze_csv_data(csv_path)
             
-            # Save results to CSV
+            # Save results to CSV (Standardize with 'csv' subfolder)
             from src.shared.config.paths import SALES_REPORT_DIR
             import pandas as pd
             
-            os.makedirs(SALES_REPORT_DIR, exist_ok=True)
+            csv_dir = os.path.join(SALES_REPORT_DIR, "csv")
+            os.makedirs(csv_dir, exist_ok=True)
+            
             report_name = f"analysis_{filename}"
-            report_path = os.path.join(SALES_REPORT_DIR, report_name)
+            report_path = os.path.join(csv_dir, report_name)
             
             # Flatten results and save
             df = pd.DataFrame([results])
@@ -54,8 +56,8 @@ class AnalyzeSales:
             df.to_csv(report_path, index=False, encoding='utf-8-sig')
             logger.info("Saved analysis report to: %s", report_path)
 
+            # Log text report
             report = generate_report(results, filename)
-            # Log the report as intended by the system
             logger.info("\n%s", report)
             return True
         except Exception as error:
