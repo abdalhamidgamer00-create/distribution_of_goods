@@ -19,16 +19,14 @@ def run_and_log_success(all_steps: list, use_latest_file: bool = False) -> bool:
 
 def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
     """Execute Step 1 (Archiving) followed by the target step."""
-    target_step = lookup.find_step_by_id(step_id)
-    if not target_step:
+    from src.application.pipeline.step_orchestrator import StepOrchestrator
+    
+    all_steps = StepOrchestrator.get_isolated_sequence(step_id)
+    if not all_steps:
         logger.error("✗ Step %s not found", step_id)
         return False
 
-    if step_id == "1":
-        all_steps = [target_step]
-    else:
-        archive_step = lookup.find_step_by_id("1")
-        all_steps = [archive_step, target_step] if archive_step else [target_step]
+    target_step = all_steps[-1]
     
     logger.info("-" * 50)
     if len(all_steps) > 1:

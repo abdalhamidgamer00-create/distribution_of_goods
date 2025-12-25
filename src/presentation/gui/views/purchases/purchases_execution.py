@@ -9,20 +9,18 @@ from src.presentation.gui.services.pipeline_service import (
 )
 
 def execute_step_ui(step: Any) -> None:
-    """Run archiving followed by the target step."""
+    """Run archiving followed by the target step using centralized orchestrator."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
         return
-
-    # If it's already the archive step, just run it
-    if step.id == "1":
-        _run_steps_sequence([step], step)
+    
+    from src.application.pipeline.step_orchestrator import StepOrchestrator
+    steps_to_run = StepOrchestrator.get_isolated_sequence(step.id)
+    
+    if not steps_to_run:
+        st.error(f"❌ لم يتم العثور على الخطوة: {step.id}")
         return
 
-    # Get archive step info
-    archive_step = get_step_info("1")
-    steps_to_run = [archive_step, step] if archive_step else [step]
-    
     _run_steps_sequence(steps_to_run, step)
 
 
