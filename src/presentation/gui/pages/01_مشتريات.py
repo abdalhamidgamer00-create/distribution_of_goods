@@ -77,5 +77,5 @@ if st.button(
 render_results_navigation()
 
 st.markdown("---")
-if st.button("← العودة إلى الرئيسية"):
+if st.button("← العودة إلى الرئيسية", type="secondary"):
     st.switch_page("pages/00_home.py")

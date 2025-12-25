@@ -66,6 +66,7 @@ def _display_latest_file(input_dir: str, latest: str) -> None:
     if st.button(
         "استخدام هذا الملف", 
         key="use_latest", 
+        type="primary",
         use_container_width=True
     ):
         st.session_state['selected_file'] = latest

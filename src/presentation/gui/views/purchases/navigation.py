@@ -55,5 +55,5 @@ def render_results_navigation() -> None:
     
     for col, (label, key, page) in zip(cols, NAV_BUTTONS):
         with col:
-            if st.button(label, key=key, use_container_width=True):
+            if st.button(label, key=key, type="secondary", use_container_width=True):
                 st.switch_page(page)

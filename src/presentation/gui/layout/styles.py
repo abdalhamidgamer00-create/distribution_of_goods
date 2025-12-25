@@ -26,31 +26,76 @@ def apply_custom_styles() -> None:
             font-weight: 700;
         }
 
-        /* Premium Card/Button Style */
+        /* =========================================================================
+           BUTTON DESIGN SYSTEM
+           ========================================================================= */
+
+        /* 1. Global Base Style (Common for all buttons) */
         .stButton>button {
             width: 100%;
-            border-radius: 15px;
-            border: none;
-            background: linear-gradient(90deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
-            color: white !important;
-            font-weight: 700 !important;
-            font-size: 2rem !important;
-            padding: 0.8rem 0.5rem !important;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .stButton>button p {
-            font-size: 2rem !important;
+        /* 2. Dashboard Tiles (Home Page - Big & Bold) */
+        div:has(> button[key^="home_"]) .stButton > button,
+        div:has(> button[key^="home_"]) .stButton > button p {
+            background: linear-gradient(90deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%) !important;
+            color: white !important;
             font-weight: 700 !important;
+            font-size: 1.8rem !important;
+            padding: 1.2rem 0.5rem !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none !important;
+        }
+
+        /* 3. Tool Action Buttons (Purchases Tools - Medium & Professional) */
+        div:has(> button[key^="run_"]) .stButton > button,
+        div:has(> button[key^="run_"]) .stButton > button p {
+            background: #1a2a6c !important; /* Elegant Royal Blue */
+            color: white !important;
+            font-weight: 600 !important;
+            font-size: 1.2rem !important;
+            padding: 0.6rem !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(26, 42, 108, 0.3);
+        }
+
+        /* 4. Primary Command Buttons (e.g., Run All - Bold & Distinct) */
+        button[data-testid="stBaseButton-primary"],
+        button[data-testid="stBaseButton-primary"] p {
+            background: linear-gradient(90deg, #ce2029 0%, #8b0000 100%) !important; /* Deep Red for main actions */
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            border: none !important;
+            padding: 0.8rem !important;
+        }
+
+        /* 5. Secondary / Utility Buttons (e.g., Back to Home - Subtle & Clean) */
+        button[data-testid="stBaseButton-secondary"],
+        button[data-testid="stBaseButton-secondary"] p {
+            background: #f8f9fa !important;
+            color: #1a2a6c !important;
+            border: 1px solid #1a2a6c !important;
+            font-weight: 500 !important;
+            font-size: 1rem !important;
+        }
+
+        /* Hover Effects */
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+            opacity: 0.95;
         }
         
-        .stButton>button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            color: white;
-            opacity: 1;
+        div:has(> button[key^="home_"]) .stButton > button:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
         }
 
         /* Specifically style the container for the tiles */
