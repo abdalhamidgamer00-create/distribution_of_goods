@@ -53,6 +53,11 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
     )
     dataframe.loc[small_need_mask, 'needed_quantity'] = 0
     
+    # New Rule: Max Balance Capping
+    # Ensure that (balance + need) <= MAX_BALANCE_FOR_NEED_THRESHOLD
+    available_space = (MAX_BALANCE_FOR_NEED_THRESHOLD - dataframe['balance']).clip(lower=0)
+    dataframe['needed_quantity'] = dataframe['needed_quantity'].clip(upper=available_space)
+    
     return dataframe
 
 

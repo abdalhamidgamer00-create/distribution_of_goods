@@ -82,6 +82,18 @@ def test_stock_calculator_suppresses_small_need():
     # 36/90 = 0.4 avg. 0.4 * 20 = 8 coverage. 8 - 4 = 4 need.
     assert stock_low_coverage.needed == 4
 
+def test_stock_calculator_caps_need_at_max_balance():
+    """Verify that StockCalculator caps need so total (balance + need) <= 30."""
+    # Scenario: coverage = 100, balance = 25. 
+    # Raw need = 75. 
+    # Cap = 30 - 25 = 5.
+    # Resulting need should be 5.
+    stock = StockCalculator.calculate_stock_level(sales_quantity=450, balance_quantity=25, days_covered=90)
+    # 450/90 = 5.0 avg. 5.0 * 20 = 100 coverage. 100 - 25 = 75 need.
+    # After cap: min(75, 30-25) = 5.
+    assert stock.needed == 5
+    assert (stock.balance + stock.needed) == 30
+
 def test_dates_calculate_days_between():
     """Verify date difference calculation."""
     start = datetime(2025, 1, 1, 0, 0)

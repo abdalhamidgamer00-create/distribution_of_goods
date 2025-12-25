@@ -54,6 +54,12 @@ class StockCalculator:
             and needed_quantity < MIN_NEED_THRESHOLD):
             needed_quantity = 0
             
+        # New Rule: Max Balance Capping
+        # Ensure that (balance + need) <= MAX_BALANCE_FOR_NEED_THRESHOLD
+        if needed_quantity > 0:
+            available_space = max(0, MAX_BALANCE_FOR_NEED_THRESHOLD - balance_quantity)
+            needed_quantity = min(needed_quantity, int(available_space))
+
         return StockLevel(
             needed=needed_quantity,
             surplus=surplus_quantity,

@@ -93,8 +93,8 @@ class TestCalculateBasicQuantities:
         # 5.0 * 20 = 100 coverage
         result = calculate_basic_quantities(df)
         
-        # 29 < 30 -> should have need (100 - 29 = 71)
-        assert result['needed_quantity'].iloc[0] == 71
+        # 29 < 30 -> need would be 100-29=71, but capped at 30-29=1
+        assert result['needed_quantity'].iloc[0] == 1
         # 30 >= 30 -> should have 0 need
         assert result['needed_quantity'].iloc[1] == 0
 
@@ -113,6 +113,20 @@ class TestCalculateBasicQuantities:
         assert result['needed_quantity'].iloc[1] == 15
         # Product 2: coverage=8 (<15), need=4 (<10) -> NOT suppressed (low coverage)
         assert result['needed_quantity'].iloc[2] == 4
+
+    def test_max_balance_capping(self):
+        """Test that need is capped so balance + need <= 30"""
+        df = pd.DataFrame({
+            'avg_sales': [5.0, 5.0],
+            'balance': [25.0, 10.0]
+        })
+        # coverage = 100
+        result = calculate_basic_quantities(df)
+        
+        # Row 0: balance=25, need=100-25=75. Cap=30-25=5. Result=5.
+        assert result['needed_quantity'].iloc[0] == 5
+        # Row 1: balance=10, need=100-10=90. Cap=30-10=20. Result=20.
+        assert result['needed_quantity'].iloc[1] == 20
 
 
 class TestCalculateSurplusRemaining:
