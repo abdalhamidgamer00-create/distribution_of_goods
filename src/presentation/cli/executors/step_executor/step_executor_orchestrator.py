@@ -18,13 +18,29 @@ def run_and_log_success(all_steps: list, use_latest_file: bool = False) -> bool:
 
 
 def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
-    """Execute a single step by ID."""
-    step = lookup.find_step_by_id(step_id)
-    if step is None:
-        logger.error("Error: Invalid step number!")
+    """Execute Step 1 (Archiving) followed by the target step."""
+    target_step = lookup.find_step_by_id(step_id)
+    if not target_step:
+        logger.error("✗ Step %s not found", step_id)
         return False
-    logger.info("Executing: %s\n" + "-" * 50, step.name)
-    return execution.execute_single_step(step, use_latest_file=use_latest_file)
+
+    if step_id == "1":
+        all_steps = [target_step]
+    else:
+        archive_step = lookup.find_step_by_id("1")
+        all_steps = [archive_step, target_step] if archive_step else [target_step]
+    
+    logger.info("-" * 50)
+    if len(all_steps) > 1:
+        logger.info(
+            "Isolated Execution: Archiving (1) + %s (%s)", 
+            target_step.name, step_id
+        )
+    else:
+        logger.info("Isolated Execution: %s (%s)", target_step.name, step_id)
+    logger.info("-" * 50)
+    
+    return run_and_log_success(all_steps, use_latest_file=use_latest_file)
 
 
 def execute_step_with_dependencies(
