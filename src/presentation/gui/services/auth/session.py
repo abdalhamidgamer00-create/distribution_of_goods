@@ -4,7 +4,7 @@ import hmac
 import streamlit as st
 
 DEFAULT_PASSWORDS = {
-    "admin": "admin123",
+    "admin": "mahrous12345",
     "user": "user123"
 }
 
