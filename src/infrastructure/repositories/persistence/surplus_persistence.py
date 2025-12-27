@@ -53,7 +53,9 @@ def _group_surplus_by_branch_category(
 
 def _persist_category_surplus(branch, category, date, items, base_dir):
     """Saves surplus CSV and Excel for a specific branch/category."""
-    dataframe = pd.DataFrame(items).sort_values('product_name')
+    dataframe = pd.DataFrame(items).sort_values(
+        'product_name', key=lambda col: col.str.lower()
+    )
     
     path_csv = os.path.join(base_dir, "csv", branch)
     os.makedirs(path_csv, exist_ok=True)
@@ -73,7 +75,9 @@ def _persist_category_surplus(branch, category, date, items, base_dir):
 
 def _persist_total_branch_surplus(branch, date, items, base_dir):
     """Saves a consolidated surplus file for an entire branch."""
-    dataframe = pd.DataFrame(items).sort_values('product_name')
+    dataframe = pd.DataFrame(items).sort_values(
+        'product_name', key=lambda col: col.str.lower()
+    )
     
     csv_dir = os.path.join(base_dir, "csv", branch)
     csv_filename = f"remaining_surplus_{branch}_total_{date}.csv"

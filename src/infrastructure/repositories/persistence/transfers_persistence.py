@@ -77,12 +77,17 @@ def _prepare_transfer_dataframe(
             'sender_balance': transfer.sender_balance,
             'receiver_balance': transfer.receiver_balance
         })
-    return pd.DataFrame(records).sort_values('product_name')
+    return pd.DataFrame(records).sort_values(
+        'product_name', key=lambda col: col.str.lower()
+    )
 
 
 def _save_split_csv(source, target, category, timestamp, dataframe, base_dir):
     """Saves a category-split CSV."""
-    directory = os.path.join(base_dir, f"{source}_to_{target}")
+    directory = os.path.join(
+        base_dir, f"transfers_from_{source}_to_other_branches", 
+        f"{source}_to_{target}"
+    )
     os.makedirs(directory, exist_ok=True)
     filename = f"{source}_to_{target}_{timestamp}_{category}.csv"
     path = os.path.join(directory, filename)
