@@ -20,7 +20,7 @@ def calculate_days_between(start_date: datetime, end_date: datetime) -> int:
 
 
 def validate_date_range_months(
-    start_date: datetime, end_date: datetime, min_months: int = 3
+    start_date: datetime, end_date: datetime, min_months: int = 1
 ) -> bool:
     """Validate that date range is at least min_months months."""
     if not _validate_date_pair(start_date, end_date):
@@ -77,7 +77,7 @@ def _extract_and_validate_dates(csv_path: str) -> tuple:
     if start_date is None or end_date is None:
         return False, None, None, "Could not extract dates from header"
     
-    is_valid = validate_date_range_months(start_date, end_date, 3)
+    is_valid = validate_date_range_months(start_date, end_date, 1)
     msg = _build_date_message(start_date, end_date, is_valid)
     return is_valid, start_date, end_date, msg
 

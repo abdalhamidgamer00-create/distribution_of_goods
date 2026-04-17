@@ -9,7 +9,22 @@ logger = get_logger(__name__)
 
 def _do_excel_conversion(input_path: str, output_path: str) -> None:
     """Perform the actual Excel to CSV conversion."""
-    df = pd.read_excel(input_path)
+    try:
+        # Attempt standard read
+        df = pd.read_excel(input_path, engine='openpyxl')
+    except TypeError as e:
+        if "extLst" in str(e):
+            logger.warning("Detected known openpyxl style error. Retrying without styles...")
+            # Fallback: Load workbook manually without styles
+            from openpyxl import load_workbook
+            wb = load_workbook(input_path, data_only=True, read_only=True)
+            sheet = wb.active
+            data = sheet.values
+            cols = next(data)
+            df = pd.DataFrame(data, columns=cols)
+        else:
+            raise e
+            
     df.to_csv(output_path, index=False, encoding='utf-8-sig')
 
 
