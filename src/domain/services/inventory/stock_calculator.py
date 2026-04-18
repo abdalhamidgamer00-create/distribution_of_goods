@@ -47,18 +47,3 @@ class StockCalculator:
             sales=float(sales_quantity),
             shortage=shortage_quantity
         )
-        
-        # Apply centralized business rules (Max Balance, Small Need, Capping)
-        needed_quantity = InventoryPolicy.apply_scalar_rules(
-            needed=needed_quantity,
-            balance=balance_quantity,
-            coverage=target_inventory_coverage
-        )
-
-        return StockLevel(
-            needed=needed_quantity,
-            surplus=surplus_quantity,
-            balance=float(balance_quantity),
-            avg_sales=float(daily_average_sales),
-            sales=float(sales_quantity)
-        )
