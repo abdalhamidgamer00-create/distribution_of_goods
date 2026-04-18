@@ -122,13 +122,23 @@ class DistributionEngine:
             b.name: sum(t.quantity for t in transfers if t.to_branch == b)
             for b, s in original_needs
         }
+        
+        # Calculate remaining need (20d)
         remaining_needed = sum(
             max(0, s.needed - fulfilled.get(b.name, 0))
             for b, s in original_needs
         )
+        
+        # Calculate remaining shortage (30d) for reporting
+        remaining_shortage = sum(
+            max(0, s.shortage - fulfilled.get(b.name, 0))
+            for b, s in original_needs
+        )
+
         return DistributionResult(
             product=product, transfers=transfers,
             remaining_needed=remaining_needed,
+            remaining_shortage=remaining_shortage,
             remaining_surplus=sum(available_surplus.values()),
             remaining_branch_surplus=available_surplus
         )

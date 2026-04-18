@@ -20,6 +20,7 @@ class StockLevel:
     balance: float
     avg_sales: float
     sales: float = 0.0
+    shortage: int = 0
 
 
 @dataclass(frozen=True)

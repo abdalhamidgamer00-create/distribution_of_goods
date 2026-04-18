@@ -2,12 +2,14 @@
 
 import math
 from src.domain.models.entities import StockLevel
-from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.shared.constants import (
+    NEED_COVERAGE_DAYS, SURPLUS_COVERAGE_DAYS, SHORTAGE_COVERAGE_DAYS
+)
 from src.domain.services.inventory.inventory_policy import InventoryPolicy
 
 
 class StockCalculator:
-    """Handles core inventory calculations for distribution logic."""
+    """Handles multi-target inventory calculations."""
 
     @staticmethod
     def calculate_stock_level(
@@ -15,29 +17,35 @@ class StockCalculator:
         balance_quantity: float,
         days_covered: int
     ) -> StockLevel:
-        """
-        Calculates inventory needs and surpluses for a branch.
-        
-        Args:
-            sales_quantity: Total sales during the period
-            balance_quantity: Current branch balance
-            days_covered: Number of days in the sales period
-            
-        Returns:
-            StockLevel: Domain model containing calculated metrics
-        """
+        """Calculates surplus(60d), needs(20d) and shortage(30d)."""
         daily_average_sales = (
             sales_quantity / days_covered if days_covered > 0 else 0.0
         )
-        target_inventory_coverage = math.ceil(
-            daily_average_sales * STOCK_COVERAGE_DAYS
-        )
         
-        surplus_quantity = math.floor(
-            max(0, balance_quantity - target_inventory_coverage)
+        # 1. Targets for different contexts
+        surplus_target = math.ceil(daily_average_sales * SURPLUS_COVERAGE_DAYS)
+        need_target = math.ceil(daily_average_sales * NEED_COVERAGE_DAYS)
+        shortage_target = math.ceil(daily_average_sales * SHORTAGE_COVERAGE_DAYS)
+
+        # 2. Raw quantities
+        surplus_quantity = math.floor(max(0, balance_quantity - surplus_target))
+        needed_quantity = math.ceil(max(0, need_target - balance_quantity))
+        shortage_quantity = math.ceil(max(0, shortage_target - balance_quantity))
+        
+        # 3. Apply business rules to the 'need' (for transfers)
+        needed_quantity = InventoryPolicy.apply_scalar_rules(
+            needed=needed_quantity,
+            balance=balance_quantity,
+            coverage=need_target
         )
-        needed_quantity = math.ceil(
-            max(0, target_inventory_coverage - balance_quantity)
+
+        return StockLevel(
+            needed=needed_quantity,
+            surplus=surplus_quantity,
+            balance=float(balance_quantity),
+            avg_sales=float(daily_average_sales),
+            sales=float(sales_quantity),
+            shortage=shortage_quantity
         )
         
         # Apply centralized business rules (Max Balance, Small Need, Capping)

@@ -33,7 +33,7 @@ def _group_shortage_by_category(results: List[DistributionResult]) -> Dict:
     """Groups shortage data by category."""
     grouped = {}
     for result in results:
-        if result.remaining_needed > 0:
+        if result.remaining_shortage > 0:
             category = classify_product_type(result.product.name)
             if category not in grouped:
                 grouped[category] = []
@@ -46,7 +46,7 @@ def _format_shortage_row(result: DistributionResult) -> Dict:
     row = {
         COLUMNS['code']: result.product.code,
         COLUMNS['product_name']: result.product.name,
-        COLUMNS['shortage_quantity']: result.remaining_needed,
+        COLUMNS['shortage_quantity']: result.remaining_shortage,
         COLUMNS['total_sales']: result.total_sales
     }
     for branch_key in BRANCHES:

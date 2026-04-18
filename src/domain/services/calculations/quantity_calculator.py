@@ -2,39 +2,45 @@
 
 import math
 import pandas as pd
-from src.shared.constants import STOCK_COVERAGE_DAYS
+from src.shared.constants import (
+    NEED_COVERAGE_DAYS, SURPLUS_COVERAGE_DAYS, SHORTAGE_COVERAGE_DAYS
+)
 from src.domain.services.inventory.inventory_policy import InventoryPolicy
 
 
-def _calculate_coverage_quantity(avg_sales: pd.Series) -> pd.Series:
+def _calculate_target_quantity(avg_sales: pd.Series, days: int) -> pd.Series:
     """Calculate target coverage quantity using ceiling."""
-    return (avg_sales * STOCK_COVERAGE_DAYS).apply(lambda x: math.ceil(x))
+    return (avg_sales * days).apply(lambda x: math.ceil(x))
 
 
-def _calculate_surplus(balance: pd.Series, coverage: pd.Series) -> pd.Series:
+def _calculate_surplus(balance: pd.Series, target: pd.Series) -> pd.Series:
     """Calculate surplus quantity using floor."""
-    return (balance - coverage).apply(lambda x: max(0, math.floor(x)))
+    return (balance - target).apply(lambda x: max(0, math.floor(x)))
 
 
-def _calculate_needed(coverage: pd.Series, balance: pd.Series) -> pd.Series:
+def _calculate_needed(target: pd.Series, balance: pd.Series) -> pd.Series:
     """Calculate needed quantity using ceiling."""
-    return (coverage - balance).apply(lambda x: max(0, math.ceil(x)))
+    return (target - balance).apply(lambda x: max(0, math.ceil(x)))
 
 
 def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate coverage, surplus, and needed quantities."""
+    """Calculate surplus(60d), needed(20d) and shortage(30d)."""
     dataframe = branch_df.copy()
-    coverage = _calculate_coverage_quantity(dataframe['avg_sales'])
     
-    dataframe['coverage_quantity'] = coverage
-    dataframe['surplus_quantity'] = _calculate_surplus(
-        dataframe['balance'], coverage
-    )
-    dataframe['needed_quantity'] = _calculate_needed(
-        coverage, dataframe['balance']
-    )
+    # 1. Targets
+    surplus_target = _calculate_target_quantity(dataframe['avg_sales'], SURPLUS_COVERAGE_DAYS)
+    need_target = _calculate_target_quantity(dataframe['avg_sales'], NEED_COVERAGE_DAYS)
+    shortage_target = _calculate_target_quantity(dataframe['avg_sales'], SHORTAGE_COVERAGE_DAYS)
+
+    # 2. Main Logic
+    dataframe['surplus_quantity'] = _calculate_surplus(dataframe['balance'], surplus_target)
+    dataframe['needed_quantity'] = _calculate_needed(need_target, dataframe['balance'])
+    dataframe['shortage_quantity'] = _calculate_needed(shortage_target, dataframe['balance'])
     
-    # Apply centralized business rules (Max Balance, Small Need, Capping)
+    # For compatibility with downstream logic that expects 'coverage_quantity'
+    dataframe['coverage_quantity'] = need_target
+    
+    # 3. Apply business rules to the 'needed_quantity' (transfers)
     return InventoryPolicy.apply_vectorized_rules(dataframe)
 
 

@@ -22,6 +22,7 @@ class DistributionResult:
     product: Product
     transfers: List[Transfer]
     remaining_needed: int
+    remaining_shortage: int
     remaining_surplus: int
     remaining_branch_surplus: Dict[str, int]
     branch_balances: Dict[str, float] = None
