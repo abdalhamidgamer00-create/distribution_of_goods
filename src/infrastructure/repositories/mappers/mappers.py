@@ -86,6 +86,7 @@ class StockMapper:
                 'balance': branch_stock.stock.balance,
                 'avg_sales': branch_stock.stock.avg_sales,
                 'needed_quantity': branch_stock.stock.needed,
-                'surplus_quantity': branch_stock.stock.surplus
+                'surplus_quantity': branch_stock.stock.surplus,
+                'shortage_quantity': branch_stock.stock.shortage
             })
         return pd.DataFrame(records)
