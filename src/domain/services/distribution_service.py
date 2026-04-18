@@ -13,78 +13,96 @@ class DistributionEngine:
         self._calculator = priority_calculator
 
     def distribute_product(
-        self, product, needing_branches, surplus_branches
+        self, product: Product, needing_branches: list, surplus_branches: list
     ) -> DistributionResult:
-        """Distribute surplus to needing branches using balanced Round-Robin."""
+        """Distribute surplus using a balanced multi-pass approach."""
         sorted_needs = self._sort_needs_by_priority(needing_branches)
+        surplus, needs, matrix = self._initialize_state(
+            sorted_needs, surplus_branches
+        )
         
-        # Track available surplus per branch
-        available_surplus = {
-            branch.name: stock.surplus 
-            for branch, stock in surplus_branches
-        }
+        self._run_distribution_loop(
+            sorted_needs, surplus_branches, surplus, needs, matrix
+        )
         
-        # Track remaining need per consumer branch
-        current_needs = {
-            consumer.name: stock.needed
-            for consumer, stock in sorted_needs
-        }
-        
-        # Matrix to hold consolidated transfers: (from_name, to_name) -> quantity
-        transfer_matrix = {}
+        transfers = self._convert_matrix_to_transfers(
+            product, matrix, needing_branches, surplus_branches
+        )
 
-        # Round-Robin Distribution: 1 unit per branch per pass
-        while sum(available_surplus.values()) > 0 and sum(current_needs.values()) > 0:
-            any_distributed = False
-            
-            for consumer_branch, consumer_stock in sorted_needs:
-                if current_needs[consumer_branch.name] <= 0:
-                    continue
-                
-                # Find best surplus source (branch with most surplus)
-                sorted_sources = sorted(
-                    surplus_branches,
-                    key=lambda x: available_surplus[x[0].name],
-                    reverse=True
-                )
-                
-                provider, provider_stock = sorted_sources[0]
-                if available_surplus[provider.name] > 0:
-                    # Distribute 1 unit
-                    qty = 1
-                    key = (provider.name, consumer_branch.name)
-                    transfer_matrix[key] = transfer_matrix.get(key, 0) + qty
-                    
-                    available_surplus[provider.name] -= qty
-                    current_needs[consumer_branch.name] -= qty
-                    any_distributed = True
-                    
-                    if sum(available_surplus.values()) <= 0:
-                        break
-            
-            if not any_distributed:
+        return self._build_distribution_result(
+            product, transfers, needing_branches, surplus
+        )
+
+    def _initialize_state(self, sorted_needs, surplus_branches) -> Tuple:
+        """Initialize tracking dictionaries for distribution."""
+        available_surplus = {
+            branch.name: stock.surplus for branch, stock in surplus_branches
+        }
+        current_needs = {
+            consumer.name: stock.needed for consumer, stock in sorted_needs
+        }
+        return available_surplus, current_needs, {}
+
+    def _run_distribution_loop(self, sorted_needs, sources, surplus, needs, matrix):
+        """Orchestrate the round-robin distribution until exhaustion."""
+        while sum(surplus.values()) > 0 and sum(needs.values()) > 0:
+            units_distributed = self._process_round_robin_pass(
+                sorted_needs, sources, surplus, needs, matrix
+            )
+            if units_distributed == 0:
                 break
 
-        # Convert matrix back to Transfer objects
+    def _process_round_robin_pass(self, needs_list, sources, surplus, needs, matrix):
+        """Perform one pass across all needy branches, giving 1 unit each."""
+        total_pass_distributed = 0
+        for consumer, _ in needs_list:
+            if needs[consumer.name] > 0:
+                total_pass_distributed += self._allocate_unit_if_available(
+                    consumer, sources, surplus, needs, matrix
+                )
+            if sum(surplus.values()) <= 0:
+                break
+        return total_pass_distributed
+
+    def _allocate_unit_if_available(self, consumer, sources, surplus, needs, matrix):
+        """Find the best source and allocate one unit to the consumer."""
+        provider = self._get_best_surplus_provider(sources, surplus)
+        if provider and surplus[provider.name] > 0:
+            self._record_unit_transfer(provider, consumer, surplus, needs, matrix)
+            return 1
+        return 0
+
+    def _get_best_surplus_provider(self, sources, surplus_map):
+        """Identify the branch with the highest current surplus."""
+        sorted_sources = sorted(
+            sources, key=lambda x: surplus_map[x[0].name], reverse=True
+        )
+        return sorted_sources[0][0] if sorted_sources else None
+
+    def _record_unit_transfer(self, provider, consumer, surplus, needs, matrix):
+        """Update states and transfer matrix for a single unit allocation."""
+        key = (provider.name, consumer.name)
+        matrix[key] = matrix.get(key, 0) + 1
+        surplus[provider.name] -= 1
+        needs[consumer.name] -= 1
+
+    def _convert_matrix_to_transfers(self, product, matrix, needs, sources):
+        """Transform the consolidated matrix into Domain Transfer objects."""
+        all_branches = {b.name: b for b, s in needs + sources}
+        all_stocks = {b.name: s for b, s in needs + sources}
         transfers = []
-        # Create lookup for branch objects
-        all_branches = {b.name: b for b, s in needing_branches + surplus_branches}
-        all_stocks = {b.name: s for b, s in needing_branches + surplus_branches}
         
-        for (from_name, to_name), qty in transfer_matrix.items():
-            if qty > 0:
+        for (from_name, to_name), quantity in matrix.items():
+            if quantity > 0:
                 transfers.append(Transfer(
                     product=product,
                     from_branch=all_branches[from_name],
                     to_branch=all_branches[to_name],
-                    quantity=qty,
+                    quantity=quantity,
                     sender_balance=all_stocks[from_name].balance,
                     receiver_balance=all_stocks[to_name].balance
                 ))
-
-        return self._build_distribution_result(
-            product, transfers, needing_branches, available_surplus
-        )
+        return transfers
 
     def _sort_needs_by_priority(self, needing_branches):
         """Sorts needing branches by vulnerability score (descending)."""
@@ -95,39 +113,6 @@ class DistributionEngine:
             ),
             reverse=True
         )
-
-    def _fulfill_branch_need(
-        self, product, consumer, consumer_stock, 
-        surplus_branches, available_surplus
-    ) -> List[Transfer]:
-        """Fulfill single branch's need from surplus sources."""
-        transfers = []
-        remaining_needed = consumer_stock.needed
-        sorted_sources = sorted(
-            surplus_branches,
-            key=lambda item: available_surplus[item[0].name],
-            reverse=True
-        )
-        for provider_branch, provider_stock in sorted_sources:
-            if remaining_needed <= 0:
-                break
-            qty = self._calculate_transfer_quantity(
-                remaining_needed, available_surplus[provider_branch.name]
-            )
-            if qty > 0:
-                transfers.append(Transfer(
-                    product=product, from_branch=provider_branch, 
-                    to_branch=consumer, quantity=qty,
-                    sender_balance=provider_stock.balance,
-                    receiver_balance=consumer_stock.balance
-                ))
-                available_surplus[provider_branch.name] -= qty
-                remaining_needed -= qty
-        return transfers
-
-    def _calculate_transfer_quantity(self, needed: int, available: int) -> int:
-        """Calculates the maximum possible transfer quantity."""
-        return min(needed, max(0, available))
 
     def _build_distribution_result(
         self, product, transfers, original_needs, available_surplus
