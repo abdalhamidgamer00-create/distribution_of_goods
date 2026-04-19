@@ -56,35 +56,46 @@ def display_execution_summary(successful: int, total: int) -> None:
 # EXECUTION HELPERS
 # =============================================================================
 
-def _execute_and_track(step: Any, use_latest_file: bool) -> bool:
+def _execute_and_track(step: Any, **kwargs) -> bool:
     """Execute a step."""
-    return execute_single_step(step, use_latest_file)
+    return execute_single_step(step, **kwargs)
 
 
-def execute_all_steps_batch(use_latest_file: bool) -> tuple[int, int]:
+def execute_all_steps_batch(use_latest_file: bool, config=None) -> tuple[int, int]:
     """Execute all steps and return success/failure counts."""
-    total_steps = len(AVAILABLE_STEPS)
+    from src.application.pipeline.pipeline_config import PipelineConfig
+    sequence = PipelineConfig.get_full_sequence(use_latest_file, config)
+    total_steps = len(sequence)
     successful_count = 0
     
-    for step_index, step in enumerate(AVAILABLE_STEPS, 1):
-        step_id = step.id
-        step_name = step.name
+    # Connect services
+    from src.infrastructure.repositories.base.pandas_repository import PandasDataRepository
+    from src.shared.config.paths import RENAMED_CSV_DIR, ANALYTICS_DIR
+    repo = PandasDataRepository(RENAMED_CSV_DIR, ANALYTICS_DIR)
+    services = PipelineConfig.initialize_services(repo)
+
+    for step_index, (step_id, params) in enumerate(sequence, 1):
+        from src.presentation.cli.executors.step_executor.lookup import find_step_by_id
+        step = find_step_by_id(step_id)
+        if not step: continue
         
-        logger.info(f"[{step_index}/{total_steps}] {step_id} - {step_name}")
+        logger.info(f"[{step_index}/{total_steps}] {step.id} - {step.name}")
         logger.info("-" * 50)
         
-        if _execute_and_track(step, use_latest_file):
+        if _execute_and_track(step, **params):
             successful_count += 1
+        else:
+            break
     
     return successful_count, total_steps
 
 
-def _run_steps_with_mode(use_latest: bool) -> bool:
+def _run_steps_with_mode(use_latest: bool, config=None) -> bool:
     """Run all steps with the given file selection mode."""
     if use_latest:
         logger.info("Using latest file for all steps...")
     try:
-        successful, total = execute_all_steps_batch(use_latest)
+        successful, total = execute_all_steps_batch(use_latest, config)
         display_execution_summary(successful, total)
         return successful == total
     except Exception as error:

@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from typing import List, Dict, Optional
 from src.domain.models.entities import Product, StockLevel, ConsolidatedStock
+from src.domain.models.config import InventoryConfig
 from src.infrastructure.repositories.mappers.mappers import StockMapper
 from src.domain.services.validation.dates import extract_dates_from_header
 from src.shared.utility.logging_utils import get_logger
@@ -17,7 +18,11 @@ class StockReader:
     def __init__(self, analytics_directory: str):
         self._analytics_directory = analytics_directory
 
-    def load_consolidated_stock(self, csv_path: str) -> List[ConsolidatedStock]:
+    def load_consolidated_stock(
+        self, 
+        csv_path: str,
+        config: InventoryConfig = None
+    ) -> List[ConsolidatedStock]:
         """Loads and maps consolidated stock from a CSV file."""
         if not csv_path or not os.path.exists(csv_path):
             return []
@@ -29,13 +34,16 @@ class StockReader:
                 for column in dataframe.columns
             ]
             
-            return self._map_dataframe_to_entities(dataframe, days)
+            return self._map_dataframe_to_entities(dataframe, days, config)
         except Exception as error:
             logger.error(f"Error loading stock from {csv_path}: {error}")
             return []
 
     def load_stock_levels(
-        self, branch_name: str, days: int = 90
+        self, 
+        branch_name: str, 
+        days: int = 90,
+        config: InventoryConfig = None
     ) -> Dict[str, StockLevel]:
         """Reads branch-specific stock levels from disk."""
         path = os.path.join(
@@ -48,7 +56,7 @@ class StockReader:
             
         try:
             dataframe = pd.read_csv(path, encoding='utf-8-sig')
-            return self._parse_stocks_dataframe(dataframe, days)
+            return self._parse_stocks_dataframe(dataframe, days, config)
         except Exception as error:
             logger.error(f"Error loading levels for {branch_name}: {error}")
             return {}
@@ -82,12 +90,13 @@ class StockReader:
     def _map_dataframe_to_entities(
         self, 
         dataframe: pd.DataFrame,
-        days: int
+        days: int,
+        config: InventoryConfig = None
     ) -> List[ConsolidatedStock]:
         """Maps pandas dataframe rows to domain entities."""
         results = []
         for _, row in dataframe.iterrows():
-            object_instance = StockMapper.to_consolidated_stock(row, days)
+            object_instance = StockMapper.to_consolidated_stock(row, days, config)
             if object_instance:
                 results.append(object_instance)
         return results
@@ -95,7 +104,8 @@ class StockReader:
     def _parse_stocks_dataframe(
         self, 
         dataframe: pd.DataFrame,
-        days: int
+        days: int,
+        config: InventoryConfig = None
     ) -> Dict[str, StockLevel]:
         """Parses a dataframe into a dictionary of StockLevel objects."""
         stocks = {}
@@ -103,6 +113,6 @@ class StockReader:
             code_column = 'code' if 'code' in row else 'كود'
             if code_column in row:
                 stocks[str(row[code_column])] = StockMapper.to_stock_level(
-                    row, days
+                    row, days, config
                 )
         return stocks

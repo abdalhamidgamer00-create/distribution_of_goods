@@ -9,15 +9,15 @@ from src.presentation.cli.executors.step_executor import logging
 logger = get_logger(__name__)
 
 
-def run_and_log_success(all_steps: list, use_latest_file: bool = False) -> bool:
+def run_and_log_success(all_steps: list, **kwargs) -> bool:
     """Run steps and log success if all complete."""
-    success = sequence.run_step_sequence(all_steps, use_latest_file=use_latest_file)
+    success = sequence.run_step_sequence(all_steps, **kwargs)
     if success:
         logging.log_success_banner(len(all_steps))
     return success
 
 
-def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
+def execute_step(step_id: str, **kwargs) -> bool:
     """Execute Step 1 (Archiving) followed by the target step."""
     from src.application.pipeline.step_orchestrator import StepOrchestrator
     
@@ -38,11 +38,11 @@ def execute_step(step_id: str, use_latest_file: bool = False) -> bool:
         logger.info("Isolated Execution: %s (%s)", target_step.name, step_id)
     logger.info("-" * 50)
     
-    return run_and_log_success(all_steps, use_latest_file=use_latest_file)
+    return run_and_log_success(all_steps, **kwargs)
 
 
 def execute_step_with_dependencies(
-    step_id: str, use_latest_file: bool = False
+    step_id: str, **kwargs
 ) -> bool:
     """Execute Step 1 (Archiving) followed by the target step."""
     target_step = lookup.find_step_by_id(step_id)
@@ -66,4 +66,4 @@ def execute_step_with_dependencies(
         logger.info("Running Step %s: %s", step_id, target_step.name)
     logger.info("=" * 70)
     
-    return run_and_log_success(all_steps, use_latest_file=use_latest_file)
+    return run_and_log_success(all_steps, **kwargs)

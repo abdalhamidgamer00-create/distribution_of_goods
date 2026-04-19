@@ -6,13 +6,16 @@ from src.domain.models.entities import (
     Product, Branch, StockLevel, ConsolidatedStock, BranchStock
 )
 from src.domain.models.distribution import Transfer, DistributionResult
+from src.domain.models.config import InventoryConfig
 
 
 class DataRepository(ABC):
     """Abstract interface for loading and saving domain data."""
 
     @abstractmethod
-    def load_consolidated_stock(self) -> List[ConsolidatedStock]:
+    def load_consolidated_stock(
+        self, config: InventoryConfig = None
+    ) -> List[ConsolidatedStock]:
         """Load unified stock data from all branches."""
         pass
 
@@ -33,7 +36,9 @@ class DataRepository(ABC):
         pass
 
     @abstractmethod
-    def load_stock_levels(self, branch: Branch) -> Dict[str, StockLevel]:
+    def load_stock_levels(
+        self, branch: Branch, config: InventoryConfig = None
+    ) -> Dict[str, StockLevel]:
         """Load stock levels (needed, surplus, etc.) for a specific branch."""
         pass
 

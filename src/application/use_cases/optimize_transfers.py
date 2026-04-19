@@ -22,8 +22,9 @@ class OptimizeTransfers:
 
     def execute(self, **kwargs) -> List[DistributionResult]:
         """Runs the distribution optimization process and persists transfers."""
+        config = kwargs.get("config")
         try:
-            results = self.calculate()
+            results = self.calculate(config)
             self.save(results)
             logger.info("✓ Transfer optimization completed successfully")
             return results
@@ -31,15 +32,16 @@ class OptimizeTransfers:
             logger.exception(f"OptimizeTransfers execution failed: {error}")
             return []
 
-    def calculate(self) -> List[DistributionResult]:
+    def calculate(self, config=None) -> List[DistributionResult]:
         """Performs parallel calculation for all products."""
         branches = self._repository.load_branches()
         products = self._repository.load_products()
         network_state = self._factory.create_network_state(
-            branches, self._repository.load_stock_levels
+            branches, lambda b, config=config: self._repository.load_stock_levels(b, config),
+            config=config
         )
         stocks_map = {
-            b.name: self._repository.load_stock_levels(b) for b in branches
+            b.name: self._repository.load_stock_levels(b, config) for b in branches
         }
         
         return [

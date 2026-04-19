@@ -21,9 +21,10 @@ class SegmentBranches:
 
     def execute(self, **kwargs) -> bool:
         """Loads consolidated data, splits it, and persists the results."""
+        config = kwargs.get("config")
         try:
             branches = self._repository.load_branches()
-            data = self._repository.load_consolidated_stock()
+            data = self._repository.load_consolidated_stock(config)
             
             if not data:
                 logger.error("No consolidated data found to segment.")

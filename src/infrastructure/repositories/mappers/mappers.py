@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 from src.domain.models.entities import (
     StockLevel, ConsolidatedStock, BranchStock
 )
+from src.domain.models.config import InventoryConfig
 from src.shared.constants import BRANCHES
 from src.domain.services.inventory.stock_calculator import StockCalculator
 from src.infrastructure.repositories.mappers.product_extractor import (
@@ -18,7 +19,8 @@ class StockMapper:
     @staticmethod
     def to_consolidated_stock(
         row_data: pd.Series, 
-        num_days: int
+        num_days: int,
+        config: InventoryConfig = None
     ) -> Optional[ConsolidatedStock]:
         """Maps a row to a ConsolidatedStock domain object."""
         product = ProductExtractor.extract(row_data)
@@ -28,7 +30,7 @@ class StockMapper:
         branch_stocks = {}
         for branch in BRANCHES:
             stock_level = StockMapper._calculate_branch_stock(
-                row_data, branch, num_days
+                row_data, branch, num_days, config
             )
             branch_stocks[branch] = stock_level
             
@@ -40,7 +42,8 @@ class StockMapper:
     def _calculate_branch_stock(
         row: pd.Series, 
         branch: str, 
-        days: int
+        days: int,
+        config: InventoryConfig = None
     ) -> StockLevel:
         """Extracts metrics and uses domain service for calculations."""
         sales = StockMapper._find_metric(row, branch, ["_sales", " مبيعات"])
@@ -49,7 +52,8 @@ class StockMapper:
         return StockCalculator.calculate_stock_level(
             sales_quantity=sales,
             balance_quantity=balance,
-            days_covered=days
+            days_covered=days,
+            config=config
         )
 
     @staticmethod
@@ -62,7 +66,11 @@ class StockMapper:
         return 0.0
 
     @staticmethod
-    def to_stock_level(row: pd.Series, days: int = 90) -> StockLevel:
+    def to_stock_level(
+        row: pd.Series, 
+        days: int = 90,
+        config: InventoryConfig = None
+    ) -> StockLevel:
         """Maps a analysis row to a StockLevel domain object, recalculating avg_sales."""
         sales = float(row.get('sales', 0.0))
         balance = float(row.get('balance', 0.0))
@@ -71,7 +79,8 @@ class StockMapper:
         return StockCalculator.calculate_stock_level(
             sales_quantity=sales,
             balance_quantity=balance,
-            days_covered=days
+            days_covered=days,
+            config=config
         )
 
     @staticmethod

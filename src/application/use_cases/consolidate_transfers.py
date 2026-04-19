@@ -21,16 +21,17 @@ class ConsolidateTransfers:
 
     def execute(self, **kwargs) -> bool:
         """Processes all branches to generate consolidated logistics files."""
+        config = kwargs.get("config")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
-            merged_total, separate_total = self._process_all_branches(timestamp)
+            merged_total, separate_total = self._process_all_branches(timestamp, config=config)
             self._log_execution_summary(merged_total, separate_total)
             return (merged_total + separate_total) > 0
         except Exception as error:
             logger.exception(f"ConsolidateTransfers execution failed: {error}")
             return False
 
-    def execute_for_branch(self, branch: Branch, timestamp: str) -> tuple:
+    def execute_for_branch(self, branch: Branch, timestamp: str, config=None) -> tuple:
         """Executes the consolidation logic for a specific branch."""
         transfers, surplus_raw = self._load_branch_input_data(branch)
         if not transfers and not surplus_raw:
@@ -38,7 +39,8 @@ class ConsolidateTransfers:
 
         network_state = self._factory.create_network_state(
             [Branch(n) for n in get_branches()], 
-            self._repository.load_stock_levels
+            self._repository.load_stock_levels,
+            config=config
         )
         surplus_entries = self._factory.create_surplus_entries(surplus_raw, branch)
         
@@ -50,7 +52,7 @@ class ConsolidateTransfers:
         self._save_results(branch, merged, separate, timestamp)
         return len(merged), len(separate)
 
-    def _process_all_branches(self, timestamp: str) -> tuple:
+    def _process_all_branches(self, timestamp: str, config=None) -> tuple:
         """Iterates through all branches in parallel to consolidate data."""
         from concurrent.futures import ThreadPoolExecutor
         merged_total = 0
@@ -58,7 +60,7 @@ class ConsolidateTransfers:
         
         with ThreadPoolExecutor() as executor:
             futures = [
-                executor.submit(self.execute_for_branch, Branch(name), timestamp)
+                executor.submit(self.execute_for_branch, Branch(name), timestamp, config)
                 for name in get_branches()
             ]
             for future in futures:

@@ -12,12 +12,13 @@ class DomainModelFactory:
     @staticmethod
     def create_network_state(
         branches: List[Branch], 
-        repository_loader_function
+        repository_loader_function,
+        config=None
     ) -> NetworkStockState:
         """Creates a NetworkStockState snapshot from the repository."""
         balances_map = {}
         for branch in branches:
-            stocks = repository_loader_function(branch)
+            stocks = repository_loader_function(branch, config=config)
             balances_map[branch.name] = {
                 code: stock.balance for code, stock in stocks.items()
             }

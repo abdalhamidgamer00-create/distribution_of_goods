@@ -25,10 +25,11 @@ class ReportShortage:
         """
         Calculates distributions and saves the network-wide shortage report.
         """
+        config = kwargs.get("config")
         try:
             logger.info("Generating shortage reports...")
             # 1. Calculate all distribution results
-            results = self._optimizer.calculate()
+            results = self._optimizer.calculate(config)
             
             # 2. Persist the shortage specific report
             self._repository.save_shortage_report(results)

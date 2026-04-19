@@ -2,7 +2,8 @@
 
 import pytest
 import pandas as pd
-from src.domain.services.inventory.inventory_policy import InventoryPolicy
+from src.domain.services.inventory.inventory_rules import apply_scalar_rules
+from src.infrastructure.services.inventory.inventory_policy import InventoryPolicy
 from src.shared.constants import (
     MAX_BALANCE_FOR_NEED_THRESHOLD,
     MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION,
@@ -16,7 +17,7 @@ class TestInventoryPolicyScalar:
     def test_max_balance_suppression(self):
         """Should zero out need if balance >= threshold."""
         # Threshold is 30
-        result = InventoryPolicy.apply_scalar_rules(
+        result = apply_scalar_rules(
             needed=10, 
             balance=MAX_BALANCE_FOR_NEED_THRESHOLD, 
             coverage=20
@@ -26,7 +27,7 @@ class TestInventoryPolicyScalar:
     def test_small_need_suppression(self):
         """Should zero out small needs for high coverage products."""
         # Coverage >= 15 and need < 10
-        result = InventoryPolicy.apply_scalar_rules(
+        result = apply_scalar_rules(
             needed=5, 
             balance=10, 
             coverage=MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION
@@ -35,7 +36,7 @@ class TestInventoryPolicyScalar:
 
     def test_small_need_not_suppressed_low_coverage(self):
         """Should NOT zero out small needs if coverage is low."""
-        result = InventoryPolicy.apply_scalar_rules(
+        result = apply_scalar_rules(
             needed=5, 
             balance=10, 
             coverage=MIN_COVERAGE_FOR_SMALL_NEED_SUPPRESSION - 1
@@ -45,7 +46,7 @@ class TestInventoryPolicyScalar:
     def test_max_balance_capping(self):
         """Should cap need so total doesn't exceed 30."""
         # Balance 25, need 10 -> total 35 -> capped need 5
-        result = InventoryPolicy.apply_scalar_rules(
+        result = apply_scalar_rules(
             needed=10, 
             balance=25, 
             coverage=20

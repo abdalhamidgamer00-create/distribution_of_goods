@@ -42,6 +42,22 @@ st.markdown("---")
 show_metrics()
 st.markdown("---")
 
+# Settings Sidebar
+from src.domain.models.config import InventoryConfig
+
+with st.sidebar:
+    st.subheader("⚙️ إعدادات التغطية")
+    need_days = st.slider("أيام الاحتياج (Need)", 1, 240, 20)
+    surplus_days = st.slider("أيام الفائض (Surplus)", 1, 240, 60)
+    shortage_days = st.slider("أيام النقص (Shortage)", 1, 240, 30)
+    
+    config = InventoryConfig(
+        need_days=need_days,
+        surplus_days=surplus_days,
+        shortage_days=shortage_days
+    )
+    st.markdown("---")
+
 # File management
 start_file_management_ui()
 st.markdown("---")
@@ -59,7 +75,7 @@ for i, step in enumerate(visible_steps):
             key=f"run_{step.id}",
             use_container_width=True
         ):
-            execute_step_ui(step)
+            execute_step_ui(step, config=config)
             
         render_nav_button(step.id)
         st.markdown("---")
@@ -72,7 +88,7 @@ if st.button(
     type="primary",
     use_container_width=True
 ):
-    run_all_steps_ui()
+    run_all_steps_ui(config=config)
 
 render_results_navigation()
 

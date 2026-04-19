@@ -8,7 +8,7 @@ from src.presentation.gui.services.pipeline_service import (
     get_step_info
 )
 
-def execute_step_ui(step: Any) -> None:
+def execute_step_ui(step: Any, config=None) -> None:
     """Run archiving followed by the target step using centralized orchestrator."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
@@ -21,10 +21,10 @@ def execute_step_ui(step: Any) -> None:
         st.error(f"❌ لم يتم العثور على الأداة: {step.id}")
         return
 
-    _run_steps_sequence(steps_to_run, step)
+    _run_steps_sequence(steps_to_run, step, config=config)
 
 
-def run_all_steps_ui() -> None:
+def run_all_steps_ui(config=None) -> None:
     """Run all steps with progress UI."""
     if 'selected_file' not in st.session_state:
         st.error("❌ يرجى اختيار ملف أولاً")
@@ -36,7 +36,7 @@ def run_all_steps_ui() -> None:
     
     for i, step in enumerate(steps):
         status.text(f"جاري تنفيذ: {step.name}")
-        success, _ = run_single_step(step.id)
+        success, _ = run_single_step(step.id, config=config)
         
         if not success:
             st.error(f"فشل في: {step.name}")
@@ -49,14 +49,14 @@ def run_all_steps_ui() -> None:
     st.session_state['all_steps_success'] = True
 
 
-def _run_steps_sequence(all_steps: list, target_step: Any) -> None:
+def _run_steps_sequence(all_steps: list, target_step: Any, config=None) -> None:
     """Execute a sequence of steps with progress bar."""
     progress = st.progress(0)
     status = st.empty()
     
     for i, s in enumerate(all_steps):
         status.text(f"جاري تنفيذ: {s.name}")
-        s_success, msg = run_single_step(s.id)
+        s_success, msg = run_single_step(s.id, config=config)
         
         if not s_success:
             progress.empty()

@@ -25,10 +25,11 @@ class ReportSurplus:
         """
         Calculates distributions and saves the remaining surplus report.
         """
+        config = kwargs.get("config")
         try:
             logger.info("Generating surplus reports...")
             # 1. Calculate all distribution results
-            results = self._optimizer.calculate()
+            results = self._optimizer.calculate(config)
             
             # 2. Persist the surplus specific report
             self._repository.save_remaining_surplus(results)

@@ -17,14 +17,14 @@ def handle_step_result(step: Any, success: bool) -> bool:
     return success
 
 
-def execute_single_step(step: Any, use_latest_file: bool = False) -> bool:
+def execute_single_step(step: Any, **kwargs) -> bool:
     """Execute a single step with error handling."""
     if not validate_step_function(step):
         logger.error("✗ Step %s has no valid function!", step.id)
         return False
     try:
         return handle_step_result(
-            step, step.function(use_latest_file=use_latest_file)
+            step, step.function(**kwargs)
         )
     except Exception as error:
         logger.exception("✗ Step %s crashed: %s", step.id, error)

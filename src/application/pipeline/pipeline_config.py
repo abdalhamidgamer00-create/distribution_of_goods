@@ -75,13 +75,13 @@ class PipelineConfig:
         }
 
     @staticmethod
-    def get_full_sequence(use_latest_file: bool) -> list:
+    def get_full_sequence(use_latest_file: bool, config=None) -> list:
         """Returns the standard sequence for a full pipeline run."""
-        parameters = {"use_latest_file": use_latest_file}
+        parameters = {"use_latest_file": use_latest_file, "config": config}
         return [
-            ("archive", {}), ("ingest", parameters), ("validate", parameters),
-            ("analyze", parameters), ("normalize", parameters), 
-            ("segment", {}), ("optimize", {}), ("classify", {}), 
-            ("report_surplus", {}), ("report_shortage", {}), 
-            ("consolidate", {})
+            ("1", {}), ("2", parameters), ("3", parameters),
+            ("4", parameters), ("5", parameters), 
+            ("6", parameters), ("7", parameters), ("8", parameters), 
+            ("9", parameters), ("10", parameters), 
+            ("11", parameters)
         ]

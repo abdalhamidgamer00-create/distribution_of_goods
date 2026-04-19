@@ -20,11 +20,26 @@ def run_cli():
         execute_step, execute_step_with_dependencies
     )
     from src.presentation.cli.executors.step_executor.lookup import find_step_by_id
+    from src.domain.models.config import InventoryConfig
     
     setup_logging()
     
     args = sys.argv[1:]
     use_latest = "--latest" in args
+    
+    # Parse Coverage Config
+    def get_arg_val(flag, default):
+        try:
+            idx = args.index(flag)
+            return int(args[idx + 1])
+        except (ValueError, IndexError):
+            return default
+
+    config = InventoryConfig(
+        need_days=get_arg_val("--need", 20),
+        surplus_days=get_arg_val("--surplus", 60),
+        shortage_days=get_arg_val("--shortage", 30)
+    )
     
     # CASE 1: Isolated step execution via --step flag
     if "--step" in args:
@@ -34,29 +49,28 @@ def run_cli():
             step = find_step_by_id(step_id)
             if step:
                 print(f"\n--- [CLI] Isolated Execution: {step.name} ({step_id}) ---")
-                execute_step(step_id, use_latest_file=use_latest)
+                execute_step(step_id, use_latest_file=use_latest, config=config)
                 return
             else:
                 print(f"Error: Step {step_id} not found.")
                 return
         except (IndexError, ValueError):
-            print("Usage: python main.py --step <id> [--latest]")
+            print("Usage: python main.py --step <id> [--latest] [--need <d>] [--surplus <d>] [--shortage <d>]")
             return
 
-    # CASE 2: Positional step ID (Defaults to dependency-aware execution like the menu)
+    # CASE 2: Positional step ID
     positional_args = [a for a in args if not a.startswith("--")]
     if positional_args and positional_args[0].isdigit():
         step_id = positional_args[0]
         step = find_step_by_id(step_id)
         if step:
-            # If explicit --step is not used, we assume interactive-like behavior (with deps)
-            execute_step_with_dependencies(step_id, use_latest_file=use_latest)
+            execute_step_with_dependencies(step_id, use_latest_file=use_latest, config=config)
             return
 
     # CASE 3: Execute all steps via --all flag
     if "--all" in args:
         from src.presentation.cli.executors.batch_executor import _run_steps_with_mode
-        _run_steps_with_mode(use_latest)
+        _run_steps_with_mode(use_latest, config=config)
         return
 
     # Default to interactive menu

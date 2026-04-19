@@ -14,7 +14,7 @@ from src.domain.exceptions.pipeline_exceptions import (
 )
 
 
-def run_single_step(step_id: str) -> Tuple[bool, str]:
+def run_single_step(step_id: str, **kwargs) -> Tuple[bool, str]:
     """Execute a single step and return status and message."""
     step = _find_step_by_id(step_id)
     if not step:
@@ -23,7 +23,10 @@ def run_single_step(step_id: str) -> Tuple[bool, str]:
     step_name = STEP_NAMES.get(step_id, step.name)
     try:
         # Execute the step with standard parameters
-        result = step.function(use_latest_file=True)
+        if 'use_latest_file' not in kwargs:
+            kwargs['use_latest_file'] = True
+            
+        result = step.function(**kwargs)
         status_key = 'success' if result else 'failed'
         return result, f"{MESSAGES[status_key]}: {step_name}"
         

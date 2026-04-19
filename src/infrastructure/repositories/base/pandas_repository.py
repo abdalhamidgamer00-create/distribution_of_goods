@@ -5,6 +5,7 @@ from src.domain.models.entities import (
     Product, Branch, StockLevel, ConsolidatedStock, BranchStock
 )
 from src.domain.models.distribution import Transfer, DistributionResult
+from src.domain.models.config import InventoryConfig
 from src.application.ports.repository import DataRepository
 from src.shared.constants import BRANCHES
 from src.infrastructure.repositories.persistence.transfers_persistence import (
@@ -48,19 +49,26 @@ class PandasDataRepository(DataRepository):
         consolidated = self.load_consolidated_stock()
         return [item.product for item in consolidated]
 
-    def load_consolidated_stock(self) -> List[ConsolidatedStock]:
+    def load_consolidated_stock(
+        self, 
+        config: InventoryConfig = None
+    ) -> List[ConsolidatedStock]:
         from src.shared.utility.file_handler import get_latest_file
         import os
         name = get_latest_file(self._input_dir, ".csv")
         path = os.path.join(self._input_dir, name) if name else None
-        return self._reader.load_consolidated_stock(path)
+        return self._reader.load_consolidated_stock(path, config)
 
-    def load_stock_levels(self, branch: Branch) -> Dict[str, StockLevel]:
-        key = f"stock_levels_{branch.name}"
+    def load_stock_levels(
+        self, 
+        branch: Branch, 
+        config: InventoryConfig = None
+    ) -> Dict[str, StockLevel]:
+        key = f"stock_levels_{branch.name}_{id(config)}"
         if not self._cache.has(key):
             days = self._get_current_duration()
             self._cache.set(
-                key, self._reader.load_stock_levels(branch.name, days)
+                key, self._reader.load_stock_levels(branch.name, days, config)
             )
         return self._cache.get(key)
 
