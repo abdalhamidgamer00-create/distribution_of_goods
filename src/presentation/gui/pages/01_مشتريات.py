@@ -46,10 +46,21 @@ st.markdown("---")
 from src.domain.models.config import InventoryConfig
 
 with st.sidebar:
-    st.subheader("⚙️ إعدادات التغطية")
-    need_days = st.slider("أيام الاحتياج (Need)", 1, 240, 20)
-    surplus_days = st.slider("أيام الفائض (Surplus)", 1, 240, 60)
-    shortage_days = st.slider("أيام النقص (Shortage)", 1, 240, 30)
+    st.markdown("### ⚙️ إعدادات التغطية", help="تعديل معايير حساب الاحتياج والفائض لضبط مخرجات النظام.")
+    st.info("قم بتعديل أيام التغطية لتحديد كمية الادوية التي سوف تتحرك بين الفروع او تطلب من الخارج")
+    
+    need_days = st.slider(
+        "أيام الاحتياج (Need)", 1, 240, 20,
+        help="الفترة التي نحتاج لتغطيتها بالفروع لضمان عدم حدوث عجز (الطلب المثالي)."
+    )
+    surplus_days = st.slider(
+        "أيام الفائض (Surplus)", 1, 240, 60,
+        help="الحد الأقصى للتخزين؛ أي كمية تتجاوز هذه الأيام تعتبر فائضاً يجب نقله."
+    )
+    shortage_days = st.slider(
+        "أيام النقص (Shortage)", 1, 240, 30,
+        help="الحد الأدنى للتغطية؛ إذا قل المخزون عن هذه الأيام يظهر المنتج في تقرير النواقص للطلب من الخارج."
+    )
     
     config = InventoryConfig(
         need_days=need_days,
