@@ -84,7 +84,7 @@ class StockMapper:
                 'product_name': branch_stock.product.name,
                 'sales': branch_stock.stock.sales,
                 'balance': branch_stock.stock.balance,
-                'avg_sales': branch_stock.stock.avg_sales,
+                'average_daily_sales': branch_stock.stock.average_daily_sales,
                 'needed_quantity': branch_stock.stock.needed,
                 'surplus_quantity': branch_stock.stock.surplus,
                 'shortage_quantity': branch_stock.stock.shortage

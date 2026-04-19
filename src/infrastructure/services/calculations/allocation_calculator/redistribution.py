@@ -4,10 +4,10 @@
 def get_sorted_zero_branches(
     branches_with_zero: list, branch_data: dict, product_index: int
 ) -> list:
-    """Sort zero-allocation branches by avg_sales (desc) then balance (asc)."""
+    """Sort zero-allocation branches by average_daily_sales (desc) then balance (asc)."""
     scored = [(
         branch, 
-        branch_data[branch].iloc[product_index]['avg_sales'], 
+        branch_data[branch].iloc[product_index]['average_daily_sales'], 
         branch_data[branch].iloc[product_index]['balance']
     ) for branch in branches_with_zero]
     

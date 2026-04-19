@@ -16,7 +16,7 @@ BRANCHES = [
 PRIORITY_WEIGHTS = {
     "balance": 0.60,
     "needed": 0.30,
-    "avg_sales": 0.10
+    "average_daily_sales": 0.10
 }
 
 # Inventory Constraints

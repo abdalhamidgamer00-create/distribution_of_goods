@@ -23,7 +23,7 @@ class PriorityCalculator:
         return (
             weights["balance"] * inverse_balance_score +
             weights["needed"] * stock.needed +
-            weights["avg_sales"] * stock.avg_sales
+            weights["average_daily_sales"] * stock.average_daily_sales
         )
 
     @staticmethod
@@ -32,6 +32,6 @@ class PriorityCalculator:
         Calculate ranking for surplus sources.
         We prefer branches with more surplus and better balance.
         """
-        # Secondary ranking factors: balance and avg_sales
+        # Secondary ranking factors: balance and average_daily_sales
         # This mirrors the logic in get_surplus_sources_ordered_for_product
         return stock.surplus

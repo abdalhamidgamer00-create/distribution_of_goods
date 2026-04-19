@@ -18,7 +18,7 @@ class StockLevel:
     needed: int
     surplus: int
     balance: float
-    avg_sales: float
+    average_daily_sales: float
     sales: float = 0.0
     shortage: int = 0
 

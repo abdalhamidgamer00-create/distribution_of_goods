@@ -36,7 +36,7 @@ def get_base_columns() -> list:
 def get_analytics_columns(max_withdrawals: int = 5) -> list:
     """Get analytics columns for separate analytics files."""
     base_columns = [
-        'code', 'product_name', 'sales', 'avg_sales', 'balance', 
+        'code', 'product_name', 'sales', 'average_daily_sales', 'balance', 
         'monthly_quantity', 'surplus_quantity', 'needed_quantity'
     ]
     return base_columns + _build_withdrawal_columns(max_withdrawals)

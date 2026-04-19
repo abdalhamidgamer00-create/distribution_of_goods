@@ -5,7 +5,7 @@ from src.domain.models.entities import StockLevel
 from src.shared.constants import (
     NEED_COVERAGE_DAYS, SURPLUS_COVERAGE_DAYS, SHORTAGE_COVERAGE_DAYS
 )
-from src.domain.services.inventory.inventory_policy import InventoryPolicy
+from .inventory_rules import apply_scalar_rules
 
 
 class StockCalculator:
@@ -33,7 +33,7 @@ class StockCalculator:
         shortage_quantity = math.ceil(max(0, shortage_target - balance_quantity))
         
         # 3. Apply business rules to the 'need' (for transfers)
-        needed_quantity = InventoryPolicy.apply_scalar_rules(
+        needed_quantity = apply_scalar_rules(
             needed=needed_quantity,
             balance=balance_quantity,
             coverage=need_target
@@ -43,7 +43,7 @@ class StockCalculator:
             needed=needed_quantity,
             surplus=surplus_quantity,
             balance=float(balance_quantity),
-            avg_sales=float(daily_average_sales),
+            average_daily_sales=float(daily_average_sales),
             sales=float(sales_quantity),
             shortage=shortage_quantity
         )

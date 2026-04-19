@@ -6,8 +6,8 @@ import pandas as pd
 def build_branch_matrices(branch_data: dict, branches: list) -> dict:
     """Build DataFrames for each metric from branch data."""
     return {
-        'avg_sales': pd.DataFrame({
-            branch: branch_data[branch]['avg_sales'].astype(float) 
+        'average_daily_sales': pd.DataFrame({
+            branch: branch_data[branch]['average_daily_sales'].astype(float) 
             for branch in branches
         }),
         'balance': pd.DataFrame({

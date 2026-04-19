@@ -5,12 +5,12 @@ import pandas as pd
 from src.shared.constants import (
     NEED_COVERAGE_DAYS, SURPLUS_COVERAGE_DAYS, SHORTAGE_COVERAGE_DAYS
 )
-from src.domain.services.inventory.inventory_policy import InventoryPolicy
+from src.infrastructure.services.inventory.inventory_policy import InventoryPolicy
 
 
-def _calculate_target_quantity(avg_sales: pd.Series, days: int) -> pd.Series:
+def _calculate_target_quantity(average_daily_sales: pd.Series, days: int) -> pd.Series:
     """Calculate target coverage quantity using ceiling."""
-    return (avg_sales * days).apply(lambda x: math.ceil(x))
+    return (average_daily_sales * days).apply(lambda x: math.ceil(x))
 
 
 def _calculate_surplus(balance: pd.Series, target: pd.Series) -> pd.Series:
@@ -28,9 +28,9 @@ def calculate_basic_quantities(branch_df: pd.DataFrame) -> pd.DataFrame:
     dataframe = branch_df.copy()
     
     # 1. Targets
-    surplus_target = _calculate_target_quantity(dataframe['avg_sales'], SURPLUS_COVERAGE_DAYS)
-    need_target = _calculate_target_quantity(dataframe['avg_sales'], NEED_COVERAGE_DAYS)
-    shortage_target = _calculate_target_quantity(dataframe['avg_sales'], SHORTAGE_COVERAGE_DAYS)
+    surplus_target = _calculate_target_quantity(dataframe['average_daily_sales'], SURPLUS_COVERAGE_DAYS)
+    need_target = _calculate_target_quantity(dataframe['average_daily_sales'], NEED_COVERAGE_DAYS)
+    shortage_target = _calculate_target_quantity(dataframe['average_daily_sales'], SHORTAGE_COVERAGE_DAYS)
 
     # 2. Main Logic
     dataframe['surplus_quantity'] = _calculate_surplus(dataframe['balance'], surplus_target)

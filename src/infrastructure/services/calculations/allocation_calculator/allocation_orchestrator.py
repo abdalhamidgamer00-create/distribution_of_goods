@@ -1,9 +1,7 @@
 """Main orchestration for allocation calculation."""
 
 import pandas as pd
-from src.domain.services.calculations.allocation_calculator import (
-    matrices, scoring, proportions, redistribution
-)
+from . import matrices, scoring, proportions, redistribution
 
 
 def process_single_product_allocation(

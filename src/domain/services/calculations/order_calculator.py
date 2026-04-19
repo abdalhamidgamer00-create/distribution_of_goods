@@ -1,13 +1,6 @@
 from typing import List, Dict, Optional, Tuple
 from src.domain.models.entities import StockLevel
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-BALANCE_WEIGHT = 0.60
-NEEDED_WEIGHT = 0.30
-AVG_SALES_WEIGHT = 0.10
+from src.shared.constants import PRIORITY_WEIGHTS
 
 
 # =============================================================================
@@ -38,7 +31,7 @@ def get_surplus_sources_ordered_for_product(
     surplus_info = _collect_available_surplus_info(
         source_branch_name, all_branch_stocks, existing_withdrawals
     )
-    # Sort by surplus desc, then balance desc, then avg_sales asc
+    # Sort by surplus desc, then balance desc, then average_daily_sales asc
     surplus_info.sort(key=lambda item: (-item[1], -item[2], item[3]))
     return [branch_name for branch_name, *metrics in surplus_info]
 
@@ -52,9 +45,9 @@ def _calculate_priority_score(stock: StockLevel) -> float:
     # Avoid division by zero with a small smoothing factor
     inverse_balance_score = 1.0 / (stock.balance + 0.1)
     return (
-        BALANCE_WEIGHT * inverse_balance_score +
-        NEEDED_WEIGHT * stock.needed +
-        AVG_SALES_WEIGHT * stock.avg_sales
+        PRIORITY_WEIGHTS["balance"] * inverse_balance_score +
+        PRIORITY_WEIGHTS["needed"] * stock.needed +
+        PRIORITY_WEIGHTS["average_daily_sales"] * stock.average_daily_sales
     )
 
 
@@ -87,6 +80,6 @@ def _collect_available_surplus_info(
             branch_name, 
             stock.surplus, 
             stock.balance, 
-            stock.avg_sales
+            stock.average_daily_sales
         ))
     return surplus_list

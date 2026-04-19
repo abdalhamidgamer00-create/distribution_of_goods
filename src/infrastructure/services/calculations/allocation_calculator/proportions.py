@@ -2,7 +2,7 @@
 
 import pandas as pd
 import math
-from src.domain.services.calculations.allocation_calculator import scoring
+from . import scoring
 
 
 def calculate_proportions(
