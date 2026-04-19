@@ -26,17 +26,19 @@ class DistributionMetricsService:
             for branch, stock in original_needs
         )
         
-        # Calculate remaining shortage (30d) for reporting
-        remaining_shortage = sum(
+        # Calculate remaining shortage (30d) for reporting (Net Network Shortage)
+        gross_shortage = sum(
             max(0, stock.shortage - fulfilled.get(branch.name, 0))
             for branch, stock in original_needs
         )
+        unallocated_surplus = sum(available_surplus.values())
+        remaining_shortage = max(0, gross_shortage - unallocated_surplus)
 
         return DistributionResult(
-            product=product, 
+            product=product,
             transfers=transfers,
             remaining_needed=remaining_needed,
             remaining_shortage=remaining_shortage,
-            remaining_surplus=sum(available_surplus.values()),
+            remaining_surplus=unallocated_surplus,
             remaining_branch_surplus=available_surplus
         )
