@@ -48328,3 +48328,119 @@ Execution Summary:
   Failed: 0
   Success rate: 100.0%
 ==================================================
+2026-04-19 17:25:25,493 | INFO     | src.presentation.cli.executors.batch_executor | Using latest file for all steps...
+2026-04-19 17:25:25,493 | INFO     | src.presentation.cli.executors.batch_executor | [1/11] 1 - Data Archiving
+2026-04-19 17:25:25,493 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:25,494 | INFO     | src.application.use_cases.archive_data | Archiving previous output files...
+2026-04-19 17:25:25,495 | INFO     | src.shared.utility.archiver.manager | Archiving complete contents of data/output...
+  Source: data/output
+  Destination: data\archive\archive_20260419_172525\output
+2026-04-19 17:25:25,511 | INFO     | src.shared.utility.archiver.directory_ops |   Found 855 files in 192 directories
+2026-04-19 17:25:26,160 | INFO     | src.shared.utility.archiver.manager | Archive created successfully!
+2026-04-19 17:25:26,161 | INFO     | src.shared.utility.archiver.manager |   - Archive location: data\archive\archive_20260419_172525
+2026-04-19 17:25:26,161 | INFO     | src.shared.utility.archiver.manager |   - Archived 855 files in 192 directories
+2026-04-19 17:25:26,161 | INFO     | src.shared.utility.archiver.zip_ops | Creating ZIP archive: data\archive\archive_20260419_172525.zip...
+2026-04-19 17:25:29,948 | INFO     | src.shared.utility.archiver.zip_ops | ZIP archive created successfully: data\archive\archive_20260419_172525.zip
+2026-04-19 17:25:29,948 | INFO     | src.shared.utility.archiver.cleanup | Clearing output directory: data\output...
+2026-04-19 17:25:29,965 | INFO     | src.shared.utility.archiver.cleanup |   Found 855 files in 192 directories to delete
+2026-04-19 17:25:30,132 | INFO     | src.shared.utility.archiver.cleanup |   ✓ Output directory cleared successfully!
+  ✓ Deleted 855 files and 192 directories
+2026-04-19 17:25:30,133 | INFO     | src.application.use_cases.archive_data | ✓ Output directory cleared successfully
+2026-04-19 17:25:30,133 | INFO     | src.shared.utility.telemetry | Service 'archive' execution took 4.6393 seconds.
+2026-04-19 17:25:30,133 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 1 completed successfully
+2026-04-19 17:25:30,133 | INFO     | src.presentation.cli.executors.batch_executor | [2/11] 2 - Source Ingestion
+2026-04-19 17:25:30,133 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:30,726 | INFO     | src.application.use_cases.ingest_data | Ingesting monthly_stock_distribution_analysis.xlsx -> data\output\converted\csv\monthly_stock_distribution_analysis.csv
+2026-04-19 17:25:31,469 | INFO     | src.application.use_cases.ingest_data | ✓ Data ingestion completed: data\output\converted\csv\monthly_stock_distribution_analysis.csv
+2026-04-19 17:25:31,469 | INFO     | src.shared.utility.telemetry | Service 'ingest' execution took 1.3363 seconds.
+2026-04-19 17:25:31,469 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 2 completed successfully
+2026-04-19 17:25:31,470 | INFO     | src.presentation.cli.executors.batch_executor | [3/11] 3 - Inventory Validation
+2026-04-19 17:25:31,470 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:31,470 | INFO     | src.application.use_cases.validate_inventory | Validating inventory data: monthly_stock_distribution_analysis.csv
+2026-04-19 17:25:31,485 | INFO     | src.application.use_cases.validate_inventory | ✓ Date range validated: 2026-03-17 00:00:00 to 2026-04-17 18:32:00
+2026-04-19 17:25:31,485 | INFO     | src.application.use_cases.validate_inventory | ✓ Schema headers validated
+2026-04-19 17:25:31,485 | INFO     | src.application.use_cases.validate_inventory | ✓ Data validation completed successfully
+2026-04-19 17:25:31,485 | INFO     | src.shared.utility.telemetry | Service 'validate' execution took 0.0153 seconds.
+2026-04-19 17:25:31,485 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 3 completed successfully
+2026-04-19 17:25:31,485 | INFO     | src.presentation.cli.executors.batch_executor | [4/11] 4 - Sales Analytics
+2026-04-19 17:25:31,485 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:31,486 | INFO     | src.application.use_cases.analyze_sales | Analyzing sales data: monthly_stock_distribution_analysis.csv
+2026-04-19 17:25:31,486 | INFO     | src.application.use_cases.analyze_sales | --------------------------------------------------
+2026-04-19 17:25:31,520 | INFO     | src.application.use_cases.analyze_sales | Saved analysis reports: CSV=data\output\sales_analysis\csv\analysis_monthly_stock_distribution_analysis.csv, Excel=data\output\sales_analysis\excel\analysis_monthly_stock_distribution_analysis.xlsx
+2026-04-19 17:25:31,520 | INFO     | src.application.use_cases.analyze_sales | 
+============================================================
+SALES DATA ANALYSIS REPORT
+============================================================
+
+Generated: 2026-04-19 17:25:31
+File: monthly_stock_distribution_analysis.csv
+Date Range: 17/03/2026 00:00 to 17/04/2026 18:32
+
+------------------------------------------------------------
+STATISTICS
+------------------------------------------------------------
+Total Rows (Data): 3,799
+Total Columns: 25
+Total Cells: 94,975
+Filled Cells: 94,975
+Empty Cells: 0
+Empty Cells Percentage: 0.0%
+
+------------------------------------------------------------
+IMPROVEMENT SUGGESTIONS
+------------------------------------------------------------
+1. Ensure consistent data format.
+2. Regular data audits.
+
+============================================================
+2026-04-19 17:25:31,520 | INFO     | src.shared.utility.telemetry | Service 'analyze' execution took 0.0348 seconds.
+2026-04-19 17:25:31,520 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 4 completed successfully
+2026-04-19 17:25:31,521 | INFO     | src.presentation.cli.executors.batch_executor | [5/11] 5 - Schema Normalization
+2026-04-19 17:25:31,521 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:31,521 | INFO     | src.application.use_cases.normalize_schema | Normalizing schema: monthly_stock_distribution_analysis.csv -> data\output\converted\renamed\monthly_stock_distribution_analysis_renamed_20260419_172531.csv
+2026-04-19 17:25:31,596 | INFO     | src.application.use_cases.normalize_schema | ✓ Data normalization completed successfully
+2026-04-19 17:25:31,596 | INFO     | src.shared.utility.telemetry | Service 'normalize' execution took 0.0751 seconds.
+2026-04-19 17:25:31,596 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 5 completed successfully
+2026-04-19 17:25:31,596 | INFO     | src.presentation.cli.executors.batch_executor | [6/11] 6 - Branch Segmentation
+2026-04-19 17:25:31,596 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:32,389 | INFO     | src.application.use_cases.segment_branches | Segmenting data for 6 branches...
+2026-04-19 17:25:32,585 | INFO     | src.application.use_cases.segment_branches | ✓ Data segmentation completed successfully
+2026-04-19 17:25:32,593 | INFO     | src.shared.utility.telemetry | Service 'segment' execution took 0.9964 seconds.
+2026-04-19 17:25:32,593 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 6 completed successfully
+2026-04-19 17:25:32,593 | INFO     | src.presentation.cli.executors.batch_executor | [7/11] 7 - Transfer Optimization
+2026-04-19 17:25:32,593 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:35,149 | INFO     | src.application.use_cases.optimize_transfers | ✓ Transfer optimization completed successfully
+2026-04-19 17:25:35,149 | INFO     | src.shared.utility.telemetry | Service 'optimize' execution took 2.5550 seconds.
+2026-04-19 17:25:35,149 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 7 completed successfully
+2026-04-19 17:25:35,149 | INFO     | src.presentation.cli.executors.batch_executor | [8/11] 8 - Transfer Classification
+2026-04-19 17:25:35,149 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:25:58,117 | INFO     | src.application.use_cases.classify_transfers | Classifying 3386 transfers by category...
+2026-04-19 17:26:02,350 | INFO     | src.application.use_cases.classify_transfers | ✓ Transfer classification completed successfully
+2026-04-19 17:26:02,351 | INFO     | src.shared.utility.telemetry | Service 'classify' execution took 27.2005 seconds.
+2026-04-19 17:26:02,351 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 8 completed successfully
+2026-04-19 17:26:02,351 | INFO     | src.presentation.cli.executors.batch_executor | [9/11] 9 - Surplus Reporting
+2026-04-19 17:26:02,351 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:26:02,351 | INFO     | src.application.use_cases.report_surplus | Generating surplus reports...
+2026-04-19 17:26:05,042 | INFO     | src.application.use_cases.report_surplus | ✓ Surplus reporting completed successfully
+2026-04-19 17:26:05,044 | INFO     | src.shared.utility.telemetry | Service 'report_surplus' execution took 2.6928 seconds.
+2026-04-19 17:26:05,044 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 9 completed successfully
+2026-04-19 17:26:05,044 | INFO     | src.presentation.cli.executors.batch_executor | [10/11] 10 - Shortage Reporting
+2026-04-19 17:26:05,044 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:26:05,045 | INFO     | src.application.use_cases.report_shortage | Generating shortage reports...
+2026-04-19 17:26:06,991 | INFO     | src.application.use_cases.report_shortage | ✓ Shortage reporting completed successfully
+2026-04-19 17:26:06,993 | INFO     | src.shared.utility.telemetry | Service 'report_shortage' execution took 1.9483 seconds.
+2026-04-19 17:26:06,993 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 10 completed successfully
+2026-04-19 17:26:06,994 | INFO     | src.presentation.cli.executors.batch_executor | [11/11] 11 - Consolidated Reporting
+2026-04-19 17:26:06,994 | INFO     | src.presentation.cli.executors.batch_executor | --------------------------------------------------
+2026-04-19 17:26:19,073 | INFO     | src.application.use_cases.consolidate_transfers | ==================================================
+2026-04-19 17:26:19,073 | INFO     | src.application.use_cases.consolidate_transfers | Generated 36 merged files (CSV + Excel)
+2026-04-19 17:26:19,073 | INFO     | src.application.use_cases.consolidate_transfers | Generated 176 separate files (CSV + Excel)
+2026-04-19 17:26:19,074 | INFO     | src.shared.utility.telemetry | Service 'consolidate' execution took 12.0787 seconds.
+2026-04-19 17:26:19,074 | INFO     | src.presentation.cli.executors.step_executor.step_execution | ✓ Step 11 completed successfully
+2026-04-19 17:26:19,074 | INFO     | src.presentation.cli.executors.batch_executor | ==================================================
+Execution Summary:
+  Total steps: 11
+  Successful: 11
+  Failed: 0
+  Success rate: 100.0%
+==================================================

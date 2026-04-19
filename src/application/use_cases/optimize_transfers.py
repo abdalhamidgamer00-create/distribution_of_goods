@@ -80,7 +80,7 @@ class OptimizeTransfers:
             if product.code in branch_stocks:
                 stock = branch_stocks[product.code]
                 total_sales += stock.sales
-                if stock.needed > 0:
+                if stock.needed > 0 or stock.shortage > 0:
                     needs.append((branch, stock))
                 elif stock.surplus > 0:
                     surpluses.append((branch, stock))
