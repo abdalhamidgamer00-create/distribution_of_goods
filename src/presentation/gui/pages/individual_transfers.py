@@ -6,26 +6,29 @@ import os
 import sys
 
 # Ensure project root is in sys.path for absolute imports starting with 'src'
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../../..")
+)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import streamlit as st
-
+# Imports
 from src.presentation.gui.views.browsers.transfers_view.premium_view_layout import (
     render_premium_browser
 )
 from src.presentation.gui.config.file_browsers import FILE_BROWSERS
 
-cfg = FILE_BROWSERS['merged']
+# Main Logic
+configuration = FILE_BROWSERS['transfers']
 render_premium_browser(
-    cfg['title'],
-    cfg['icon'],
-    cfg['csv'],
-    cfg['excel'],
-    cfg['step'],
-    cfg['session_key'],
-    cfg['key_prefix'],
-    cfg['category'],
-    cfg.get('help_text')
+    configuration['title'],
+    configuration['icon'],
+    configuration['csv'],
+    configuration['excel'],
+    configuration['step'],
+    configuration['session_key'],
+    configuration['key_prefix'],
+    configuration['category'],
+    configuration.get('help_text')
 )
+ Riverside

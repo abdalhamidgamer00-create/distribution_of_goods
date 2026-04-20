@@ -1,18 +1,24 @@
 """Specialized component for mapping and listing output artifacts."""
-
 import os
 from typing import List, Dict, Optional
-from src.infrastructure.repositories.metadata.output_manager import list_artifacts
-
+from src.infrastructure.repositories.metadata.output_manager import (
+    list_artifacts
+)
 
 class ArtifactLister:
     """Handles discovery and categorization of output files."""
 
     def __init__(self, output_directory: str, **kwargs):
         self._output_directory = output_directory
-        self._surplus_directory = kwargs.get('surplus_dir', output_directory)
-        self._shortage_directory = kwargs.get('shortage_dir', output_directory)
-        self._sales_analysis_directory = kwargs.get('sales_analysis_dir', output_directory)
+        self._surplus_directory = kwargs.get(
+            'surplus_dir', output_directory
+        )
+        self._shortage_directory = kwargs.get(
+            'shortage_dir', output_directory
+        )
+        self._sales_analysis_directory = kwargs.get(
+            'sales_analysis_dir', output_directory
+        )
 
     def list_outputs(
         self, 
@@ -20,15 +26,15 @@ class ArtifactLister:
         branch_filter: Optional[str] = None
     ) -> List[Dict]:
         """Lists available output artifacts for a specific category."""
-        mapping = self._get_category_mapping()
-        if category_name not in mapping:
+        category_mapping = self._get_category_mapping()
+        if category_name not in category_mapping:
             return []
             
-        config = mapping[category_name]
+        configuration = category_mapping[category_name]
         return list_artifacts(
             category_name, 
-            config['base_directory'], 
-            config['search_patterns'],
+            configuration['base_directory'], 
+            configuration['search_patterns'],
             branch_filter
         )
 
@@ -76,3 +82,4 @@ class ArtifactLister:
                 'search_patterns': {'csv': 'analysis_', 'excel': 'analysis_'}
             }
         }
+ Riverside

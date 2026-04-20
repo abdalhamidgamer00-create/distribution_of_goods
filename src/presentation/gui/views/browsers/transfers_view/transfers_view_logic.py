@@ -1,89 +1,103 @@
 """Tab processing logic for transfers view."""
-
 from typing import List, Dict, Optional
 import streamlit as st
 from . import (
-    transfers_view_filters as filters, 
-    transfers_view_display as display
+    transfers_view_filters as logic_filters, 
+    transfers_view_display as display_interface
 )
 from src.presentation.gui.services.pipeline_service import get_repository
 from src.application.use_cases.query_outputs import QueryOutputs
 
 def process_transfer_tab(
-    directory: str,
-    extension: str,
-    step_number: int,
-    key_prefix: str,
-    selected_branch: str,
-    branches_list: list
+    target_directory: str,
+    file_extension: str,
+    processing_step_number: int,
+    interaction_key_prefix: str,
+    target_branch_name: str,
+    available_branches_list: list
 ) -> None:
     """Processes single tab logic using QueryOutputs use case."""
-    files = _load_and_prepare_files(selected_branch, extension)
+    artifact_list = _load_and_prepare_files(target_branch_name, file_extension)
     
-    if not files:
+    if not artifact_list:
         st.warning("لا توجد ملفات")
         return
 
-    if selected_branch == "all":
-        _handle_all_branches_view(files, key_prefix, extension)
+    if target_branch_name == "all":
+        _handle_all_branches_view(
+            artifact_list, interaction_key_prefix, file_extension
+        )
     else:
         _handle_single_branch_view(
-            files, selected_branch, branches_list, key_prefix, extension
+            artifact_list, 
+            target_branch_name, 
+            available_branches_list, 
+            interaction_key_prefix, 
+            file_extension
         )
-
 
 def _load_and_prepare_files(
-    selected_branch: str, 
-    extension: str, 
-    category: str = 'transfers'
+    target_branch_name: str, 
+    file_extension: str, 
+    report_category: str = 'transfers'
 ) -> List[Dict]:
     """Loads and prepares transfer files for the UI."""
-    repository = get_repository()
-    use_case = QueryOutputs(repository)
+    artifact_repository = get_repository()
+    query_use_case = QueryOutputs(artifact_repository)
     
-    branch_query = None if selected_branch == "all" else selected_branch
-    files = use_case.execute(category, branch_query)
+    branch_query_filter = (
+        None if target_branch_name == "all" else target_branch_name
+    )
+    artifact_list = query_use_case.execute(report_category, branch_query_filter)
     
     # Filter by extension and add compatibility metadata
-    prepared_files = []
-    for file_info in files:
-        if file_info['name'].endswith(extension):
-            if 'relative_path' not in file_info:
-                file_info['relative_path'] = file_info['path']
-            prepared_files.append(file_info)
+    prepared_artifact_list = []
+    for artifact_info in artifact_list:
+        if artifact_info['name'].endswith(file_extension):
+            if 'relative_path' not in artifact_info:
+                artifact_info['relative_path'] = artifact_info['path']
+            prepared_artifact_list.append(artifact_info)
             
-    return prepared_files
-
+    return prepared_artifact_list
 
 def _handle_all_branches_view(
-    files: List[Dict], key_prefix: str, extension: str
+    artifact_list: List[Dict], 
+    interaction_key_prefix: str, 
+    file_extension: str
 ) -> None:
     """Groups files by branch and dispatches to grouped display."""
-    grouped_files: Dict[str, List[Dict]] = {}
-    for file_info in files:
-        branch_key = file_info.get('branch', 'عام')
-        if branch_key not in grouped_files:
-            grouped_files[branch_key] = []
-        grouped_files[branch_key].append(file_info)
+    grouped_artifacts: Dict[str, List[Dict]] = {}
+    for artifact_info in artifact_list:
+        branch_key = artifact_info.get('branch', 'عام')
+        if branch_key not in grouped_artifacts:
+            grouped_artifacts[branch_key] = []
+        grouped_artifacts[branch_key].append(artifact_info)
             
-    display.display_transfer_files_grouped(
-        grouped_files, files, key_prefix, extension
+    display_interface.display_transfer_files_grouped(
+        grouped_artifacts, artifact_list, interaction_key_prefix, file_extension
     )
-
 
 def _handle_single_branch_view(
-    files: List[Dict], 
-    selected_branch: str, 
-    branches_list: list,
-    key_prefix: str, 
-    extension: str
+    artifact_list: List[Dict], 
+    target_branch_name: str, 
+    available_branches_list: list,
+    interaction_key_prefix: str, 
+    file_extension: str
 ) -> None:
     """Applies branch filters and dispatches to standard display."""
-    filtered_files = filters.filter_transfers(
-        files, selected_branch, branches_list, key_prefix, extension
+    filtered_artifacts = logic_filters.filter_transfers(
+        artifact_list, 
+        target_branch_name, 
+        available_branches_list, 
+        interaction_key_prefix, 
+        file_extension
     )
     
-    if filtered_files:
-        display.display_transfer_files(
-            filtered_files, key_prefix, selected_branch, extension
+    if filtered_artifacts:
+        display_interface.display_transfer_files(
+            filtered_artifacts, 
+            interaction_key_prefix, 
+            target_branch_name, 
+            file_extension
         )
+ Riverside

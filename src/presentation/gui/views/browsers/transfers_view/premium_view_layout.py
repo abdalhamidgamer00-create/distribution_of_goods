@@ -6,69 +6,93 @@ from src.presentation.gui.components import (
     render_browser_tabs,
     group_files_by_branch
 )
-from src.presentation.gui.views.browsers.transfers_view import transfers_view_logic as logic
-from src.presentation.gui.views.browsers.transfers_view import transfers_view_display as display
+from src.presentation.gui.views.browsers.transfers_view import (
+    transfers_view_logic as logic_layer
+)
+from src.presentation.gui.views.browsers.transfers_view import (
+    transfers_view_display as display_layer
+)
 
 def render_premium_browser(
-    title: str,
-    icon: str,
-    csv_directory: str,
-    excel_directory: str,
-    step_number: int,
-    session_key: str,
-    key_prefix: str,
-    category: str,
-    help_text: str = None
+    display_title: str,
+    browser_icon: str,
+    comma_separated_values_directory: str,
+    excel_spreadsheet_directory: str,
+    processing_step_number: int,
+    state_session_key: str,
+    interaction_key_prefix: str,
+    report_category_type: str,
+    informative_help_text: str = None
 ) -> None:
-    """Renders a premium dashboard browser with sidebar navigation and grouping."""
+    """Renders a premium dashboard browser with sidebar navigation."""
     
-    if not setup_browser_page(title, icon, help_text):
+    if not setup_browser_page(
+        display_title, browser_icon, informative_help_text
+    ):
         return
         
     # 1. Sidebar Navigation (UX Improvement)
     with st.sidebar:
         st.markdown("### 📍 تصفية الفروع")
-        st.info(f"اختر الفرع المصدر لعرض تقارير **{title}** الخاصة به.")
-        render_branch_selection_buttons(session_key, f"{key_prefix}_sidebar")
+        st.info(
+            f"اختر الفرع المصدر لعرض تقارير **{display_title}** الخاصة به."
+        )
+        render_branch_selection_buttons(
+            state_session_key, 
+            f"{interaction_key_prefix}_sidebar"
+        )
         st.markdown("---")
-        st.caption(f"نظام {title} الذكي - v1.1")
+        st.caption(f"نظام {display_title} الذكي - v1.2")
 
     # 2. State Resolution
-    selected_branch = st.session_state.get(session_key, "all")
+    selected_source_branch = st.session_state.get(state_session_key, "all")
     
     # 3. Main Dashboard Rendering
     render_browser_tabs(
-        csv_directory,
-        excel_directory,
-        lambda dir_path, ext: _process_premium_tab(
-            selected_branch, ext, key_prefix, category
+        comma_separated_values_directory,
+        excel_spreadsheet_directory,
+        lambda dir_path, extension: _process_premium_rendering_tab(
+            selected_source_branch, 
+            extension, 
+            interaction_key_prefix, 
+            report_category_type
         )
     )
 
-def _process_premium_tab(branch: str, ext: str, key_prefix: str, category: str):
+def _process_premium_rendering_tab(
+    branch_name: str, 
+    file_extension: str, 
+    key_prefix: str, 
+    category_name: str
+) -> None:
     """Bridge function to load files and call the premium display."""
-    files = logic._load_and_prepare_files(branch, ext, category=category)
+    artifact_files = logic_layer._load_and_prepare_files(
+        branch_name, 
+        file_extension, 
+        category=category_name
+    )
     
-    if not files:
-        branch_name = "كل الفروع" if branch == "all" else branch
-        st.warning(f"⚠️ لا توجد ملفات متوفرة لـ **{branch_name}** بصيغة هذا التبويب.")
+    if not artifact_files:
+        display_name = "كل الفروع" if branch_name == "all" else branch_name
+        st.warning(
+            f"⚠️ لا توجد ملفات متوفرة لـ **{display_name}** "
+            f"بصيغة هذا التبويب."
+        )
         return
     
-    if branch == "all":
-        # Group files for the global view
-        grouped = group_files_by_branch(files)
-        # Use specialized grouped display for collections, or generic for others
-        if category == 'collections':
-            display.display_collection_files_grouped(grouped, files, key_prefix, ext)
-        else:
-            # For other categories, we can use a similar grouped display
-            # We'll adapt transfers_view_display to handle this
-            display.display_collection_files_grouped(grouped, files, key_prefix, ext)
+    if branch_name == "all":
+        grouped_files = group_files_by_branch(artifact_files)
+        display_layer.display_collection_files_grouped(
+            grouped_files, 
+            artifact_files, 
+            key_prefix, 
+            file_extension
+        )
     else:
-        # Direct display for single branch
-        if category == 'collections':
-            display.display_collection_files(files, key_prefix, branch, ext)
-        else:
-            # Fallback to collection-style display for consistency, 
-            # or specialized logic for 'transfers'
-            display.display_collection_files(files, key_prefix, branch, ext)
+        display_layer.display_collection_files(
+            artifact_files, 
+            key_prefix, 
+            branch_name, 
+            file_extension
+        )
+ Riverside

@@ -2,23 +2,23 @@
 import streamlit as st
 
 NAV_BUTTON_CONFIG = {
-    '8': [("📤 عرض ملفات التحويل", "pages/06_ملفات_التحويل.py")],
-    '9': [("📦 عرض الفائض المتبقي", "pages/07_الفائض_المتبقي.py")],
-    '10': [("⚠️ عرض ملفات النقص", "pages/08_النقص.py")],
+    '8': [("📤 عرض ملفات التحويل", "pages/individual_transfers.py")],
+    '9': [("📦 عرض الفائض المتبقي", "pages/remaining_surplus.py")],
+    '10': [("⚠️ عرض ملفات النقص", "pages/shortage_reports.py")],
     '11': [
-        ("📋 التحويلات المجمعة", "pages/09_التحويلات_المجمعة.py"),
-        ("📂 التحويلات المنفصلة", "pages/10_التحويلات_المنفصلة.py")
+        ("📋 التحويلات المجمعة", "pages/merged_transfers_with_surplus.py"),
+        ("📂 التحويلات المنفصلة", "pages/separate_transfers_with_surplus.py")
     ],
-    '4': [("📈 عرض تحليل المبيعات", "pages/11_تحليل_المبيعات.py")]
+    '4': [("📈 عرض تحليل المبيعات", "pages/sales_data_analysis.py")]
 }
 
 NAV_BUTTONS = [
-    ("📤 ملفات التحويل", "nav_all_transfer", "pages/06_ملفات_التحويل.py"),
-    ("📦 الفائض المتبقي", "nav_all_surplus", "pages/07_الفائض_المتبقي.py"),
-    ("⚠️ ملفات النقص", "nav_all_shortage", "pages/08_النقص.py"),
-    ("📋 مجمعة", "nav_all_combined", "pages/09_التحويلات_المجمعة.py"),
-    ("📂 منفصلة", "nav_all_separate", "pages/10_التحويلات_المنفصلة.py"),
-    ("📈 تحليل المبيعات", "nav_all_sales", "pages/11_تحليل_المبيعات.py"),
+    ("📤 ملفات التحويل", "nav_all_transfer", "pages/individual_transfers.py"),
+    ("📦 الفائض المتبقي", "nav_all_surplus", "pages/remaining_surplus.py"),
+    ("⚠️ ملفات النقص", "nav_all_shortage", "pages/shortage_reports.py"),
+    ("📋 مجمعة", "nav_all_combined", "pages/merged_transfers_with_surplus.py"),
+    ("📂 منفصلة", "nav_all_separate", "pages/separate_transfers_with_surplus.py"),
+    ("📈 تحليل المبيعات", "nav_all_sales", "pages/sales_data_analysis.py"),
 ]
 
 def render_nav_button(step_id: str) -> None:
@@ -34,16 +34,15 @@ def render_nav_button(step_id: str) -> None:
     buttons = NAV_BUTTON_CONFIG[step_id]
     cols = st.columns(len(buttons))
     
-    for i, (label, page) in enumerate(buttons):
-        with cols[i]:
+    for index, (label, page) in enumerate(buttons):
+        with cols[index]:
             if st.button(
                 label, 
-                key=f"nav_{step_id}_{i}", 
+                key=f"nav_{step_id}_{index}", 
                 type="primary", 
                 use_container_width=True
             ):
                 st.switch_page(page)
-
 
 def render_results_navigation() -> None:
     """Display navigation buttons to result pages if all steps succeeded."""
@@ -55,5 +54,11 @@ def render_results_navigation() -> None:
     
     for col, (label, key, page) in zip(cols, NAV_BUTTONS):
         with col:
-            if st.button(label, key=key, type="secondary", use_container_width=True):
+            if st.button(
+                label, 
+                key=key, 
+                type="secondary", 
+                use_container_width=True
+            ):
                 st.switch_page(page)
+ Riverside
