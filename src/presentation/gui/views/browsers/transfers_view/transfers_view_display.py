@@ -147,9 +147,8 @@ def display_collection_files_grouped(
     
     st.markdown("---")
     
-    branch_keys = sorted(grouped_files.keys())
-    tab_labels = [BRANCH_NAMES.get(k, k) for k in branch_keys]
-    
+    branch_keys = sorted(grouped_files.keys(), key=lambda x: str(x) if x is not None else "")
+    tab_labels = [str(BRANCH_NAMES.get(k, k)) if k is not None else "🌐 تقارير عامة" for k in branch_keys]
     if not branch_keys:
         st.warning("⚠️ لا توجد بيانات متاحة لأي فرع.")
         return
