@@ -25,5 +25,6 @@ render_transfers_browser(
     cfg['excel'],
     cfg['step'],
     cfg['session_key'],
-    cfg['key_prefix']
+    cfg['key_prefix'],
+    cfg.get('help_text')
 )

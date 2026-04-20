@@ -59,14 +59,15 @@ def render_simple_browser(
     step: int, 
     key: str, 
     show_branch: bool = True,
-    category: "typing.Optional[str]" = None
+    category: "typing.Optional[str]" = None,
+    help_text: str = None
 ) -> None:
     """Render the main simple file browser using domain use cases."""
     if category is None:
         # Fallback to key if category not provided
         category = key.lower()
 
-    setup.setup_page_config(title, icon)
+    setup.setup_page_config(title, icon, help_text)
     
     tabs = st.tabs(["📊 Excel", "📄 CSV"])
     extensions = [".xlsx", ".csv"]

@@ -25,6 +25,7 @@ render_simple_browser(
     cfg['excel'],
     cfg['step'],
     cfg['session_key'],
-    show_branch=False,
-    category='shortage'
+    show_branch=True,
+    category='shortage',
+    help_text=cfg.get('help_text')
 )

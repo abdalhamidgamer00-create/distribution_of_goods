@@ -6,7 +6,7 @@ from src.presentation.gui.components.branch_selection import (
     render_selected_branch_info
 )
 
-def setup_browser_page(title: str, icon: str) -> bool:
+def setup_browser_page(title: str, icon: str, help_text: str = None) -> bool:
     """Initialize page header and check auth. Returns success."""
     
     from src.presentation.gui.utils.auth import check_password
@@ -14,7 +14,7 @@ def setup_browser_page(title: str, icon: str) -> bool:
         st.stop()
         return False
         
-    st.title(f"{icon} {title}")
+    st.title(f"{icon} {title}", help=help_text)
     st.markdown("---")
     return True
 

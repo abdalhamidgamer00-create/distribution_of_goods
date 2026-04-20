@@ -76,11 +76,22 @@ def _collect_recursive(search_dir, category, branch, results, root_dir) -> None:
     if not os.path.exists(search_dir):
         return
     folder = os.path.basename(search_dir)
+    
+    # Category-specific filtering:
+    # 'collections' only takes files from folders containing 'all_transfers_collection'
+    # 'transfers' ignores files from such folders
+    is_collection_folder = "all_transfers_collection" in folder
+    
     for item in os.listdir(search_dir):
         path = os.path.join(search_dir, item)
         if os.path.isdir(path):
             _collect_recursive(path, category, branch, results, root_dir)
         elif item.endswith(('.csv', '.xlsx')):
+            if category == 'collections' and not is_collection_folder:
+                continue
+            if category == 'transfers' and is_collection_folder:
+                continue
+                
             meta = create_artifact_metadata(
                 item, path, category, branch, folder, root_dir
             )

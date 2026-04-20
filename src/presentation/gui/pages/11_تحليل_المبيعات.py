@@ -26,5 +26,6 @@ render_simple_browser(
     cfg['step'],
     cfg['session_key'],
     show_branch=False,
-    category='sales_analysis'
+    category='sales_analysis',
+    help_text=cfg.get('help_text')
 )

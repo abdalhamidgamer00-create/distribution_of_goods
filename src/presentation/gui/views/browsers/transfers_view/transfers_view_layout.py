@@ -16,7 +16,8 @@ def render_transfers_browser(
     excel_directory: str,
     step_number: int,
     session_key: str,
-    key_prefix: str
+    key_prefix: str,
+    help_text: str = None
 ) -> None:
     """
     Render transfer files browser with branch selection.
@@ -30,7 +31,7 @@ def render_transfers_browser(
         session_key: Streamlit session state key for branch selection
         key_prefix: Unique prefix for UI element keys
     """
-    if not setup_browser_page(title, icon):
+    if not setup_browser_page(title, icon, help_text):
         return
     
     selected_branch = render_branch_selection_section(

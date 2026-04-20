@@ -11,6 +11,7 @@ from src.shared.constants import BRANCHES
 from src.infrastructure.repositories.persistence.transfers_persistence import (
     save_step7_transfers, save_step8_split_transfers
 )
+from src.shared.config.paths import TRANSFERS_EXCEL_DIR
 from src.infrastructure.repositories.persistence.surplus_persistence import (
     save_surplus_reports
 )
@@ -97,7 +98,9 @@ class PandasDataRepository(DataRepository):
         self._writer.save_branch_stocks(branch, stocks)
 
     def save_transfers(self, transfers: List[Transfer]):
-        save_step7_transfers(transfers, self._transfers_dir)
+        from datetime import datetime
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        save_step7_transfers(transfers, self._transfers_dir, TRANSFERS_EXCEL_DIR, now)
 
     def save_split_transfers(self, transfers_list, excel_directory):
         from datetime import datetime

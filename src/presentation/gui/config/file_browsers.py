@@ -6,6 +6,7 @@ FILE_BROWSERS = {
     'transfers': {
         'title': 'ملفات التحويل', 
         'icon': '📤',
+        'help_text': 'تعرض ملفات التحويلات الفردية المباشرة التي تتم بين فرع وآخر بناءً على الاحتياج.',
         'csv': os.path.join("data", "output", "transfers", "csv"),
         'excel': os.path.join("data", "output", "transfers", "excel"),
         'step': 7, 
@@ -15,6 +16,7 @@ FILE_BROWSERS = {
     'surplus': {
         'title': 'الفائض المتبقي', 
         'icon': '📦',
+        'help_text': 'تقارير توضح أصناف الفائض التي لا تزال موجودة في الفروع بعد تلبية احتياجات الفروع الأخرى.',
         'csv': os.path.join("data", "output", "remaining_surplus", "csv"),
         'excel': os.path.join("data", "output", "remaining_surplus", "excel"),
         'step': 9, 
@@ -24,6 +26,7 @@ FILE_BROWSERS = {
     'shortage': {
         'title': 'النقص', 
         'icon': '⚠️',
+        'help_text': 'تقارير توضح احتياجات الفروع التي لم يتم تغطيتها بالكامل من خلال التحويلات المتاحة.',
         'csv': os.path.join("data", "output", "shortage", "csv"),
         'excel': os.path.join("data", "output", "shortage", "excel"),
         'step': 10, 
@@ -31,8 +34,9 @@ FILE_BROWSERS = {
         'key_prefix': 'shortage'
     },
     'merged': {
-        'title': 'التحويلات المجمعة', 
+        'title': 'التحويلات المجمعة مع نقل الفائض المتبقي', 
         'icon': '📋',
+        'help_text': 'ملفات التحويل النهائية التي تدمج التحويلات المباشرة مع عمليات إعادة توزيع الفائض لتعظيم الفائدة.',
         'csv': os.path.join(
             "data", "output", "combined_transfers", "merged", "csv"
         ),
@@ -44,8 +48,9 @@ FILE_BROWSERS = {
         'key_prefix': 'merged'
     },
     'separate': {
-        'title': 'التحويلات المنفصلة', 
+        'title': 'التحويلات المنفصلة مع نقل الفائض المتبقي', 
         'icon': '📂',
+        'help_text': 'تفاصيل التحويلات لكل صنف على حدة ناتجة عن عملية الدمج وإعادة التوزيع.',
         'csv': os.path.join(
             "data", "output", "combined_transfers", "separate", "csv"
         ),
@@ -59,10 +64,21 @@ FILE_BROWSERS = {
     'sales_analysis': {
         'title': 'تحليل المبيعات', 
         'icon': '📈',
+        'help_text': 'نتائج فحص وتدقيق بيانات المبيعات الخام قبل البدء في عملية التوزيع.',
         'csv': os.path.join("data", "output", "sales_analysis", "csv"),
         'excel': os.path.join("data", "output", "sales_analysis", "excel"),
         'step': 4, 
         'session_key': 'sales_analysis_filter', 
         'key_prefix': 'sales'
+    },
+    'collections': {
+        'title': 'التحويلات المجمعة بدون نقل الفائض المتبقي', 
+        'icon': '📦',
+        'help_text': 'تحتوي هذه الملفات على تجميعة لكافة التحويلات الخارجة من الفرع إلى جميع الفروع الأخرى، مصنفة حسب نوع المنتج (أقراص، كريمات، إلخ)، وذلك دون إجراء أي عمليات نقل للفائض المتبقي.',
+        'csv': os.path.join("data", "output", "transfers", "csv"),
+        'excel': os.path.join("data", "output", "transfers", "excel"),
+        'step': 7, 
+        'session_key': 'collections_selected_branch', 
+        'key_prefix': 'collections'
     },
 }

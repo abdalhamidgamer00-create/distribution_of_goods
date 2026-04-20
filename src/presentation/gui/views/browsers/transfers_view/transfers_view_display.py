@@ -85,3 +85,57 @@ def _render_branch_tab_content(
             file_info, extension, 
             key_prefix=f"{key_prefix}_tab_{branch_key}_{extension}_{i}"
         )
+
+
+def display_collection_files(
+    files: List[Dict],
+    key_prefix: str,
+    selected_branch: str,
+    extension: str
+) -> None:
+    """Display collected files grouped by category for a premium look."""
+    # 1. Group files by category extracted from filename
+    # Pattern: from_[branch]_[category]_[timestamp]
+    category_groups: Dict[str, List[Dict]] = {}
+    
+    for f in files:
+        # Extract category: remove prefix 'from_[branch]_all_' and suffix '_[timestamp]'
+        name = f['name']
+        match = re.search(fr"from_{selected_branch}_all_(.+?)_\d+\.(csv|xlsx)", name)
+        if match:
+            cat = match.group(1).replace('_', ' ').title()
+        else:
+            cat = "عام / أخرى"
+        
+        if cat not in category_groups:
+            category_groups[cat] = []
+        category_groups[cat].append(f)
+
+    # 2. Render Header & Metrics
+    st.markdown(f"### 📊 ملخص التحويلات لفرع {selected_branch}")
+    m1, m2 = st.columns(2)
+    m1.metric("عدد التصنيفات", len(category_groups))
+    m2.metric("إجمالي الملفات", len(files))
+    st.markdown("---")
+
+    # 3. Render Categorized Sections
+    for cat, cat_files in category_groups.items():
+        with st.container():
+            st.markdown(f"#### 🏷️ قسم: {cat}")
+            
+            # Action: Download all for this category
+            prepare_zip_paths(cat_files, path_strategy='transfer')
+            zip_name = f"{key_prefix}_{selected_branch}_{cat.lower().replace(' ', '_')}.zip"
+            render_download_all_button(
+                cat_files, zip_name,
+                label_template=f"📦 تحميل تصنيف {cat} ({{count}})",
+                key=f"{key_prefix}_{selected_branch}_{cat}_{extension}_btn"
+            )
+            
+            # File list
+            for i, f in enumerate(cat_files):
+                render_file_expander(
+                    f, extension,
+                    key_prefix=f"{key_prefix}_{cat}_{i}_{extension}"
+                )
+            st.markdown("<br>", unsafe_allow_html=True)
