@@ -11,7 +11,8 @@ FILE_BROWSERS = {
         'excel': os.path.join("data", "output", "transfers", "excel"),
         'step': 7, 
         'session_key': 'selected_source_branch', 
-        'key_prefix': 'transfers'
+        'key_prefix': 'transfers',
+        'category': 'transfers'
     },
     'surplus': {
         'title': 'الفائض المتبقي', 
@@ -21,7 +22,8 @@ FILE_BROWSERS = {
         'excel': os.path.join("data", "output", "remaining_surplus", "excel"),
         'step': 9, 
         'session_key': 'surplus_filter', 
-        'key_prefix': 'surplus'
+        'key_prefix': 'surplus',
+        'category': 'surplus'
     },
     'shortage': {
         'title': 'النقص', 
@@ -31,7 +33,8 @@ FILE_BROWSERS = {
         'excel': os.path.join("data", "output", "shortage", "excel"),
         'step': 10, 
         'session_key': 'shortage_filter', 
-        'key_prefix': 'shortage'
+        'key_prefix': 'shortage',
+        'category': 'shortage'
     },
     'merged': {
         'title': 'التحويلات المجمعة مع نقل الفائض المتبقي', 
@@ -45,7 +48,8 @@ FILE_BROWSERS = {
         ),
         'step': 11, 
         'session_key': 'merged_selected_branch', 
-        'key_prefix': 'merged'
+        'key_prefix': 'merged',
+        'category': 'merged'
     },
     'separate': {
         'title': 'التحويلات المنفصلة مع نقل الفائض المتبقي', 
@@ -59,7 +63,8 @@ FILE_BROWSERS = {
         ),
         'step': 11, 
         'session_key': 'sep_selected_source', 
-        'key_prefix': 'sep'
+        'key_prefix': 'sep',
+        'category': 'separate'
     },
     'sales_analysis': {
         'title': 'تحليل المبيعات', 
@@ -69,7 +74,8 @@ FILE_BROWSERS = {
         'excel': os.path.join("data", "output", "sales_analysis", "excel"),
         'step': 4, 
         'session_key': 'sales_analysis_filter', 
-        'key_prefix': 'sales'
+        'key_prefix': 'sales',
+        'category': 'sales_analysis'
     },
     'collections': {
         'title': 'التحويلات المجمعة بدون نقل الفائض المتبقي', 
@@ -79,6 +85,7 @@ FILE_BROWSERS = {
         'excel': os.path.join("data", "output", "transfers", "excel"),
         'step': 7, 
         'session_key': 'collections_selected_branch', 
-        'key_prefix': 'collections'
+        'key_prefix': 'collections',
+        'category': 'collections'
     },
 }
