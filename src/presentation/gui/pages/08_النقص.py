@@ -12,20 +12,20 @@ if project_root not in sys.path:
 
 import streamlit as st
 
-from src.presentation.gui.page_templates.simple_browser import (
-    render_simple_browser
+from src.presentation.gui.views.browsers.transfers_view.premium_view_layout import (
+    render_premium_browser
 )
-from src.presentation.gui.page_config import FILE_BROWSERS
+from src.presentation.gui.config.file_browsers import FILE_BROWSERS
 
 cfg = FILE_BROWSERS['shortage']
-render_simple_browser(
+render_premium_browser(
     cfg['title'],
     cfg['icon'],
     cfg['csv'],
     cfg['excel'],
     cfg['step'],
     cfg['session_key'],
-    show_branch=True,
-    category='shortage',
-    help_text=cfg.get('help_text')
+    cfg['key_prefix'],
+    cfg['category'],
+    cfg.get('help_text')
 )
