@@ -3,7 +3,8 @@ import streamlit as st
 from src.presentation.gui.components import (
     render_branch_selection_buttons,
     setup_browser_page,
-    render_browser_tabs
+    render_browser_tabs,
+    group_files_by_branch
 )
 from src.presentation.gui.views.browsers.transfers_view import transfers_view_logic as logic
 from src.presentation.gui.views.browsers.transfers_view import transfers_view_display as display
@@ -34,11 +35,6 @@ def render_collections_browser(
     # 2. State Resolution
     selected_branch = st.session_state.get(session_key, "all")
     
-    if selected_branch == "all":
-        st.info("👋 **مرحباً بك!** يرجى اختيار فرع محدد من **القائمة الجانبية** لمراجعة تجميعات التحويلات الخاصة به.")
-        st.image("https://img.freemarket.com/v1/group-files.png", width=300) # Optional aesthetic placeholder
-        return
-
     # 3. Main Dashboard Rendering
     render_browser_tabs(
         csv_directory,
@@ -51,9 +47,17 @@ def render_collections_browser(
 def _process_collection_tab(branch: str, ext: str, key_prefix: str):
     """Bridge function to load files and call the premium display."""
     # We use the internal logic helper from transfers_view_logic
-    files = logic._load_and_prepare_files(branch, ext)
+    files = logic._load_and_prepare_files(branch, ext, category='collections')
+    
     if not files:
-        st.warning(f"⚠️ لا توجد ملفات متوفرة لفرع **{branch}** بصيغة هذا التبويب.")
+        branch_name = "كل الفروع" if branch == "all" else branch
+        st.warning(f"⚠️ لا توجد ملفات متوفرة لـ **{branch_name}** بصيغة هذا التبويب.")
         return
     
-    display.display_collection_files(files, key_prefix, branch, ext)
+    if branch == "all":
+        # Group files for the global view
+        grouped = group_files_by_branch(files)
+        display.display_collection_files_grouped(grouped, files, key_prefix, ext)
+    else:
+        # Direct display for single branch
+        display.display_collection_files(files, key_prefix, branch, ext)

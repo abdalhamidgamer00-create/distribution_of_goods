@@ -9,7 +9,6 @@ from src.presentation.gui.components import (
     render_download_all_button
 )
 from src.presentation.gui.utils.translations import BRANCH_NAMES
-
 from src.presentation.gui.utils.display_utils import prepare_zip_paths
 
 
@@ -27,10 +26,10 @@ def display_transfer_files(
         files, zip_filename, 
         key=f"{key_prefix}_{selected_branch}_{extension}_single_download"
     )
-    for file_info in files:
+    for i, file_info in enumerate(files):
         render_file_expander(
             file_info, extension, 
-            key_prefix=f"{key_prefix}_{extension}_expander"
+            key_prefix=f"{key_prefix}_{extension}_expander_{i}"
         )
 
 
@@ -93,49 +92,74 @@ def display_collection_files(
     selected_branch: str,
     extension: str
 ) -> None:
-    """Display collected files grouped by category for a premium look."""
-    # 1. Group files by category extracted from filename
-    # Pattern: from_[branch]_[category]_[timestamp]
-    category_groups: Dict[str, List[Dict]] = {}
+    """Display all collection files in a single unified section."""
     
-    for f in files:
-        # Extract category: remove prefix 'from_[branch]_all_' and suffix '_[timestamp]'
-        name = f['name']
-        match = re.search(fr"from_{selected_branch}_all_(.+?)_\d+\.(csv|xlsx)", name)
-        if match:
-            cat = match.group(1).replace('_', ' ').title()
-        else:
-            cat = "عام / أخرى"
-        
-        if cat not in category_groups:
-            category_groups[cat] = []
-        category_groups[cat].append(f)
-
-    # 2. Render Header & Metrics
-    st.markdown(f"### 📊 ملخص التحويلات لفرع {selected_branch}")
+    # 1. Render Header & Metrics
+    st.markdown(f"### 📦 التقارير المجمعة لفرع {selected_branch}")
+    st.info("💡 تم تجميع كافة التقارير في قسم واحد لسهولة الوصول والتحميل المباشر.")
+    
     m1, m2 = st.columns(2)
-    m1.metric("عدد التصنيفات", len(category_groups))
-    m2.metric("إجمالي الملفات", len(files))
+    m1.metric("إجمالي التقارير", len(files))
+    m2.metric("فرع المصدر", selected_branch.title())
     st.markdown("---")
 
-    # 3. Render Categorized Sections
-    for cat, cat_files in category_groups.items():
-        with st.container():
-            st.markdown(f"#### 🏷️ قسم: {cat}")
-            
-            # Action: Download all for this category
-            prepare_zip_paths(cat_files, path_strategy='transfer')
-            zip_name = f"{key_prefix}_{selected_branch}_{cat.lower().replace(' ', '_')}.zip"
-            render_download_all_button(
-                cat_files, zip_name,
-                label_template=f"📦 تحميل تصنيف {cat} ({{count}})",
-                key=f"{key_prefix}_{selected_branch}_{cat}_{extension}_btn"
+    if not files:
+        st.warning("⚠️ لا توجد ملفات متوفرة حالياً.")
+        return
+
+    # 2. Unified Download Action
+    prepare_zip_paths(files, path_strategy='transfer')
+    zip_name = f"all_collections_{selected_branch}_{extension[1:]}.zip"
+    render_download_all_button(
+        files, zip_name,
+        label_template="📥 تحميل كافة التقارير المجمعة ({count})",
+        key=f"{key_prefix}_unified_download_{extension}"
+    )
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. List all files individually
+    st.markdown("#### 📄 قائمة الملفات")
+    for i, f in enumerate(files):
+        render_file_expander(
+            f, extension,
+            key_prefix=f"{key_prefix}_unified_list_{i}_{extension}"
+        )
+
+
+def display_collection_files_grouped(
+    grouped_files: Dict[str, List[Dict]],
+    all_files: List[Dict],
+    key_prefix: str,
+    extension: str
+) -> None:
+    """Display collection files organized by branch using tabs with a global download."""
+    st.info(f"📂 عرض كلي لجميع الفروع - ({len(all_files)} ملف مجمع بجاهزية التحميل)")
+    
+    # Global Action: Download EVERYTHING for ALL branches
+    prepare_zip_paths(all_files, path_strategy='transfer')
+    zip_name = f"complete_network_collections_{extension[1:]}.zip"
+    render_download_all_button(
+        all_files, zip_name,
+        label_template="📦 تحميل كافة تقارير جميع الفروع ({count})",
+        key=f"{key_prefix}_global_bulk_download_{extension}"
+    )
+    
+    st.markdown("---")
+    
+    branch_keys = sorted(grouped_files.keys())
+    tab_labels = [BRANCH_NAMES.get(k, k) for k in branch_keys]
+    
+    if not branch_keys:
+        st.warning("⚠️ لا توجد بيانات متاحة لأي فرع.")
+        return
+        
+    tabs = st.tabs(tab_labels)
+    for branch_key, tab in zip(branch_keys, tabs):
+        with tab:
+            display_collection_files(
+                grouped_files[branch_key],
+                f"{key_prefix}_{branch_key}",
+                branch_key,
+                extension
             )
-            
-            # File list
-            for i, f in enumerate(cat_files):
-                render_file_expander(
-                    f, extension,
-                    key_prefix=f"{key_prefix}_{cat}_{i}_{extension}"
-                )
-            st.markdown("<br>", unsafe_allow_html=True)

@@ -32,13 +32,17 @@ def process_transfer_tab(
         )
 
 
-def _load_and_prepare_files(selected_branch: str, extension: str) -> List[Dict]:
+def _load_and_prepare_files(
+    selected_branch: str, 
+    extension: str, 
+    category: str = 'transfers'
+) -> List[Dict]:
     """Loads and prepares transfer files for the UI."""
     repository = get_repository()
     use_case = QueryOutputs(repository)
     
     branch_query = None if selected_branch == "all" else selected_branch
-    files = use_case.execute('transfers', branch_query)
+    files = use_case.execute(category, branch_query)
     
     # Filter by extension and add compatibility metadata
     prepared_files = []

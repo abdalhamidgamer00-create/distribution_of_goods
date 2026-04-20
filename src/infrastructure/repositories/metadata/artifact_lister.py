@@ -45,8 +45,8 @@ class ArtifactLister:
             'collections': {
                 'base_directory': self._output_directory,
                 'search_patterns': {
-                    'csv': 'transfers_from_', 
-                    'excel': 'transfers_excel_from_'
+                    'csv': 'from_', 
+                    'excel': 'from_'
                 }
             },
             'surplus': {
