@@ -69,7 +69,7 @@ def _process_premium_rendering_tab(
     artifact_files = logic_layer._load_and_prepare_files(
         branch_name, 
         file_extension, 
-        category=category_name
+        report_category=category_name
     )
     
     if not artifact_files:

@@ -5,7 +5,5 @@ from src.presentation.gui.views.browsers.transfers_view.display import (
     display_collection_files_grouped
 )
 
-# This module now serves as a clean entry point while 
-# the implementation is delegated to the display/ package 
-# according to the 100-line modularization rule.
-
+# Aliases for backward compatibility with previous logic versions
+display_transfer_files_grouped = display_collection_files_grouped
