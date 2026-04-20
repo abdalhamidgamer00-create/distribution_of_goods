@@ -82,4 +82,4 @@ class ArtifactLister:
                 'search_patterns': {'csv': 'analysis_', 'excel': 'analysis_'}
             }
         }
- Riverside
+

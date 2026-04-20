@@ -18,4 +18,4 @@ from src.presentation.gui.page_config import DEPARTMENTS
 
 # Main Layout
 render_department(DEPARTMENTS['accounting'])
- Riverside
+

@@ -31,4 +31,4 @@ render_simple_browser(
     category='sales_analysis',
     help_text=configuration.get('help_text')
 )
- Riverside
+

@@ -110,4 +110,4 @@ FILE_BROWSERS = {
         'category': 'collections'
     },
 }
- Riverside
+

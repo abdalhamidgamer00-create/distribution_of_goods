@@ -31,4 +31,4 @@ render_premium_browser(
     configuration['category'],
     configuration.get('help_text')
 )
- Riverside
+

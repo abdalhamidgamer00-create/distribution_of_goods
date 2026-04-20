@@ -56,4 +56,3 @@ def render_home():
                 st.switch_page(department['page'])
 
     st.markdown("---")
- Riverside

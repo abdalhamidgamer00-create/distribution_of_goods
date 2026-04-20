@@ -13,4 +13,4 @@ from src.presentation.gui.views.browsers.transfers_view.display.global_dashboard
 display_transfer_files = display_individual_transfer_files
 display_collection_files = display_unified_collection_files
 display_collection_files_grouped = display_global_collection_dashboard
- Riverside
+

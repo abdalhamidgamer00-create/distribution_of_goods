@@ -100,4 +100,4 @@ st.markdown("---")
 
 if st.button("← العودة إلى الرئيسية", type="secondary"):
     st.switch_page("pages/home.py")
- Riverside
+
