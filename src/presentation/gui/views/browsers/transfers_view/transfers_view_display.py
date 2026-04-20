@@ -100,7 +100,8 @@ def display_collection_files(
     
     m1, m2 = st.columns(2)
     m1.metric("إجمالي التقارير", len(files))
-    m2.metric("فرع المصدر", selected_branch.title())
+    branch_display = (selected_branch or "عام").title()
+    m2.metric("فرع المصدر", branch_display)
     st.markdown("---")
 
     if not files:
