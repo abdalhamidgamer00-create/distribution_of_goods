@@ -20,6 +20,11 @@ def get_navigation_config():
                 icon="⚙️"
             ),
             st.Page(
+                "pages/transfer_ratio.py",
+                title="نسبة التحويل",
+                icon="📊"
+            ),
+            st.Page(
                 "pages/individual_transfers.py", 
                 title="ملفات التحويل", 
                 icon="📤"

@@ -21,7 +21,11 @@ class TestSidebar:
         
         mock_sidebar.title.assert_called_with("💊 مشاريع صيدليات محروس")
         # Verify specific page links exist
-        mock_sidebar.page_link.assert_any_call("pages/00_الرئيسية.py", label="🏠 الرئيسية", icon="🏠")
+        mock_sidebar.page_link.assert_any_call(
+            "pages/home.py",
+            label="🏠 الرئيسية",
+            icon="🏠",
+        )
 
     @patch('streamlit.sidebar')
     @patch('streamlit.page_link')
@@ -35,16 +39,32 @@ class TestSidebar:
         
         mock_sidebar.expander.assert_called_with("🛒 قسم المشتريات", expanded=False)
         # Check if some links were called inside the expander part (global page_link mock since st.page_link is used)
-        mock_page_link.assert_any_call("pages/01_مشتريات.py", label="⚙️ الادوات", icon="⚙️")
-        mock_page_link.assert_any_call("pages/10_التحويلات_المنفصلة.py", label="📂 التحويلات المنفصلة", icon="📂")
+        mock_page_link.assert_any_call(
+            "pages/purchasing_dashboard.py",
+            label="⚙️ الادوات",
+            icon="⚙️",
+        )
+        mock_page_link.assert_any_call(
+            "pages/separate_transfers_with_surplus.py",
+            label="📂 التحويلات المنفصلة",
+            icon="📂",
+        )
 
     @patch('streamlit.sidebar')
     def test_render_other_sections(self, mock_sidebar):
         """Test other department links in sidebar"""
         render_sidebar()
         
-        mock_sidebar.page_link.assert_any_call("pages/02_مبيعات.py", label="💰 قسم المبيعات", icon="💰")
-        mock_sidebar.page_link.assert_any_call("pages/05_اتش_ار.py", label="👥 قسم اتش ار", icon="👥")
+        mock_sidebar.page_link.assert_any_call(
+            "pages/sales_dashboard.py",
+            label="💰 قسم المبيعات",
+            icon="💰",
+        )
+        mock_sidebar.page_link.assert_any_call(
+            "pages/human_resources_dashboard.py",
+            label="👥 قسم اتش ار",
+            icon="👥",
+        )
 
     @patch('streamlit.sidebar')
     def test_render_info_box(self, mock_sidebar):

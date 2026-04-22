@@ -195,9 +195,18 @@ class TestOrganizeFilesByBranch:
         from src.presentation.gui.services.file_service import group_files_by_branch
         
         files = [
-            {"name": "file1.csv", "relative_path": "administration/file1.csv"},
-            {"name": "file2.csv", "relative_path": "shahid/file2.csv"},
-            {"name": "file3.csv", "relative_path": "administration/file3.csv"}
+            {
+                "name": "file1.csv",
+                "relative_path": os.path.join("administration", "file1.csv"),
+            },
+            {
+                "name": "file2.csv",
+                "relative_path": os.path.join("shahid", "file2.csv"),
+            },
+            {
+                "name": "file3.csv",
+                "relative_path": os.path.join("administration", "file3.csv"),
+            }
         ]
         
         organized = group_files_by_branch(files)

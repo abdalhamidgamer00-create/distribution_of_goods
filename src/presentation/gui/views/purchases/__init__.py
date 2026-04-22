@@ -5,6 +5,7 @@ from .purchases_execution import (
     execute_step_ui, run_all_steps_ui
 )
 from .navigation import render_nav_button, render_results_navigation
+from .transfer_ratio_page import render_transfer_ratio_page
 
 __all__ = [
     'show_metrics',
@@ -12,5 +13,6 @@ __all__ = [
     'execute_step_ui',
     'run_all_steps_ui',
     'render_nav_button',
-    'render_results_navigation'
+    'render_results_navigation',
+    'render_transfer_ratio_page',
 ]

@@ -28,7 +28,7 @@ class TestBrowserShared:
         
         assert result is True
         mock_config.assert_not_called()
-        mock_title.assert_called_with("🚀 Title")
+        mock_title.assert_called_with("🚀 Title", help=None)
         
     @patch('streamlit.stop')
     @patch('streamlit.set_page_config')

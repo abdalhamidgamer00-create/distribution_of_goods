@@ -77,7 +77,7 @@ for index, step_info in enumerate(visible_steps):
         if st.button(
             f"▶️ {step_info.name}",
             key=f"run_{step_info.id}",
-            use_container_width=True
+            width="stretch"
         ):
             execute_step_ui(step_info, config=inventory_configuration)
             
@@ -90,12 +90,14 @@ st.subheader("تشغيل جميع الادوات")
 if st.button(
     "🚀 تشغيل جميع الادوات بالترتيب",
     type="primary",
-    use_container_width=True
+    width="stretch"
 ):
     run_all_steps_ui(config=inventory_configuration)
 
 # Bottom Navigation
 render_results_navigation()
+if st.button("📊 الانتقال إلى صفحة نسبة التحويل", width="stretch"):
+    st.switch_page("pages/transfer_ratio.py")
 st.markdown("---")
 
 if st.button("← العودة إلى الرئيسية", type="secondary"):
