@@ -26,13 +26,22 @@ def save_uploaded_file(
     file_name: str,
     destination_dir: str
 ) -> str:
-    """Save bytes to file."""
+    """Save bytes to file after sanitizing the filename."""
+    safe_name = os.path.basename(file_name)
+    if not safe_name:
+        raise ValueError("Invalid file name")
+
     os.makedirs(destination_dir, exist_ok=True)
-    file_path = os.path.join(destination_dir, file_name)
-    
+    file_path = os.path.normpath(
+        os.path.join(destination_dir, safe_name)
+    )
+    abs_dest = os.path.normpath(os.path.abspath(destination_dir))
+    if not os.path.abspath(file_path).startswith(abs_dest):
+        raise ValueError("Invalid file name")
+
     with open(file_path, "wb") as f:
         f.write(file_buffer)
-        
+
     return file_path
 
 def _write_files_to_zip(zip_handle, files: List[Dict]) -> None:
