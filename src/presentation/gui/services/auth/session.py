@@ -1,34 +1,38 @@
 """Authentication session logic."""
 
+import hashlib
 import hmac
 import streamlit as st
 
-DEFAULT_PASSWORDS = {
-    "admin": "mahrous12345",
-    "user": "user123"
-}
+
+def _hash_password(password: str) -> str:
+    """Hash a password with SHA-256 for constant-time comparison."""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
 
 def get_passwords() -> dict:
-    """Get passwords from secrets or defaults."""
+    """Get passwords from Streamlit secrets."""
     try:
-        return st.secrets["passwords"]
+        return dict(st.secrets["passwords"])
     except (FileNotFoundError, KeyError):
-        msg = (
-            "⚠️ استخدام كلمات المرور الافتراضية. "
-            "يرجى إنشاء ملف .streamlit/secrets.toml للأمان."
+        st.error(
+            "⚠️ لم يتم العثور على ملف .streamlit/secrets.toml. "
+            "يرجى إنشاء الملف وتعيين بيانات الاعتماد."
         )
-        st.warning(msg)
-        return DEFAULT_PASSWORDS
+        return {}
 
 
 def verify_credentials(passwords: dict) -> bool:
     """Verify username and password."""
-    return (
-        st.session_state["username"] in passwords and 
-        hmac.compare_digest(
-            st.session_state["password"],
-            passwords[st.session_state["username"]]
-        )
+    username = st.session_state.get("username", "")
+    password = st.session_state.get("password", "")
+    if username not in passwords:
+        hmac.compare_digest(_hash_password(password), _hash_password(""))
+        return False
+    expected = passwords[username]
+    return hmac.compare_digest(
+        _hash_password(password),
+        _hash_password(expected),
     )
 
 

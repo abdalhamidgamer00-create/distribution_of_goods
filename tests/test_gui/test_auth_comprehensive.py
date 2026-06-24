@@ -61,17 +61,20 @@ class TestGetPasswords:
             
             assert "admin" in result or result == {"admin": "admin123", "user": "user123"}
     
-    def test_returns_defaults_when_secrets_missing(self):
+    def test_returns_empty_when_secrets_missing(self, mock_streamlit_no_secrets):
         """
-        WHAT: Return default passwords when secrets not found
-        WHY: Development environment fallback
-        BREAKS: App crashes without secrets
+        WHAT: Return empty dict when secrets not found
+        WHY: App should not fall back to hardcoded passwords
+        BREAKS: Hardcoded credential exposure
         """
-        from src.presentation.gui.services.auth.session import DEFAULT_PASSWORDS
-        
-        # Default passwords should exist
-        assert "admin" in DEFAULT_PASSWORDS
-        assert "user" in DEFAULT_PASSWORDS
+        with patch.dict('sys.modules', {'streamlit': mock_streamlit_no_secrets}):
+            import importlib
+            from src.presentation.gui.services.auth import session as auth
+            importlib.reload(auth)
+
+            result = auth.get_passwords()
+
+            assert result == {}
 
 
 # ===================== _verify_credentials Tests =====================
@@ -276,49 +279,17 @@ class TestLoginStyles:
         assert "</style>" in LOGIN_STYLES
 
 
-# ===================== DEFAULT_PASSWORDS Tests =====================
+# ===================== No Hardcoded Passwords Tests =====================
 
-class TestDefaultPasswords:
-    """Tests for DEFAULT_PASSWORDS constant."""
-    
-    def test_has_admin_user(self):
+class TestNoHardcodedPasswords:
+    """Verify that no default passwords are embedded in source code."""
+
+    def test_no_default_passwords_constant(self):
         """
-        WHAT: Default admin user exists
-        WHY: Admin access for development
-        BREAKS: No admin access in dev
+        WHAT: DEFAULT_PASSWORDS constant must not exist
+        WHY: Hardcoded credentials are a critical security risk
+        BREAKS: Credentials leaked in source
         """
-        from src.presentation.gui.services.auth.session import DEFAULT_PASSWORDS
-        
-        assert "admin" in DEFAULT_PASSWORDS
-    
-    def test_has_regular_user(self):
-        """
-        WHAT: Default regular user exists
-        WHY: Test user access
-        BREAKS: No test user available
-        """
-        from src.presentation.gui.services.auth.session import DEFAULT_PASSWORDS
-        
-        assert "user" in DEFAULT_PASSWORDS
-    
-    def test_passwords_are_not_empty(self):
-        """
-        WHAT: Passwords are non-empty strings
-        WHY: Empty passwords are security risk
-        BREAKS: Login with empty password
-        """
-        from src.presentation.gui.services.auth.session import DEFAULT_PASSWORDS
-        
-        for username, password in DEFAULT_PASSWORDS.items():
-            assert len(password) > 0, f"Password for {username} is empty"
-    
-    def test_passwords_minimum_length(self):
-        """
-        WHAT: Passwords have minimum length
-        WHY: Very short passwords are weak
-        BREAKS: Weak password policy
-        """
-        from src.presentation.gui.services.auth.session import DEFAULT_PASSWORDS
-        
-        for username, password in DEFAULT_PASSWORDS.items():
-            assert len(password) >= 6, f"Password for {username} is too short"
+        from src.presentation.gui.services.auth import session as auth
+
+        assert not hasattr(auth, "DEFAULT_PASSWORDS")
