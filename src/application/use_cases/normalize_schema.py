@@ -54,5 +54,5 @@ class NormalizeSchema:
             logger.info("✓ Data normalization completed successfully")
             return True
         except Exception as error:
-            logger.exception(f"NormalizeSchema use case failed: {error}")
+            logger.exception("NormalizeSchema use case failed: %s", error)
             return False

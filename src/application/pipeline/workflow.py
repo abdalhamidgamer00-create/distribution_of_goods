@@ -47,6 +47,7 @@ class PipelineManager:
         except PrerequisiteNotFoundError as error:
             return self._handle_rescue(service_name, error, **kwargs)
         except Exception as error:
+            logger.exception("Service '%s' failed: %s", service_name, error)
             self._record_result(service_name, False, str(error))
             return False
     def get_workflow_state(self) -> PipelineState:
@@ -80,7 +81,7 @@ class PipelineManager:
 
     def _handle_rescue(self, name, error, **kwargs) -> bool:
         """Attempts to resolve a missing prerequisite."""
-        logger.warning(f"Rescuing: {error}")
+        logger.warning("Rescuing: %s", error)
         res_name = error.missing_prerequisite
         if not (self.run_service(res_name, **kwargs) and 
                 self._is_data_present(res_name)):

@@ -28,7 +28,7 @@ class ConsolidateTransfers:
             self._log_execution_summary(merged_total, separate_total)
             return (merged_total + separate_total) > 0
         except Exception as error:
-            logger.exception(f"ConsolidateTransfers execution failed: {error}")
+            logger.exception("ConsolidateTransfers execution failed: %s", error)
             return False
 
     def execute_for_branch(self, branch: Branch, timestamp: str, config=None) -> tuple:
@@ -93,5 +93,5 @@ class ConsolidateTransfers:
     ) -> None:
         """Logs a summary of the generation process."""
         logger.info("=" * 50)
-        logger.info(f"Generated {merged_count} merged files (CSV + Excel)")
-        logger.info(f"Generated {separate_count} separate files (CSV + Excel)")
+        logger.info("Generated %d merged files (CSV + Excel)", merged_count)
+        logger.info("Generated %d separate files (CSV + Excel)", separate_count)

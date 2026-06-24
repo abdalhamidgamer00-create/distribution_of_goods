@@ -37,7 +37,7 @@ class SegmentBranches:
             logger.info("✓ Data segmentation completed successfully")
             return True
         except Exception as error:
-            logger.exception(f"SegmentBranches use case failed: {error}")
+            logger.exception("SegmentBranches use case failed: %s", error)
             return False
 
     def _save_segmented_branches(self, branches, results_map: Dict) -> None:

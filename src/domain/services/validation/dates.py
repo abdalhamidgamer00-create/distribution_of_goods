@@ -1,7 +1,10 @@
 """Date extraction and validation logic."""
+import logging
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
+logger = logging.getLogger(__name__)
 
 def extract_dates_from_header(header_text: str) -> tuple:
     """Extract start and end dates from header text."""
@@ -47,7 +50,8 @@ def get_sheet_duration_days(csv_path: str) -> int:
         if start_date and end_date:
             return calculate_days_between(start_date, end_date)
         return 0
-    except Exception:
+    except Exception as error:
+        logger.warning("Could not extract duration from %s: %s", csv_path, error)
         return 0
 
 
@@ -57,7 +61,8 @@ def _parse_date_strings(dates: list) -> tuple:
         start_date = datetime.strptime(dates[0], "%d/%m/%Y %H:%M")
         end_date = datetime.strptime(dates[1], "%d/%m/%Y %H:%M")
         return start_date, end_date
-    except ValueError:
+    except ValueError as error:
+        logger.warning("Could not parse date strings %s: %s", dates, error)
         return None, None
 
 

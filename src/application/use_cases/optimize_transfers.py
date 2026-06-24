@@ -29,7 +29,7 @@ class OptimizeTransfers:
             logger.info("✓ Transfer optimization completed successfully")
             return results
         except Exception as error:
-            logger.exception(f"OptimizeTransfers execution failed: {error}")
+            logger.exception("OptimizeTransfers execution failed: %s", error)
             return []
 
     def calculate(self, config=None) -> List[DistributionResult]:

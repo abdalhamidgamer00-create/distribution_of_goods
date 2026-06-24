@@ -1,7 +1,10 @@
 """File and directory handling."""
 
+import logging
 import os
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -21,8 +24,8 @@ def has_files_in_directory(directory: str) -> bool:
         for _, _, files in os.walk(directory):
             if files:
                 return True
-    except Exception:
-        pass
+    except OSError as error:
+        logger.warning("Could not scan directory %s: %s", directory, error)
     return False
 
 

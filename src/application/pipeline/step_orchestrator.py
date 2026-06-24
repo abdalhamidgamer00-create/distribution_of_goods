@@ -1,8 +1,11 @@
 """Application service for orchestrating pipeline step sequences."""
 
+import logging
 from typing import List, Optional
 from src.application.pipeline.steps import AVAILABLE_STEPS
 from src.domain.models.step import Step
+
+logger = logging.getLogger(__name__)
 
 
 class StepOrchestrator:
@@ -51,6 +54,7 @@ class StepOrchestrator:
         try:
             target_step_number = int(step_id)
         except ValueError:
+            logger.warning("Invalid step_id '%s': must be an integer", step_id)
             return []
             
         return [

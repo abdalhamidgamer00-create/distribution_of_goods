@@ -27,7 +27,7 @@ class ArchiveData:
             
             return self._perform_archiving_and_cleanup()
         except Exception as error:
-            logger.exception(f"ArchiveData use case failed: {error}")
+            logger.exception("ArchiveData use case failed: %s", error)
             return False
 
     def _perform_archiving_and_cleanup(self) -> bool:

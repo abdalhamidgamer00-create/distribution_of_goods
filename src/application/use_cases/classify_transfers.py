@@ -39,5 +39,5 @@ class ClassifyTransfers:
             logger.info("✓ Transfer classification completed successfully")
             return True
         except Exception as e:
-            logger.exception(f"ClassifyTransfers use case failed: {e}")
+            logger.exception("ClassifyTransfers use case failed: %s", e)
             return False

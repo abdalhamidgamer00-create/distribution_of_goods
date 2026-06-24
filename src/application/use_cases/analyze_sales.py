@@ -68,5 +68,5 @@ class AnalyzeSales:
             logger.info("\n%s", report)
             return True
         except Exception as error:
-            logger.exception(f"AnalyzeSales use case failed: {error}")
+            logger.exception("AnalyzeSales use case failed: %s", error)
             return False

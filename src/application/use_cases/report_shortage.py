@@ -37,5 +37,5 @@ class ReportShortage:
             logger.info("✓ Shortage reporting completed successfully")
             return True
         except Exception as e:
-            logger.exception(f"ReportShortage use case failed: {e}")
+            logger.exception("ReportShortage use case failed: %s", e)
             return False

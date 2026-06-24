@@ -1,6 +1,9 @@
 """File reading logic."""
+import logging
 import pandas as pd
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 def read_file_content(
     file_path: str, 
@@ -13,7 +16,8 @@ def read_file_content(
         elif file_path.endswith('.xlsx'):
             return pd.read_excel(file_path, nrows=max_rows)
         return None
-    except Exception:
+    except Exception as error:
+        logger.warning("Failed to read file %s: %s", file_path, error)
         return None
 
 def _read_csv_file(

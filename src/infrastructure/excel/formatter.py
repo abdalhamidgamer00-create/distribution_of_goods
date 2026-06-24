@@ -41,7 +41,9 @@ def save_formatted_excel(dataframe: pd.DataFrame, file_path: str) -> None:
             "Install project requirements with: pip install -r requirements.txt"
         ) from error
     except Exception as error:
-        print(f"Error saving formatted Excel {file_path}: {error}")
+        raise IOError(
+            f"Error saving formatted Excel {file_path}: {error}"
+        ) from error
 
 
 def _apply_header_styles(worksheet, deps) -> None:

@@ -36,7 +36,7 @@ class StockReader:
             
             return self._map_dataframe_to_entities(dataframe, days, config)
         except Exception as error:
-            logger.error(f"Error loading stock from {csv_path}: {error}")
+            logger.exception("Error loading stock from %s: %s", csv_path, error)
             return []
 
     def load_stock_levels(
@@ -58,7 +58,7 @@ class StockReader:
             dataframe = pd.read_csv(path, encoding='utf-8-sig')
             return self._parse_stocks_dataframe(dataframe, days, config)
         except Exception as error:
-            logger.error(f"Error loading levels for {branch_name}: {error}")
+            logger.exception("Error loading levels for %s: %s", branch_name, error)
             return {}
 
     def _read_csv_and_extract_days(self, path: str) -> tuple[pd.DataFrame, int]:
