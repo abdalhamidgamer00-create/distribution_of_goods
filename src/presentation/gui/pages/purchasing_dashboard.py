@@ -1,20 +1,7 @@
-# =============================================================================
-# SETUP (PATH CONFIGURATION)
-# =============================================================================
-
-import os
-import sys
-
-# Ensure project root is in sys.path for absolute imports starting with 'src'
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../../..")
-)
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+import src.presentation.gui.page_setup  # noqa: F401  -- path bootstrap
 
 import streamlit as st
 
-# Imports
 from src.presentation.gui.services.pipeline_service import get_all_steps
 from src.presentation.gui.views.purchases import (
     show_metrics,
@@ -102,4 +89,3 @@ st.markdown("---")
 
 if st.button("← العودة إلى الرئيسية", type="secondary"):
     st.switch_page("pages/home.py")
-

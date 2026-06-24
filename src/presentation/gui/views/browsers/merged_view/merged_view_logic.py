@@ -8,6 +8,7 @@ from src.presentation.gui.views.browsers.merged_view import (
 )
 from src.presentation.gui.services.pipeline_service import get_repository
 from src.application.use_cases.query_outputs import QueryOutputs
+from src.shared.collections import group_by
 
 
 def process_merged_tab(
@@ -55,12 +56,7 @@ def _handle_all_branches_view(
     files: List[Dict], key_prefix: str, extension: str
 ) -> None:
     """Groups files by branch and dispatches to grouped display."""
-    grouped_files: Dict[str, List[Dict]] = {}
-    for file_info in files:
-        branch_key = file_info.get('branch', 'عام')
-        if branch_key not in grouped_files:
-            grouped_files[branch_key] = []
-        grouped_files[branch_key].append(file_info)
+    grouped_files = group_by(files, key_func=lambda f: f.get('branch', 'عام'))
             
     display.display_merged_files_grouped(
         grouped_files, files, key_prefix, extension

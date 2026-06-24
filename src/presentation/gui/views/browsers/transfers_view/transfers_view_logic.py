@@ -7,6 +7,7 @@ from . import (
 )
 from src.presentation.gui.services.pipeline_service import get_repository
 from src.application.use_cases.query_outputs import QueryOutputs
+from src.shared.collections import group_by
 
 def process_transfer_tab(
     target_directory: str,
@@ -66,12 +67,9 @@ def _handle_all_branches_view(
     file_extension: str
 ) -> None:
     """Groups files by branch and dispatches to grouped display."""
-    grouped_artifacts: Dict[str, List[Dict]] = {}
-    for artifact_info in artifact_list:
-        branch_key = artifact_info.get('branch', 'عام')
-        if branch_key not in grouped_artifacts:
-            grouped_artifacts[branch_key] = []
-        grouped_artifacts[branch_key].append(artifact_info)
+    grouped_artifacts = group_by(
+        artifact_list, key_func=lambda a: a.get('branch', 'عام')
+    )
             
     display_interface.display_transfer_files_grouped(
         grouped_artifacts, artifact_list, interaction_key_prefix, file_extension
