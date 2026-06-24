@@ -37,5 +37,5 @@ class ReportSurplus:
             logger.info("✓ Surplus reporting completed successfully")
             return True
         except Exception as e:
-            logger.exception(f"ReportSurplus use case failed: {e}")
+            logger.exception("ReportSurplus use case failed: %s", e)
             return False

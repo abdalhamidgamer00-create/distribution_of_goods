@@ -50,5 +50,5 @@ class SurplusReader:
                 })
             return results
         except Exception as error:
-            logger.error(f"Error reading surplus {path}: {error}")
+            logger.exception("Error reading surplus %s: %s", path, error)
             return []

@@ -1,7 +1,10 @@
 """Logic for creating and enriching artifact metadata."""
 
+import logging
 import os
 from typing import Dict
+
+logger = logging.getLogger(__name__)
 
 
 def create_artifact_metadata(
@@ -56,4 +59,6 @@ def _extract_branch_category(metadata: Dict, stem: str) -> None:
         metadata['target_branch'] = parts[to_index + 1]
         metadata['product_category'] = parts[to_index + 2]
     except (ValueError, IndexError):
-        pass
+        logger.warning(
+            "Could not extract branch/category from filename stem '%s'", stem
+        )

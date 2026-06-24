@@ -79,7 +79,7 @@ def execute_all_steps_batch(use_latest_file: bool, config=None) -> tuple[int, in
         step = find_step_by_id(step_id)
         if not step: continue
         
-        logger.info(f"[{step_index}/{total_steps}] {step.id} - {step.name}")
+        logger.info("[%d/%d] %s - %s", step_index, total_steps, step.id, step.name)
         logger.info("-" * 50)
         
         if _execute_and_track(step, **params):

@@ -54,7 +54,7 @@ class TransferReader:
                 dataframe, source_branch, target_branch
             )
         except Exception as error:
-            logger.error(f"Error parsing transfer file {path}: {error}")
+            logger.exception("Error parsing transfer file %s: %s", path, error)
             return []
 
     def _map_rows_to_transfers(
