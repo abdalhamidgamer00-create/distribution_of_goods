@@ -8,6 +8,7 @@ from src.presentation.gui.views.browsers.separate_view import (
 )
 from src.presentation.gui.services.pipeline_service import get_repository
 from src.application.use_cases.query_outputs import QueryOutputs
+from src.shared.collections import group_by
 def process_separate_tab(
     directory: str,
     extension: str,
@@ -57,13 +58,7 @@ def _load_and_filter_files(
     return prepared
 def _group_files_by_source(files: List[Dict]) -> Dict[str, List[Dict]]:
     """Helper to group files by their source branch."""
-    grouped_files: Dict[str, List[Dict]] = {}
-    for file_info in files:
-        source_key = file_info.get('source_branch', 'عام')
-        if source_key not in grouped_files:
-            grouped_files[source_key] = []
-        grouped_files[source_key].append(file_info)
-    return grouped_files
+    return group_by(files, key_func=lambda f: f.get('source_branch', 'عام'))
 def _handle_all_branches_view(
     files: List[Dict], key_prefix: str, extension: str
 ) -> None:

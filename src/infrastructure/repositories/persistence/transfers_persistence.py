@@ -8,6 +8,8 @@ from src.domain.services.classification.product_classifier import (
     classify_product_type
 )
 from src.infrastructure.excel.formatter import save_formatted_excel
+from src.shared.collections import group_by
+from src.shared.persistence import save_dual_format
 
 
 CATEGORY_NAMES = {
@@ -29,7 +31,10 @@ def save_step7_transfers(
     """Saves transfers grouped by source branch (Step 7)."""
     if not transfers:
         return
-    branch_pairs = _group_transfers_by_pair(transfers)
+    branch_pairs = group_by(
+        transfers,
+        key_func=lambda t: (t.from_branch.name, t.to_branch.name),
+    )
     os.makedirs(output_dir, exist_ok=True)
     for (source, target), pair_items in branch_pairs.items():
         dataframe = _prepare_transfer_dataframe(pair_items, target)
@@ -46,38 +51,29 @@ def save_step8_split_transfers(
     transfers: List[Transfer], output_dir: str, excel_dir: str, timestamp: str
 ) -> None:
     """Saves transfers split by product category (Step 8)."""
-    groups = _group_transfers_by_category(transfers)
+    groups = group_by(
+        transfers,
+        key_func=lambda t: (
+            t.from_branch.name,
+            t.to_branch.name,
+            classify_product_type(t.product.name),
+        ),
+    )
     for (source, target, category), items in groups.items():
         dataframe = _prepare_transfer_dataframe(items, target)
-        _save_split_csv(
-            source, target, category, timestamp, dataframe, output_dir
+        stem = f"{source}_to_{target}_{timestamp}_{category}"
+        csv_directory = os.path.join(
+            output_dir, f"transfers_from_{source}_to_other_branches",
+            f"{source}_to_{target}",
         )
-        _save_split_excel(
-            source, target, category, timestamp, dataframe, excel_dir
+        excel_directory = os.path.join(
+            excel_dir, f"transfers_excel_from_{source}_to_other_branches",
+            f"{source}_to_{target}",
         )
-
-
-def _group_transfers_by_pair(transfers: List[Transfer]) -> Dict:
-    """Groups transfers into (source, target) pairs."""
-    pairs = {}
-    for transfer in transfers:
-        key = (transfer.from_branch.name, transfer.to_branch.name)
-        if key not in pairs:
-            pairs[key] = []
-        pairs[key].append(transfer)
-    return pairs
-
-
-def _group_transfers_by_category(transfers: List[Transfer]) -> Dict:
-    """Groups transfers by source, target, and category."""
-    groups = {}
-    for transfer in transfers:
-        category = classify_product_type(transfer.product.name)
-        key = (transfer.from_branch.name, transfer.to_branch.name, category)
-        if key not in groups:
-            groups[key] = []
-        groups[key].append(transfer)
-    return groups
+        save_dual_format(
+            dataframe, csv_directory, excel_directory, stem,
+            excel_writer=save_formatted_excel,
+        )
 
 
 def _prepare_transfer_dataframe(
@@ -116,65 +112,28 @@ def _save_branch_collections(
     timestamp: str = None
 ) -> None:
     """Saves aggregated transfers per branch grouped by category."""
-    groups = _group_transfers_by_source_and_category(transfers)
+    groups = group_by(
+        transfers,
+        key_func=lambda t: (t.from_branch.name, classify_product_type(t.product.name)),
+    )
     
     for (source, category), items in groups.items():
         folder_name = f"from_{source.lower()}_all_transfers_collection"
         dataframe = _prepare_transfer_dataframe(items)
         category_name = CATEGORY_NAMES.get(category, f"all_{category}")
         
-        # Build filename: from_[source]_[category]_[timestamp]
         timestamp_suffix = f"_{timestamp}" if timestamp else ""
         filename = f"from_{source.lower()}_{category_name}{timestamp_suffix}"
         
-        # Save CSV
         csv_spec = f"transfers_from_{source}_to_other_branches"
         csv_collection_dir = os.path.join(output_dir, csv_spec, folder_name)
         os.makedirs(csv_collection_dir, exist_ok=True)
         csv_path = os.path.join(csv_collection_dir, f"{filename}.csv")
         dataframe.to_csv(csv_path, index=False, encoding='utf-8-sig')
         
-        # Save Excel if dir provided
         if excel_dir:
             excel_spec = f"transfers_excel_from_{source}_to_other_branches"
             excel_collection_dir = os.path.join(excel_dir, excel_spec, folder_name)
             os.makedirs(excel_collection_dir, exist_ok=True)
             excel_path = os.path.join(excel_collection_dir, f"{filename}.xlsx")
             save_formatted_excel(dataframe, excel_path)
-
-
-def _group_transfers_by_source_and_category(transfers: List[Transfer]) -> Dict:
-    """Groups transfers by (source, category)."""
-    groups = {}
-    for transfer in transfers:
-        category = classify_product_type(transfer.product.name)
-        key = (transfer.from_branch.name, category)
-        if key not in groups:
-            groups[key] = []
-        groups[key].append(transfer)
-    return groups
-
-
-def _save_split_csv(source, target, category, timestamp, dataframe, base_dir):
-    """Saves a category-split CSV."""
-    directory = os.path.join(
-        base_dir, f"transfers_from_{source}_to_other_branches", 
-        f"{source}_to_{target}"
-    )
-    os.makedirs(directory, exist_ok=True)
-    filename = f"{source}_to_{target}_{timestamp}_{category}.csv"
-    path = os.path.join(directory, filename)
-    dataframe.to_csv(path, index=False, encoding='utf-8-sig')
-
-
-def _save_split_excel(
-    source, target, category, timestamp, dataframe, excel_dir
-):
-    """Saves a category-split Excel."""
-    directory = os.path.join(
-        excel_dir, f"transfers_excel_from_{source}_to_other_branches", 
-        f"{source}_to_{target}"
-    )
-    os.makedirs(directory, exist_ok=True)
-    filename = f"{source}_to_{target}_{timestamp}_{category}.xlsx"
-    save_formatted_excel(dataframe, os.path.join(directory, filename))

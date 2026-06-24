@@ -1,11 +1,9 @@
 """Main layout for transfers view."""
 
+from functools import partial
+
 from src.domain.services.branches.config import get_branches
-from src.presentation.gui.components import (
-    render_branch_selection_section,
-    setup_browser_page,
-    render_browser_tabs
-)
+from src.presentation.gui.views.browsers.base_browser_layout import render_branch_browser
 from src.presentation.gui.views.browsers.transfers_view import transfers_view_logic as logic
 
 
@@ -17,38 +15,26 @@ def render_transfers_browser(
     step_number: int,
     session_key: str,
     key_prefix: str,
-    help_text: str = None
+    help_text: str = None,
 ) -> None:
-    """
-    Render transfer files browser with branch selection.
-    
-    Args:
-        title: Page title
-        icon: Page icon
-        csv_directory: Directory for CSV files
-        excel_directory: Directory for Excel files
-        step_number: Pipeline step number
-        session_key: Streamlit session state key for branch selection
-        key_prefix: Unique prefix for UI element keys
-    """
-    if not setup_browser_page(title, icon, help_text):
-        return
-    
-    selected_branch = render_branch_selection_section(
-        session_key=session_key,
-        subheader_label="📍 اختر الفرع المصدر",
-        info_message_template="📂 عرض من: **{branch_name}**"
-    )
-
-    if not selected_branch:
-        return
-
+    """Render transfer files browser with branch selection."""
     branches = get_branches()
-    render_browser_tabs(
-        csv_directory, 
-        excel_directory,
-        lambda dir_path, ext: logic.process_transfer_tab(
-            dir_path, ext, step_number, 
-            key_prefix, selected_branch, branches
+
+    def _tab_callback(dir_path, ext, step_num, prefix, selected):
+        logic.process_transfer_tab(
+            dir_path, ext, step_num, prefix, selected, branches
         )
+
+    render_branch_browser(
+        title=title,
+        icon=icon,
+        csv_directory=csv_directory,
+        excel_directory=excel_directory,
+        step_number=step_number,
+        session_key=session_key,
+        key_prefix=key_prefix,
+        tab_callback=_tab_callback,
+        subheader_label="📍 اختر الفرع المصدر",
+        info_message_template="📂 عرض من: **{branch_name}**",
+        help_text=help_text,
     )

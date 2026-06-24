@@ -8,6 +8,8 @@ from src.domain.models.distribution import DistributionResult
 from src.domain.services.classification.product_classifier import (
     classify_product_type
 )
+from src.shared.collections import group_by
+from src.shared.persistence import save_dual_format
 
 
 def save_surplus_reports(
@@ -32,23 +34,23 @@ def _group_surplus_by_branch_category(
     results: List[DistributionResult]
 ) -> Dict:
     """Groups surplus data by branch and then by category."""
-    grouped = {}
+    flat = []
     for result in results:
         category = classify_product_type(result.product.name)
         for branch, surplus in result.remaining_branch_surplus.items():
-            if surplus <= 0:
-                continue
-            if branch not in grouped:
-                grouped[branch] = {}
-            if category not in grouped[branch]:
-                grouped[branch][category] = []
-            
-            grouped[branch][category].append({
-                'code': result.product.code,
-                'product_name': result.product.name,
-                'remaining_surplus': surplus
-            })
-    return grouped
+            if surplus > 0:
+                flat.append((branch, category, {
+                    'code': result.product.code,
+                    'product_name': result.product.name,
+                    'remaining_surplus': surplus,
+                }))
+
+    by_branch = group_by(flat, key_func=lambda t: t[0])
+    nested: Dict = {}
+    for branch, triples in by_branch.items():
+        by_cat = group_by(triples, key_func=lambda t: t[1])
+        nested[branch] = {cat: [t[2] for t in rows] for cat, rows in by_cat.items()}
+    return nested
 
 
 def _persist_category_surplus(branch, category, date, items, base_dir):
@@ -56,20 +58,11 @@ def _persist_category_surplus(branch, category, date, items, base_dir):
     dataframe = pd.DataFrame(items).sort_values(
         'product_name', key=lambda col: col.str.lower()
     )
-    
-    path_csv = os.path.join(base_dir, "csv", branch)
-    os.makedirs(path_csv, exist_ok=True)
-    filename_csv = f"remaining_surplus_{branch}_{category}_{date}.csv"
-    dataframe.to_csv(
-        os.path.join(path_csv, filename_csv), index=False, encoding='utf-8-sig'
-    )
-    
-    path_excel = os.path.join(base_dir, "excel", branch)
-    os.makedirs(path_excel, exist_ok=True)
-    filename_excel = f"remaining_surplus_{branch}_{category}_{date}.xlsx"
-    dataframe.to_excel(
-        os.path.join(path_excel, filename_excel), 
-        index=False
+    save_dual_format(
+        dataframe,
+        csv_dir=os.path.join(base_dir, "csv", branch),
+        excel_dir=os.path.join(base_dir, "excel", branch),
+        filename_stem=f"remaining_surplus_{branch}_{category}_{date}",
     )
 
 
@@ -78,13 +71,9 @@ def _persist_total_branch_surplus(branch, date, items, base_dir):
     dataframe = pd.DataFrame(items).sort_values(
         'product_name', key=lambda col: col.str.lower()
     )
-    
-    csv_dir = os.path.join(base_dir, "csv", branch)
-    csv_filename = f"remaining_surplus_{branch}_total_{date}.csv"
-    csv_path = os.path.join(csv_dir, csv_filename)
-    dataframe.to_csv(csv_path, index=False, encoding='utf-8-sig')
-    
-    excel_folder = os.path.join(base_dir, "excel", branch)
-    excel_filename = f"remaining_surplus_{branch}_total_{date}.xlsx"
-    excel_path = os.path.join(excel_folder, excel_filename)
-    dataframe.to_excel(excel_path, index=False)
+    save_dual_format(
+        dataframe,
+        csv_dir=os.path.join(base_dir, "csv", branch),
+        excel_dir=os.path.join(base_dir, "excel", branch),
+        filename_stem=f"remaining_surplus_{branch}_total_{date}",
+    )
